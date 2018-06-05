@@ -1,0 +1,40 @@
+{
+    "Groups": [
+        {
+            "FullGroupName": "Language",
+            "Options": [
+                "ZH_TW"
+            ]
+        },
+        {
+            "FullGroupName": "Texture Import Settings Override/Dimension",
+            "Options": [
+                "1024 -> 512"
+            ]
+        },
+        {
+            "FullGroupName": "Texture Import Settings Override/Compression",
+            "Options": [
+                "RGB24 -> ASTC RGB 4x4"
+            ]
+        },
+        {
+            "FullGroupName": "Texture Import Settings Override/Max Size",
+            "Options": [
+                "1024 -> 512",
+                "2048 -> 1024"
+            ]
+        },
+        {
+            "FullGroupName": "Texture Import Settings Override/Format",
+            "Options": [
+                "RGB24 -> ASTC RGB 4x4"
+            ]
+        }
+    ],
+    "Tags": [
+        "iOS",
+        "HD",
+        "ZH_CN"
+    ]
+}

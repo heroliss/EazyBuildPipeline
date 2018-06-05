@@ -1,0 +1,9 @@
+{
+    "CheckBundle": true,
+    "EnumConfigPath": "Assets/AssetsPipeline/PublicConfigs/TagEnumConfig.json",
+    "PackageMapsFolderPath": "Assets/AssetsPipeline/PackageManager/Config/PackageMaps",
+    "RootPath": "C:/Users/herol/Desktop/dukto传送/ExamplePiplineRoot",
+    "packageConfigPath": "BundlePackages/_Config/PackageConfig.json",
+    "bundlePath": "AssetBundles",
+    "packagePath": "BundlePackages"
+}

@@ -1,0 +1,9 @@
+{
+    "OptionsEnumConfigPath": "Assets/AssetsPipeline/AssetPreprocessor/Config/OptionsEnumConfig.json",
+    "TagEnumConfigPath": "Assets/AssetsPipeline/PublicConfigs/TagEnumConfig.json",
+    "SavedConfigsFolderPath": "Assets/AssetsPipeline/AssetPreprocessor/Config/SavedConfigs",
+    "RootPath": "C:/Users/herol/Desktop/dukto传送/ExamplePiplineRoot",
+    "preProcessorConfigPath": "PreStoredAssets/_Config/PreprocessorConfig.json",
+    "preStoredAssetsFolderPath": "PreStoredAssets/Assets",
+    "logsFolderPath": "PreStoredAssets/_Logs"
+}

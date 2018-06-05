@@ -1,0 +1,12 @@
+{
+    "Packages": [
+        {
+            "PackageName": "New Package",
+            "Color": "139EFF",
+            "Bundles": [
+                "aaa/1.txt.manifest"
+            ],
+            "EmptyFolders": []
+        }
+    ]
+}
