@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System;
+using System.IO;
 
 namespace AssetBundleManagement2
 {
@@ -16,8 +17,9 @@ namespace AssetBundleManagement2
 
         internal void BuildBundles_extension()
         {
-            Debug.Log("build bundles at " + string.Join("_",
-                LiXuFeng.BundleManager.Editor.Configs.configs.BundleManagerConfig.CurrentTags));
+            string tags = string.Join("_", LiXuFeng.BundleManager.Editor.Configs.configs.BundleManagerConfig.CurrentTags);
+            string path = Path.Combine(LiXuFeng.BundleManager.Editor.Configs.configs.LocalConfig.BundlesFolderPath, tags);
+            buildTab.ExecuteBuild_extension(path);
         }
 
         internal void OnDisable_extension()

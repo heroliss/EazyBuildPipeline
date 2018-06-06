@@ -140,7 +140,7 @@ namespace LiXuFeng.BundleManager.Editor.Config
     public class BundleManagerConfig : Config
     {
         public string[] CurrentTags;
-        public string CurrentConfigName;
+        public int CurrentBuildAssetBundleOptionsValue;
         public bool Applying;
     }
 

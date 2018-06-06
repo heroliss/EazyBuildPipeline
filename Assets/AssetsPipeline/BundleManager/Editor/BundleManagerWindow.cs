@@ -24,8 +24,8 @@ namespace LiXuFeng.BundleManager.Editor
         {
             Configs.Init();
             settingPanel = new SettingPanel();
-            mainTab = new AssetBundleManagement2.AssetBundleMainWindow();
             settingPanel.OnEnable();
+            mainTab = new AssetBundleManagement2.AssetBundleMainWindow();
             mainTab.OnEnable_extension();
         }
         private void OnDisable()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,6 +9,15 @@ namespace LiXuFeng.BundleManager.Editor
 {
     public class SettingPanel
     {
+        Dictionary<string, BuildAssetBundleOptions> compressionDic = new Dictionary<string, BuildAssetBundleOptions>
+        {
+            { "None",BuildAssetBundleOptions.UncompressedAssetBundle },
+            { "LZMA",BuildAssetBundleOptions.None },
+            { "LZ4" ,BuildAssetBundleOptions.ChunkBasedCompression}
+        };
+        string[] compressionEnum;
+        int selectedCompressionIndex;
+
         bool firstShow = true;
         int[] selectedIndexs;
         GUIStyle dropdownStyle;
@@ -27,6 +37,7 @@ namespace LiXuFeng.BundleManager.Editor
 
         public void OnEnable()
         {
+            compressionEnum = compressionDic.Keys.ToArray();
             try
             {
                 LoadAllConfigs();
@@ -60,6 +71,12 @@ namespace LiXuFeng.BundleManager.Editor
             {
                 ShowTagsDropdown();
                 GUILayout.FlexibleSpace();
+                int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, compressionEnum, dropdownStyle, dropdownOptions);
+                if (selectedCompressionIndex_new != selectedCompressionIndex)
+                {
+                    selectedCompressionIndex = selectedCompressionIndex_new;
+                    Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue = (int)compressionDic[compressionEnum[selectedCompressionIndex]];
+                }
                 if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions)) ClickedApply();
             }
             GUILayout.FlexibleSpace();
@@ -135,6 +152,7 @@ namespace LiXuFeng.BundleManager.Editor
 
         private void InitSelectedIndex()
         {
+            selectedCompressionIndex = -1;
             selectedIndexs = new int[Configs.configs.TagEnumConfig.Tags.Count];
             for (int i = 0; i < selectedIndexs.Length; i++)
             {
@@ -185,6 +203,9 @@ namespace LiXuFeng.BundleManager.Editor
                 selectedIndexs[i] = GetIndex(item, Configs.configs.BundleManagerConfig.CurrentTags[i], i);
                 i++;
             }
+
+            string compressionName = compressionDic.FirstOrDefault(x=>x.Value == ((BuildAssetBundleOptions)Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue)).Key;
+            selectedCompressionIndex = compressionEnum.IndexOf(compressionName);
         }
 
         private int GetIndex(string[] sList, string s, int count)
