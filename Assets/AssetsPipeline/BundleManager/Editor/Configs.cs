@@ -1,11 +1,14 @@
 ﻿#pragma warning disable 0649
-using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using LiXuFeng.AssetPreprocessor.Editor.Config;
+using System.Linq;
+using Newtonsoft.Json;
 
-namespace LiXuFeng.PackageManager.Editor
+namespace LiXuFeng.BundleManager.Editor
 {
     public static class Configs
     {
@@ -15,17 +18,13 @@ namespace LiXuFeng.PackageManager.Editor
         {
             public Action OnChangeRootPath = () => { };
             public Action OnChangeTags = () => { };
-            public Action OnChangeMap = () => { };
-            public PackageTree packageTree;
-            public BundleTree bundleTree;
+            public Action Apply = () => { };
         }
-
         public static void Init()
         {
             configs = new Config.Configs();
             g = new GlobalReference();
         }
-        
         public static void Clear()
         {
             configs = null;
@@ -33,92 +32,67 @@ namespace LiXuFeng.PackageManager.Editor
         }
     }
 }
-namespace LiXuFeng.PackageManager.Editor.Config
+
+namespace LiXuFeng.BundleManager.Editor.Config
 {
     public class Configs
     {
+        public LocalConfig LocalConfig = new LocalConfig() { Path = "Assets/AssetsPipeline/BundleManager/Config/LocalConfig.json" };
+        public BundleManagerConfig BundleManagerConfig = new BundleManagerConfig();
         public TagEnumConfig TagEnumConfig = new TagEnumConfig();
-        public PackageMapConfig PackageMapConfig = new PackageMapConfig();
-        public LocalConfig LocalConfig = new LocalConfig() { Path = "Assets/AssetsPipeline/PackageManager/Config/LocalConfig.json" };
-        public PackageConfig PackageConfig = new PackageConfig();
 
-        public string TagName
-        {
-            get
-            {
-                int i;
-                string tagName = "";
-                for (i = 0; i < PackageConfig.CurrentTags.Length; i++)
-                {
-					if (!string.IsNullOrEmpty(PackageConfig.CurrentTags[i]))
-					{
-						tagName += PackageConfig.CurrentTags[i] + "_";
-					}
-                }
-				if (!string.IsNullOrEmpty(tagName))
-				{
-					tagName = tagName.Remove(tagName.Length - 1);
-				}
-				return tagName;
-            }
-        }
-        public int PathHandCount
-        {
-            get
-            {
-                return LocalConfig.BundlePath.Length + TagName.Length + 2;
-            }
-        }
         public bool LoadAllConfigsByLocalConfig()
         {
             bool success = true;
             try
             {
-                TagEnumConfig.Path = LocalConfig.EnumConfigPath;
+                TagEnumConfig.Path = LocalConfig.TagEnumConfigPath;
                 TagEnumConfig.Load();
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载枚举配置文件时发生错误：" + e.Message
+                UnityEditor.EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + TagEnumConfig.Path
                     + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags), "确定");
                 success = false;
             }
+
             try
             {
                 if (Directory.Exists(LocalConfig.RootPath))
                 {
-                    PackageConfig.Path = LocalConfig.PackageConfigPath;
-                    if (Directory.Exists(Path.GetDirectoryName(PackageConfig.Path)))
+                    BundleManagerConfig.Path = LocalConfig.BundleManagerConfigPath;
+                    if (Directory.Exists(Path.GetDirectoryName(BundleManagerConfig.Path)))
                     {
-                        if (!File.Exists(PackageConfig.Path))
+                        if (!File.Exists(BundleManagerConfig.Path))
                         {
-                            File.Create(PackageConfig.Path).Close();
-                            PackageConfig.Save();
+                            File.Create(BundleManagerConfig.Path).Close();
+                            BundleManagerConfig.Save();
                         }
-                        PackageConfig.Load();
+                        BundleManagerConfig.Load();
                     }
                     else
                     {
-                        UnityEditor.EditorUtility.DisplayDialog("PackageManager", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                           "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(PackageConfig.Path), "确定");
+                        UnityEditor.EditorUtility.DisplayDialog("BundleManager", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
+                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(BundleManagerConfig.Path), "确定");
                         success = false;
                     }
                 }
                 else
                 {
-                    UnityEditor.EditorUtility.DisplayDialog("PackageManager", "根目录不存在:" + LocalConfig.RootPath, "确定");
+                    UnityEditor.EditorUtility.DisplayDialog("BundleManager", "根目录不存在:" + LocalConfig.RootPath, "确定");
                     success = false;
                 }
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("PackageManager", "加载当前配置时发生错误：" + e.Message, "确定");
+                UnityEditor.EditorUtility.DisplayDialog("BundleManager", "加载当前配置时发生错误：" + e.Message, "确定");
                 success = false;
             }
             return success;
         }
-        public void LoadLocalConfig()
+        
+        public bool LoadLocalConfig()
         {
             try
             {
@@ -129,32 +103,19 @@ namespace LiXuFeng.PackageManager.Editor.Config
                 UnityEditor.EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
                     + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
+                return false;
             }
+            return true;
         }
-    }
-
-    public class PackageMapConfig : Config
-    {
-        [Serializable]
-        public struct Package
-        {
-            public string PackageName;
-            public string Color;
-            public List<string> Bundles;
-            public List<string> EmptyFolders;
-        }
-        public List<Package> Packages = new List<Package>();
     }
 
     public class LocalConfig : Config
     {
-        public bool CheckBundle;
-        public string EnumConfigPath, PackageMapsFolderPath, RootPath;
-        public string PackageConfigPath { get { return System.IO.Path.Combine(RootPath, packageConfigPath); } }
-        public string BundlePath { get { return System.IO.Path.Combine(RootPath, bundlePath); } }
-        public string PackagePath { get { return System.IO.Path.Combine(RootPath, packagePath); } }
+        public string TagEnumConfigPath, RootPath;
+        public string BundleManagerConfigPath { get { return System.IO.Path.Combine(RootPath, bundleManagerConfigPath); } }
+        public string BundlesFolderPath { get { return System.IO.Path.Combine(RootPath, bundlesFolderPath); } }
         [SerializeField]
-        private string packageConfigPath, bundlePath, packagePath;
+        private string bundleManagerConfigPath, bundlesFolderPath;
     }
 
     public class TagEnumConfig : Config
@@ -176,11 +137,10 @@ namespace LiXuFeng.PackageManager.Editor.Config
         }
     }
 
-    public class PackageConfig : Config
+    public class BundleManagerConfig : Config
     {
         public string[] CurrentTags;
-        public string CurrentPackageMap;
-        public int CompressionValue = -1;
+        public string CurrentConfigName;
         public bool Applying;
     }
 
@@ -197,6 +157,10 @@ namespace LiXuFeng.PackageManager.Editor.Config
         public virtual void Save()
         {
             File.WriteAllText(Path, JsonUtility.ToJson(this, true));
+        }
+        public override string ToString()
+        {
+            return JsonUtility.ToJson(this);
         }
     }
 }

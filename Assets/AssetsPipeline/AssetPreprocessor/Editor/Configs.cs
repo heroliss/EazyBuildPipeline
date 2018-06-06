@@ -18,6 +18,11 @@ namespace LiXuFeng.AssetPreprocessor.Editor
         {
             public Action OnChangeCurrentConfig;
         }
+        public static void Init()
+        {
+            configs = new Config.Configs();
+            g = new GlobalReference();
+        }
         public static void Clear()
         {
             configs = null;

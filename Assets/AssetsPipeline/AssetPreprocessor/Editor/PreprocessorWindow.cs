@@ -33,8 +33,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
         }
         private void OnEnable()
         {
-            Configs.configs = new Config.Configs();
-            Configs.g = new Configs.GlobalReference();
+            Configs.Init();
             Configs.configs.LoadLocalConfig();
             Configs.configs.LoadAllConfigsByLocalConfig();
             settingPanel = new SettingPanel();
@@ -91,12 +90,13 @@ namespace LiXuFeng.AssetPreprocessor.Editor
         {
             using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), new GUIContent(), EditorStyles.helpBox))
             {
-				try
-				{
-					settingPanel.OnGUI();
-                }
-				catch (NullReferenceException) //TODO: 临时解决settingPanel.OnGUI内部出现空指针异常的奇怪的问题,仅在Mac上出现
-                {}
+                //TODO: 临时解决settingPanel.OnGUI内部出现空指针异常的奇怪的问题,仅在Mac上出现
+                //try
+                //{
+                    settingPanel.OnGUI();
+                //}
+                //catch (NullReferenceException) 
+                //{ }
             }
             using (new GUILayout.AreaScope(new Rect(6, settingPanelHeight + 6 + 3,
                 position.width - 12, position.height - settingPanelHeight - 12 - 3),

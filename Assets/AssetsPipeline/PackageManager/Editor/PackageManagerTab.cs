@@ -77,9 +77,7 @@ namespace LiXuFeng.PackageManager.Editor
         }
         internal void OnEnable(Rect rect, EditorWindow editorWindow)
         {
-            Configs.configs = new Config.Configs();
-            Configs.g = new Configs.GlobalReference();
-
+            Configs.Init();
             m_editorWindow = editorWindow;
             m_TabRect = rect;
             ComputeRects();
@@ -105,14 +103,15 @@ namespace LiXuFeng.PackageManager.Editor
                 m_splitterRect.x = (int)(downFixedRect.x + downFixedRect.width * m_splitterPercent - k_SplitterWidth / 2);
                 m_splitterRect.height = downFixedRect.height;
             }
-			#endregion
+            #endregion
 
-			try
-			{
-				settingPanel.OnGUI(upFixedRect);
-			}
-			catch (NullReferenceException) //TODO: 临时解决settingPanel.OnGUI内部出现空指针异常的奇怪的问题,仅在Mac上出现
-            {}
+            //TODO: 临时解决settingPanel.OnGUI内部出现空指针异常的奇怪的问题,仅在Mac上出现
+            //try
+            //{
+                settingPanel.OnGUI(upFixedRect);
+            //}
+            //catch (NullReferenceException)
+            //{ }
             bundleTree.OnGUI(leftRect);
             packageTree.OnGUI(rightRect);
 

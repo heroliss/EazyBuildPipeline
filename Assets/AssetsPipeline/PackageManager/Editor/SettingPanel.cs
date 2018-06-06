@@ -67,7 +67,7 @@ namespace LiXuFeng.PackageManager.Editor
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     EditorGUILayout.LabelField("根目录:", GUILayout.Width(45));
-                    string path = EditorGUILayout.DelayedTextField(Configs.configs.LocalConfig.RootPath/*, textFieldStyle, textFieldOptions*/);
+                    string path = EditorGUILayout.DelayedTextField(Configs.configs.LocalConfig.RootPath);
                     if (GUILayout.Button("...", miniButtonOptions))
                     {
                         path = EditorUtility.OpenFolderPanel("打开根目录", Configs.configs.LocalConfig.RootPath, null);
