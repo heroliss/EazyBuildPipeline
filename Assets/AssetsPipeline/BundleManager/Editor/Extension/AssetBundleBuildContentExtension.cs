@@ -24,6 +24,7 @@ namespace AssetBundleManagement2
                 EditorUtility.DisplayProgressBar("Build Bundles", "准备工作完成，正在创建AssetBundles...", 0.2f);
 
                 var manifest = BuildPipeline.BuildAssetBundles(path, buildMaps.ToArray(), (BuildAssetBundleOptions)optionsValue, target);
+                RenameManifest_extension(path);
                 EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles完成！", "确定");
             }
             catch (Exception e)
@@ -34,6 +35,14 @@ namespace AssetBundleManagement2
             {
                 EditorUtility.ClearProgressBar();
             }
+        }
+        public void RenameManifest_extension(string folderPath)
+        {
+            string oldName = Path.GetFileName(folderPath);
+            string oldPath = Path.Combine(folderPath, oldName);
+            string newPath = Path.Combine(folderPath, "assetbundlemanifest");
+            File.Move(oldPath, newPath);
+            File.Move(oldPath + ".manifest", newPath + ".manifest");
         }
     }
 }
