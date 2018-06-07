@@ -12,19 +12,27 @@
         {
             "PackageName": "New Package 1",
             "Color": "FF0C5F",
-            "Bundles": [],
+            "Bundles": [
+                "newbundle106.manifest",
+                "newbundle107.manifest"
+            ],
             "EmptyFolders": []
         },
         {
             "PackageName": "New Package 2",
             "Color": "D97DFF",
-            "Bundles": [],
+            "Bundles": [
+                "newbundle106.manifest",
+                "iOS_HD_ZH_HK.manifest"
+            ],
             "EmptyFolders": []
         },
         {
             "PackageName": "New Package 3",
-            "Color": "A4FF6C",
-            "Bundles": [],
+            "Color": "FF6C6C",
+            "Bundles": [
+                "newbundle107.manifest"
+            ],
             "EmptyFolders": []
         }
     ]

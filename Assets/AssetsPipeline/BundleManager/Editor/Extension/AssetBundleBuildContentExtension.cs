@@ -15,10 +15,14 @@ namespace AssetBundleManagement2
             {
                 EditorUtility.DisplayProgressBar("Build Bundles", "Starting...", 0);
                 List<AssetBundleBuild> buildMaps = GetBuildMaps();
-                if (!Directory.Exists(path))
+                EditorUtility.DisplayProgressBar("Build Bundles", "正在重建目录:" + path, 0.1f);
+                if (Directory.Exists(path))
                 {
-                    Directory.CreateDirectory(path);
+                    Directory.Delete(path, true); //清空目录
                 }
+                Directory.CreateDirectory(path);
+                EditorUtility.DisplayProgressBar("Build Bundles", "准备工作完成，正在创建AssetBundles...", 0.2f);
+
                 var manifest = BuildPipeline.BuildAssetBundles(path, buildMaps.ToArray(), (BuildAssetBundleOptions)optionsValue, target);
                 EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles完成！", "确定");
             }
