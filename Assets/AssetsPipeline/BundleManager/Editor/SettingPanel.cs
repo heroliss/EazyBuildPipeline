@@ -11,7 +11,7 @@ namespace LiXuFeng.BundleManager.Editor
     {
         Dictionary<string, BuildAssetBundleOptions> compressionDic = new Dictionary<string, BuildAssetBundleOptions>
         {
-            { "None",BuildAssetBundleOptions.UncompressedAssetBundle },
+            { "不压缩",BuildAssetBundleOptions.UncompressedAssetBundle },
             { "LZMA",BuildAssetBundleOptions.None },
             { "LZ4" ,BuildAssetBundleOptions.ChunkBasedCompression}
         };
@@ -74,8 +74,9 @@ namespace LiXuFeng.BundleManager.Editor
                 int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, compressionEnum, dropdownStyle, dropdownOptions);
                 if (selectedCompressionIndex_new != selectedCompressionIndex)
                 {
+                    Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue -= (int)compressionDic[compressionEnum[selectedCompressionIndex]];
+                    Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue += (int)compressionDic[compressionEnum[selectedCompressionIndex_new]];
                     selectedCompressionIndex = selectedCompressionIndex_new;
-                    Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue = (int)compressionDic[compressionEnum[selectedCompressionIndex]];
                 }
                 if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions)) ClickedApply();
             }
@@ -101,12 +102,34 @@ namespace LiXuFeng.BundleManager.Editor
 
         private void ClickedApply()
         {
-            bool ensure = EditorUtility.DisplayDialog("BundleManager", "确定应用当前配置？", "确定", "取消");
+            //执行前的各种验证
+            BuildTarget target = BuildTarget.NoTarget;
+            string targetStr = Configs.configs.BundleManagerConfig.CurrentTags[0];
+            try
+            {
+                target = (BuildTarget)Enum.Parse(typeof(BuildTarget), targetStr, true);
+            }
+            catch
+            {
+                EditorUtility.DisplayDialog("Build Bundles", "没有此平台：" + targetStr, "确定");
+                return;
+            }
+            if (EditorUserBuildSettings.activeBuildTarget != target)
+            {//TODO: 是否允许强制运行？
+                EditorUtility.DisplayDialog("Build Bundles", string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target), "确定");
+                return;
+            }
+
+            int optionsValue = Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue;
+            string tags = string.Join("_", Configs.configs.BundleManagerConfig.CurrentTags);
+            string path = Path.Combine(Configs.configs.LocalConfig.BundlesFolderPath, tags);
+
+            bool ensure = EditorUtility.DisplayDialog("BundleManager", string.Format("确定应用当前配置？\n\n目标平台：{0}，\n参数：{1}，\n输出路径：{2}", target, optionsValue, path), "确定", "取消");
             if (ensure)
             {
                 Configs.configs.BundleManagerConfig.Applying = true;
                 Configs.configs.BundleManagerConfig.Save();
-                Configs.g.Apply();
+                Configs.g.Apply(target, optionsValue, path);
                 Configs.configs.BundleManagerConfig.Applying = false;
                 Configs.configs.BundleManagerConfig.Save();
             }
@@ -204,7 +227,7 @@ namespace LiXuFeng.BundleManager.Editor
                 i++;
             }
 
-            string compressionName = compressionDic.FirstOrDefault(x=>x.Value == ((BuildAssetBundleOptions)Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue)).Key;
+            string compressionName = compressionDic.FirstOrDefault(x=>x.Value == (Configs.configs.BundleManagerConfig.CompressionOption)).Key;
             selectedCompressionIndex = compressionEnum.IndexOf(compressionName);
         }
 

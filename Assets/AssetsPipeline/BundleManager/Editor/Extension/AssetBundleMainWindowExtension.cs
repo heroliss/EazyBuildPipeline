@@ -11,20 +11,12 @@ namespace AssetBundleManagement2
     {
         internal void OnEnable_extension()
         {
-            LiXuFeng.BundleManager.Editor.Configs.g.Apply += BuildBundles_extension;
             OnEnable();
         }
 
-        internal void BuildBundles_extension()
+        internal void BuildBundles_extension(BuildTarget target,int optionsValue, string path)
         {
-            string tags = string.Join("_", LiXuFeng.BundleManager.Editor.Configs.configs.BundleManagerConfig.CurrentTags);
-            string path = Path.Combine(LiXuFeng.BundleManager.Editor.Configs.configs.LocalConfig.BundlesFolderPath, tags);
-            buildTab.ExecuteBuild_extension(path);
-        }
-
-        internal void OnDisable_extension()
-        {
-            LiXuFeng.BundleManager.Editor.Configs.g.Apply -= BuildBundles_extension;
+            buildTab.ExecuteBuild_extension(target, optionsValue, path);
         }
 
         internal void OnDestroy_extension()

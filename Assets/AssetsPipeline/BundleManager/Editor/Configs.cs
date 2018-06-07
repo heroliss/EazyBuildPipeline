@@ -7,6 +7,7 @@ using UnityEngine;
 using LiXuFeng.AssetPreprocessor.Editor.Config;
 using System.Linq;
 using Newtonsoft.Json;
+using UnityEditor;
 
 namespace LiXuFeng.BundleManager.Editor
 {
@@ -18,7 +19,7 @@ namespace LiXuFeng.BundleManager.Editor
         {
             public Action OnChangeRootPath = () => { };
             public Action OnChangeTags = () => { };
-            public Action Apply = () => { };
+            public Action<BuildTarget, int, string> Apply = (x, y, z) => { };
         }
         public static void Init()
         {
@@ -51,7 +52,7 @@ namespace LiXuFeng.BundleManager.Editor.Config
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
+                EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + TagEnumConfig.Path
                     + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags), "确定");
                 success = false;
@@ -80,13 +81,13 @@ namespace LiXuFeng.BundleManager.Editor.Config
                 }
                 else
                 {
-                    UnityEditor.EditorUtility.DisplayDialog("BundleManager", "根目录不存在:" + LocalConfig.RootPath, "确定");
+                    EditorUtility.DisplayDialog("BundleManager", "根目录不存在:" + LocalConfig.RootPath, "确定");
                     success = false;
                 }
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("BundleManager", "加载当前配置时发生错误：" + e.Message, "确定");
+                EditorUtility.DisplayDialog("BundleManager", "加载当前配置时发生错误：" + e.Message, "确定");
                 success = false;
             }
             return success;
@@ -100,7 +101,7 @@ namespace LiXuFeng.BundleManager.Editor.Config
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
+                EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
                     + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
                 return false;
@@ -142,6 +143,18 @@ namespace LiXuFeng.BundleManager.Editor.Config
         public string[] CurrentTags;
         public int CurrentBuildAssetBundleOptionsValue;
         public bool Applying;
+        public BuildAssetBundleOptions CompressionOption
+        {
+            get
+            {
+                return
+                    (CurrentBuildAssetBundleOptionsValue & (int)BuildAssetBundleOptions.ChunkBasedCompression) == 0 ?
+                    (CurrentBuildAssetBundleOptionsValue & (int)BuildAssetBundleOptions.UncompressedAssetBundle) == 0 ?
+                    BuildAssetBundleOptions.None :
+                    BuildAssetBundleOptions.UncompressedAssetBundle :
+                    BuildAssetBundleOptions.ChunkBasedCompression;
+            }
+        }
     }
 
     public class Config

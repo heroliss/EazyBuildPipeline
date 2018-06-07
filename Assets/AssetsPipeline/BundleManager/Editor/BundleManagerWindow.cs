@@ -23,14 +23,16 @@ namespace LiXuFeng.BundleManager.Editor
         private void OnEnable()
         {
             Configs.Init();
+
             settingPanel = new SettingPanel();
             settingPanel.OnEnable();
+
             mainTab = new AssetBundleManagement2.AssetBundleMainWindow();
+            Configs.g.Apply += mainTab.BuildBundles_extension;
             mainTab.OnEnable_extension();
         }
         private void OnDisable()
         {
-            mainTab.OnDisable_extension();
             settingPanel.OnDisable();
             Configs.Clear();
         }
