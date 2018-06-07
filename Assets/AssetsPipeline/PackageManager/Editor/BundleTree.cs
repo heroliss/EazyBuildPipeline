@@ -121,55 +121,40 @@ namespace LiXuFeng.PackageManager.Editor
 			bundleDic.Clear();
 			folderDic.Clear();
 
-			BundleTreeItem root = new BundleTreeItem()
+			string assetBundlesFolderPath = Configs.configs.LocalConfig.BundlePath;
+			if (!Directory.Exists(assetBundlesFolderPath))
 			{
-				id = 0,
-				depth = -1,
-				displayName = "Root",
-				isFolder = true,
-			};
-
-			string rootPath = Configs.configs.LocalConfig.BundlePath;
-			if (!Directory.Exists(rootPath))
-			{
-				EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + rootPath, "确定");
-				return root;
-			}
-			BundleTreeItem AssetBundleFolder = new BundleTreeItem()
-			{
-				id = 0,
-				depth = 0,
-				displayName = Path.GetFileName(Configs.configs.LocalConfig.BundlePath),
-				isFolder = true,
-				path = rootPath,
-				relativePath = null,
-				icon = folderIcon
-			};
-			root.AddChild(AssetBundleFolder);
-
-			string[] directories = Directory.GetDirectories(rootPath);
-			foreach (string path in directories)
-			{
-				if (path == Path.Combine(rootPath, Configs.configs.TagName))//备用： if (path.Replace('\\','/') == Path.Combine(rootPath, configs.TagName).Replace('\\','/'))
-				{
-					BundleTreeItem rootFolderItem = new BundleTreeItem()
-					{
-						id = --directoryLastID,
-						displayName = Path.GetFileName(path),
-						isFolder = true,
-						path = path,
-						relativePath = "", //这里是相对路径的根
-						icon = folderIcon
-					};
-					AssetBundleFolder.AddChild(rootFolderItem);
-					AddDirectories(rootFolderItem);
-					AddFiles(rootFolderItem);
-					EditorUtility.ClearProgressBar();
-					break;
-				}
+				EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + assetBundlesFolderPath, "确定");
+                BundleTreeItem root = new BundleTreeItem()
+                {
+                    id = 0,
+                    depth = -1,
+                    displayName = "Root",
+                    isFolder = false,
+                };
+                return root;
 			}
 
-			SetupDepthsFromParentsAndChildren(root);
+            string rootPath = Path.Combine(assetBundlesFolderPath, Configs.configs.TagName);
+
+            BundleTreeItem rootFolderItem = new BundleTreeItem()
+            {
+                id = 0,
+                depth = -1,
+                displayName = Path.GetFileName(rootPath),
+                isFolder = true,
+                path = rootPath,
+                relativePath = "", //这里是相对路径的根
+                icon = folderIcon
+            };
+            if (Directory.Exists(rootFolderItem.path))
+            {
+                AddDirectories(rootFolderItem);
+                AddFiles(rootFolderItem);
+                EditorUtility.ClearProgressBar();
+            }
+
+			SetupDepthsFromParentsAndChildren(rootFolderItem);
 
 			//检查
 			if (checkFailedItems.Count > 0)
@@ -177,7 +162,7 @@ namespace LiXuFeng.PackageManager.Editor
 				EditorUtility.DisplayDialog("提示", "有 " + checkFailedItems.Count +
 					" 个manifest文件缺少对应的bundle文件！\n（这些项已标记为警告色:黄色）", "确定");
 			}
-			return root;
+			return rootFolderItem;
 		}
 		protected override IList<TreeViewItem> BuildRows(TreeViewItem root)
 		{
@@ -383,7 +368,6 @@ namespace LiXuFeng.PackageManager.Editor
 		#region 拖放
 		protected override bool CanStartDrag(CanStartDragArgs args)
 		{
-			if (args.draggedItem.depth < 2) return false;
 			return true;
 		}
 		protected override void SetupDragAndDrop(SetupDragAndDropArgs args)
@@ -398,10 +382,7 @@ namespace LiXuFeng.PackageManager.Editor
 			foreach (var id in args.draggedItemIDs)
 			{
 				var item = FindItem(id, rootItem);
-				if (item.depth >= 2)
-				{
-					items.Add(item);
-				}
+				items.Add(item);
 			}
 			DragAndDrop.SetGenericData("BundleTreeItemList", items);
 
@@ -470,22 +451,19 @@ namespace LiXuFeng.PackageManager.Editor
 		{
 			var item = (BundleTreeItem)FindItem(id, rootItem);
 			GenericMenu menu = new GenericMenu();
-			if (item.depth >= 2 && Configs.g.packageTree.Packages.Count > 0)
+			if (Configs.g.packageTree.Packages.Count > 0)
 			{
 				foreach (var package in Configs.g.packageTree.Packages)
 				{
 					menu.AddItem(new GUIContent("添加到/" + package.displayName), false, () =>
 					  {
 						  List<TreeViewItem> bundles = new List<TreeViewItem>();
-						  foreach (var i in GetSelection())
-						  {
-							  var bundle = FindItem(i, rootItem);
-							  if (bundle.depth >= 2)
-							  {
-								  bundles.Add(bundle);
-							  }
-						  }
-						  Configs.g.packageTree.AddBundlesToPackage(package, bundles);
+                          foreach (var i in GetSelection())
+                          {
+                              var bundle = FindItem(i, rootItem);
+                              bundles.Add(bundle);
+                          }
+                          Configs.g.packageTree.AddBundlesToPackage(package, bundles);
 					  });
 				}
 				menu.AddSeparator(null);

@@ -2910,6 +2910,55 @@
                 "iOS_SD_ZH_TW.manifest"
             ],
             "EmptyFolders": []
+        },
+        {
+            "PackageName": "New Package 1",
+            "Color": "CD28FF",
+            "Bundles": [
+                "eazygamegraphics_art/shaders/alphatest.manifest",
+                "eazygamegraphics_art/shaders/cginclude.manifest",
+                "eazygamegraphics_art/shaders/misc.manifest",
+                "eazygamegraphics_art/shaders/opaque.manifest",
+                "eazygamegraphics_art/shaders/skybox.manifest",
+                "eazygamegraphics_art/shaders/transparent.manifest",
+                "eazygamegraphics_art/shaders/transparent_legacy.manifest",
+                "eazygamegraphics_art/shaders/ui.manifest",
+                "eazygamegraphics_art/texture/50mmzoommodified_flare.manifest",
+                "eazygamegraphics_art/texture/flare_01_psd.manifest",
+                "eazygamegraphics_art/texture/spotlightattennorma_01_psd.manifest",
+                "eazygamegraphics_art/texture/waterbasicdaytime_01_psd.manifest",
+                "eazygamegraphics_art/texture/waterbasicnighttime_01_psd.manifest",
+                "eazygamegraphics_art/texture/waterbasicnormal_01_jpg.manifest",
+                "eazygamegraphics_art/texture/waterbasicnormal_02_psd.manifest",
+                "eazygamegraphics_art/texture/waterbasicnormal_03_psd.manifest",
+                "eazygamegraphics_art/texture/waterbasic_toutie_01_psd.manifest",
+                "eazygamegraphics_art/decalscontainer_prefab.manifest",
+                "eazygamegraphics_art/scenelightingentities_prefab.manifest",
+                "eazygamegraphics_art/scenerenderingcontrollercontainer_prefab.manifest",
+                "eazygamegraphics_art/scenerenderingcontroller_prefab.manifest",
+                "eazygamegraphics_art/scenerenderingcontroller_template_prefab.manifest",
+                "eazygamegraphics_art/storymanager_prefab.manifest",
+                "font/battlepointnum_prefab.manifest",
+                "font/gfont2_ttf.manifest",
+                "font/gfont_ttf.manifest",
+                "font/numgfont_2_prefab.manifest",
+                "font/numgfont_3_prefab.manifest",
+                "font/numgfont_prefab.manifest",
+                "font/qualitynum_prefab.manifest",
+                "aboriginalresources/png/artifact/icon.manifest",
+                "assetbundlemanifest.manifest",
+                "newbundle106.manifest",
+                "newbundle107.manifest"
+            ],
+            "EmptyFolders": []
+        },
+        {
+            "PackageName": "New Package 2",
+            "Color": "FF0156",
+            "Bundles": [
+                "newbundle107.manifest"
+            ],
+            "EmptyFolders": []
         }
     ]
 }

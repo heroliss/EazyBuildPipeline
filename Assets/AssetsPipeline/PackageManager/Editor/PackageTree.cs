@@ -689,7 +689,7 @@ namespace LiXuFeng.PackageManager.Editor
         /// <returns></returns>
         PackageTreeItem RecursiveAddParents(BundleTreeItem bundleItem, PackageTreeItem packageItem)
         {
-            if (bundleItem.parent.depth < 2)
+            if (bundleItem.parent.depth < 0)
             {
                 return FindOrCreatePackageItem(bundleItem, packageItem, packageItem);//在packageItem下找到或创建一个以bundleItem为内容的packageItem
             }
