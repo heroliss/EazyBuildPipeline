@@ -167,7 +167,8 @@ namespace LiXuFeng.PackageManager.Editor
                         Configs.configs.PackageConfig.Save();
 
                         EditorUtility.ClearProgressBar();
-                        EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime), "确定");
+                        TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
+                        EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds), "确定");
                     }
                     catch (Exception e)
                     {
@@ -183,10 +184,11 @@ namespace LiXuFeng.PackageManager.Editor
             float lastTime = Time.realtimeSinceStartup;
             string bundlesFolderPath = Path.Combine(Configs.configs.LocalConfig.BundlePath, Configs.configs.TagName);
             string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.TagName);
-            if (!Directory.Exists(packagesFolderPath))
+            if (Directory.Exists(packagesFolderPath))
             {
-                Directory.CreateDirectory(packagesFolderPath);
+                Directory.Delete(packagesFolderPath, true);
             }
+            Directory.CreateDirectory(packagesFolderPath);
             var packageMap = GetPackageMap();
             int count = 0;
             int total = 0;
@@ -220,6 +222,16 @@ namespace LiXuFeng.PackageManager.Editor
                             AddFileToZipStream(zipStream, bundleManifestPath, bundleManifestRelativePath);
                             AddFileToZipStream(zipStream, bundlePath, bundleRelativePath);
                             count++;
+                        }
+
+                        int emptyFolderCount = package.EmptyFolders.Count;
+                        EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : (-/{5})  总计:({3}/{4})",
+                                    package.PackageName, pi + 1, packagesCount, count + 1, total, emptyFolderCount),
+                                    "Empty Folders", (float)count / total);
+
+                        for (int i = 0; i < emptyFolderCount; i++)
+                        {
+                            zipStream.PutNextEntry(new ZipEntry(package.EmptyFolders[i] + "/") { });
                         }
                     }
                 }
@@ -276,7 +288,13 @@ namespace LiXuFeng.PackageManager.Editor
             }
             else
             {
-                if (!packageItem.isPackage && (packageItem.lost || packageItem.bundleItem.verify == false))
+                if (
+                        !packageItem.isPackage &&
+                        (
+                            packageItem.lost ||
+                            (!packageItem.bundleItem.isFolder && packageItem.bundleItem.verify == false)
+                        )
+                   )
                 {
                     wrongItems.Add(packageItem);
                 }
