@@ -1,24 +1,3 @@
 {
-    "Packages": [
-        {
-            "PackageName": "New Package",
-            "Color": "139EFF",
-            "Bundles": [
-                "aaa/1.txt.manifest"
-            ],
-            "EmptyFolders": []
-        },
-        {
-            "PackageName": "New Package 1",
-            "Color": "06FFA7",
-            "Bundles": [],
-            "EmptyFolders": []
-        },
-        {
-            "PackageName": "New Package 2",
-            "Color": "75FFA8",
-            "Bundles": [],
-            "EmptyFolders": []
-        }
-    ]
+    "Packages": []
 }

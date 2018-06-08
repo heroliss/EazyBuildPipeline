@@ -11,6 +11,7 @@ namespace LiXuFeng.PackageManager.Editor
     {
         int[] selectedIndexs;
         List<PackageTreeItem> wrongItems;
+        List<PackageTreeItem> emptyItems;
         int selectedMapIndex;
 
         bool firstShow = true;
@@ -253,28 +254,44 @@ namespace LiXuFeng.PackageManager.Editor
 
         private bool CheckAllPackageItem()
         {
+            if (Configs.g.packageTree.Packages.Count == 0)
+            {
+                return false;
+            }
             wrongItems = new List<PackageTreeItem>();
+            emptyItems = new List<PackageTreeItem>();
             foreach (PackageTreeItem item in Configs.g.packageTree.Packages)
             {
                 RecursiveCheckItem(item);
             }
-            if(wrongItems.Count == 0)
-            {
-                return true;
-            }
-            else
+            if(wrongItems.Count != 0)
             {
                 EditorUtility.DisplayDialog("提示", "发现" + wrongItems.Count + "个有问题的项，请修复后再应用", "确定");
-                int selectItemsCount = Mathf.Min(wrongItems.Count, 1000);
-                var ids = new int[selectItemsCount];
-                for (int i = 0; i < ids.Length; i++)
-                {
-                    ids[i] = wrongItems[i].id;
-                    Configs.g.packageTree.FrameItem(ids[i]);
-                }
-                Configs.g.packageTree.SetSelection(ids);
+                FrameAndSelectPackageTreeItems(wrongItems);
                 return false;
             }
+            if (emptyItems.Count != 0)
+            {
+                if(EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空文件夹或包，是否继续？", 
+                    "返回", "继续打包"))
+                {
+                    FrameAndSelectPackageTreeItems(emptyItems);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void FrameAndSelectPackageTreeItems(List<PackageTreeItem> items)
+        {
+            int selectItemsCount = Mathf.Min(items.Count, 1000);
+            var ids = new int[selectItemsCount];
+            for (int i = 0; i < ids.Length; i++)
+            {
+                ids[i] = items[i].id;
+                Configs.g.packageTree.FrameItem(ids[i]);
+            }
+            Configs.g.packageTree.SetSelection(ids);
         }
 
         private void RecursiveCheckItem(PackageTreeItem packageItem)
@@ -288,13 +305,19 @@ namespace LiXuFeng.PackageManager.Editor
             }
             else
             {
-                if (
-                        !packageItem.isPackage &&
-                        (
-                            packageItem.lost ||
-                            (!packageItem.bundleItem.isFolder && packageItem.bundleItem.verify == false)
-                        )
-                   )
+                if (packageItem.isPackage)
+                {
+                    emptyItems.Add(packageItem);
+                }
+                else if (packageItem.lost)
+                {
+                    wrongItems.Add(packageItem);
+                }
+                else if (packageItem.bundleItem.isFolder)
+                {
+                    emptyItems.Add(packageItem);
+                }
+                else if (!packageItem.bundleItem.verify)
                 {
                     wrongItems.Add(packageItem);
                 }
