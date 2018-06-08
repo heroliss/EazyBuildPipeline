@@ -212,7 +212,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
 			{
 				string s = string.Format("({0}/{1})", applyingID, totalApplyCount);
 				EditorUtility.DisplayProgressBar(titleMessage + s, applyingFile, (float)applyingID / totalApplyCount);
-				System.Threading.Thread.Sleep(100);
+				System.Threading.Thread.Sleep(50);
 			}
 			EditorUtility.ClearProgressBar();
 		}
@@ -486,7 +486,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
 					item = allDirectories[i];
 					string path = Path.Combine(Configs.configs.LocalConfig.PreStoredAssetsFolderPath, item.Remove(0, 7));
 					Directory.CreateDirectory(path);
-					if (Time.realtimeSinceStartup - lastTime > 0.1f)
+					if (Time.realtimeSinceStartup - lastTime > 0.06f)
 					{
 						EditorUtility.DisplayProgressBar("同步目录", path, (float)i / total);
 						lastTime = Time.realtimeSinceStartup;

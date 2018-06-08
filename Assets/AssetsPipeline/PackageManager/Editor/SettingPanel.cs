@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ICSharpCode.SharpZipLib.Zip;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -149,18 +150,92 @@ namespace LiXuFeng.PackageManager.Editor
 
         private void ClickedApply()
         {
-            bool ensure = EditorUtility.DisplayDialog("Package", "确定应用当前配置？", "确定", "取消");
-            //TODO:检查并提示：不能应用配置：缺少目录。。。
-            if (ensure)
+            if (CheckAllPackageItem())
             {
-                if (CheckAllPackageItem())
+                bool ensure = EditorUtility.DisplayDialog("Package", "确定应用当前配置？", "确定", "取消");
+                if (ensure)
                 {
-                    Configs.configs.PackageConfig.Applying = true;
-                    Configs.configs.PackageConfig.Save();
-                    //执行应用
-                    Configs.configs.PackageConfig.Applying = false;
-                    Configs.configs.PackageConfig.Save();
+                    try
+                    {
+                        EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
+                        float startTime = Time.realtimeSinceStartup;
+
+                        Configs.configs.PackageConfig.Applying = true;
+                        Configs.configs.PackageConfig.Save();
+                        ApplyAllPackages();
+                        Configs.configs.PackageConfig.Applying = false;
+                        Configs.configs.PackageConfig.Save();
+
+                        EditorUtility.ClearProgressBar();
+                        EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime), "确定");
+                    }
+                    catch (Exception e)
+                    {
+                        EditorUtility.ClearProgressBar();
+                        EditorUtility.DisplayDialog("Build Packages", "打包时发生错误：" + e.Message, "确定");
+                    }
                 }
+            }
+        }
+
+        private void ApplyAllPackages()
+        {
+            float lastTime = Time.realtimeSinceStartup;
+            string bundlesFolderPath = Path.Combine(Configs.configs.LocalConfig.BundlePath, Configs.configs.TagName);
+            string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.TagName);
+            if (!Directory.Exists(packagesFolderPath))
+            {
+                Directory.CreateDirectory(packagesFolderPath);
+            }
+            var packageMap = GetPackageMap();
+            int count = 0;
+            int total = 0;
+            foreach (var package in packageMap)
+            {
+                total += package.Bundles.Count;
+            }
+            int packagesCount = packageMap.Count;
+            for (int pi = 0; pi < packagesCount; pi++)
+            {
+                var package = packageMap[pi];
+                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, package.PackageName + ".zip"), FileMode.Create))
+                {
+                    using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
+                    {
+                        zipStream.SetLevel(Configs.configs.PackageConfig.CompressionValue);
+                        int bundlesCount = package.Bundles.Count;
+                        for (int i = 0; i < bundlesCount; i++)
+                        {
+                            var bundleManifestRelativePath = package.Bundles[i];
+                            string bundleRelativePath = bundleManifestRelativePath.Remove(bundleManifestRelativePath.Length - 9, 9);
+                            string bundleManifestPath = Path.Combine(bundlesFolderPath, bundleManifestRelativePath);
+                            string bundlePath = Path.Combine(bundlesFolderPath, bundleRelativePath);
+                            if (Time.realtimeSinceStartup - lastTime > 0.06f)
+                            {
+                                EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                                    package.PackageName, pi + 1, packagesCount, i + 1, bundlesCount, count + 1, total),
+                                    bundleRelativePath, (float)count / total);
+                                lastTime = Time.realtimeSinceStartup;
+                            }
+                            AddFileToZipStream(zipStream, bundleManifestPath, bundleManifestRelativePath);
+                            AddFileToZipStream(zipStream, bundlePath, bundleRelativePath);
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void AddFileToZipStream(ZipOutputStream zipStream, string sourceFilePath, string targetPathInZip)
+        {
+            using (FileStream fileStream = new FileStream(sourceFilePath, FileMode.Open))
+            {
+                ZipEntry zipEntry = new ZipEntry(targetPathInZip);
+                zipStream.PutNextEntry(zipEntry);
+                int fileLength = (int)fileStream.Length;
+                byte[] buffer = new byte[fileLength];
+                fileStream.Read(buffer, 0, fileLength);
+                zipStream.Write(buffer, 0, fileLength);
             }
         }
 
@@ -397,38 +472,45 @@ namespace LiXuFeng.PackageManager.Editor
 		private void SaveCurrentMap()
         {
 			try
-			{
-				var packages = new List<Config.PackageMapConfig.Package>();
-				foreach (var package in Configs.g.packageTree.Packages)
-				{
-					var p = new Config.PackageMapConfig.Package()
-					{
-						Bundles = new List<string>(),
-						EmptyFolders = new List<string>(),
-						PackageName = package.displayName,
-						Color = ColorUtility.ToHtmlStringRGB(package.packageColor)
-					};
-					if (package.hasChildren)
-					{
-						foreach (PackageTreeItem packageItem in package.children)
-						{
-							RecursiveAddItem(packageItem, p);
-						}
-					}
-					packages.Add(p);
-				}
-				Configs.configs.PackageMapConfig.Packages = packages;
-				Configs.configs.PackageMapConfig.Save();
+            {
+                List<Config.PackageMapConfig.Package> packages = GetPackageMap();
+                Configs.configs.PackageMapConfig.Packages = packages;
+                Configs.configs.PackageMapConfig.Save();
 
-				EditorUtility.DisplayDialog("保存", "保存Package树成功！", "确定");
-				Configs.g.packageTree.Dirty = false;
-			}
+                EditorUtility.DisplayDialog("保存", "保存Package树成功！", "确定");
+                Configs.g.packageTree.Dirty = false;
+            }
 
-			catch (Exception e)
+            catch (Exception e)
 			{
 				EditorUtility.DisplayDialog("保存", "保存Package树时发生错误：\n" + e.Message, "确定");
 			}
 		}
+
+        private List<Config.PackageMapConfig.Package> GetPackageMap()
+        {
+            var packages = new List<Config.PackageMapConfig.Package>();
+            foreach (var package in Configs.g.packageTree.Packages)
+            {
+                var p = new Config.PackageMapConfig.Package()
+                {
+                    Bundles = new List<string>(),
+                    EmptyFolders = new List<string>(),
+                    PackageName = package.displayName,
+                    Color = ColorUtility.ToHtmlStringRGB(package.packageColor)
+                };
+                if (package.hasChildren)
+                {
+                    foreach (PackageTreeItem packageItem in package.children)
+                    {
+                        RecursiveAddItem(packageItem, p);
+                    }
+                }
+                packages.Add(p);
+            }
+
+            return packages;
+        }
 
         private void RecursiveAddItem(PackageTreeItem packageItem, Config.PackageMapConfig.Package package)
         {

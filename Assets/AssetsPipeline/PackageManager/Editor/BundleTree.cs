@@ -303,7 +303,7 @@ namespace LiXuFeng.PackageManager.Editor
 			string[] files = Directory.GetFiles(folderItem.path);
 			foreach (string filePath in files)
 			{
-				if (Time.realtimeSinceStartup - lastTime > 0.1f)
+				if (Time.realtimeSinceStartup - lastTime > 0.06f)
 				{
 					EditorUtility.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
 					    loadFileProgressCount,Configs.configs.LocalConfig.CheckBundle), filePath,
