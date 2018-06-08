@@ -214,7 +214,7 @@ namespace LiXuFeng.PackageManager.Editor
                         {
                             var bundleManifestRelativePath = package.Bundles[i];
                             string bundleRelativePath = bundleManifestRelativePath.Remove(bundleManifestRelativePath.Length - 9, 9);
-                            string bundleManifestPath = Path.Combine(bundlesFolderPath, bundleManifestRelativePath);
+                            //string bundleManifestPath = Path.Combine(bundlesFolderPath, bundleManifestRelativePath);
                             string bundlePath = Path.Combine(bundlesFolderPath, bundleRelativePath);
                             if (Time.realtimeSinceStartup - lastTime > 0.06f)
                             {
@@ -223,7 +223,7 @@ namespace LiXuFeng.PackageManager.Editor
                                     bundleRelativePath, (float)count / total);
                                 lastTime = Time.realtimeSinceStartup;
                             }
-                            AddFileToZipStream(zipStream, bundleManifestPath, bundleManifestRelativePath);
+                            //AddFileToZipStream(zipStream, bundleManifestPath, bundleManifestRelativePath);
                             AddFileToZipStream(zipStream, bundlePath, bundleRelativePath);
                             count++;
                         }
