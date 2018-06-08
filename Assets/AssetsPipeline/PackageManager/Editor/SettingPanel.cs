@@ -185,11 +185,6 @@ namespace LiXuFeng.PackageManager.Editor
             float lastTime = Time.realtimeSinceStartup;
             string bundlesFolderPath = Path.Combine(Configs.configs.LocalConfig.BundlePath, Configs.configs.TagName);
             string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.TagName);
-            if (Directory.Exists(packagesFolderPath))
-            {
-                Directory.Delete(packagesFolderPath, true);
-            }
-            Directory.CreateDirectory(packagesFolderPath);
             var packageMap = GetPackageMap();
             int count = 0;
             int total = 0;
@@ -198,6 +193,14 @@ namespace LiXuFeng.PackageManager.Editor
                 total += package.Bundles.Count;
             }
             int packagesCount = packageMap.Count;
+
+            EditorUtility.DisplayProgressBar("Build Packages", "正在重建目录:" + packagesFolderPath, 0);
+            if (Directory.Exists(packagesFolderPath))
+            {
+                Directory.Delete(packagesFolderPath, true);
+            }
+            Directory.CreateDirectory(packagesFolderPath);
+
             for (int pi = 0; pi < packagesCount; pi++)
             {
                 var package = packageMap[pi];
