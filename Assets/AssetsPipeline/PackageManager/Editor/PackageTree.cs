@@ -757,31 +757,28 @@ namespace LiXuFeng.PackageManager.Editor
                 parent.complete = true;
                 return;
             }
-            if (parent.hasChildren)
+            int count = 0;
+            foreach (PackageTreeItem item in parent.children)
             {
-                int count = 0;
+                if (!item.lost) count++;
+            }
+            if (count == parent.bundleItem.children.Count)
+            {
+                parent.complete = true;
                 foreach (PackageTreeItem item in parent.children)
                 {
-                    if (!item.lost) count++;
-                }
-                if (count == parent.bundleItem.children.Count)
-                {
-                    parent.complete = true;
-                    foreach (PackageTreeItem item in parent.children)
+                    if (!item.lost && item.complete == false)
                     {
-                        if (!item.lost && item.complete == false)
-                        {
-                            parent.complete = false;
-                            break;
-                        }
+                        parent.complete = false;
+                        break;
                     }
                 }
-                else
-                {
-                    parent.complete = false;
-                }
-                RecursiveUpdateParentComplete((PackageTreeItem)parent.parent);
             }
+            else
+            {
+                parent.complete = false;
+            }
+            RecursiveUpdateParentComplete((PackageTreeItem)parent.parent);
         }
         #endregion
     }

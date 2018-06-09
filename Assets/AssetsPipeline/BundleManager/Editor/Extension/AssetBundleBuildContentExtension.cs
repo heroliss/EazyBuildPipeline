@@ -24,7 +24,13 @@ namespace AssetBundleManagement2
                 EditorUtility.DisplayProgressBar("Build Bundles", "准备工作完成，正在创建AssetBundles...", 0.2f);
 
                 var manifest = BuildPipeline.BuildAssetBundles(path, buildMaps.ToArray(), (BuildAssetBundleOptions)optionsValue, target);
-                RenameManifest_extension(path);
+                try //TODO:临时解决ios平台下没有主bundle文件的问题
+                {
+                    RenameManifest_extension(path);
+                }
+                catch(Exception e)
+                {
+                }
                 EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles完成！", "确定");
             }
             catch (Exception e)
