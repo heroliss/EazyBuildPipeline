@@ -492,10 +492,10 @@ namespace LiXuFeng.PackageManager.Editor
 
         private void AddGlobalMenuItem(GenericMenu menu)
         {
-            menu.AddItem(new GUIContent("New Package"), false, () => { CreatePackage(); });
+            menu.AddItem(new GUIContent("New Package"), false, CreatePackage);
             menu.AddSeparator(null);
-            menu.AddItem(new GUIContent("展开所有项"), false, () => { ExpandAll(); });
-            menu.AddItem(new GUIContent("折叠所有项"), false, () => { CollapseAll(); });
+            menu.AddItem(new GUIContent("展开所有项"), false, ExpandAll);
+            menu.AddItem(new GUIContent("折叠所有项"), false, CollapseAll);
         }
 
         protected override void ContextClickedItem(int id)

@@ -28,7 +28,7 @@ namespace AssetBundleManagement2
                 {
                     RenameManifest_extension(path);
                 }
-                catch(Exception e)
+                catch
                 {
                 }
                 EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles完成！", "确定");

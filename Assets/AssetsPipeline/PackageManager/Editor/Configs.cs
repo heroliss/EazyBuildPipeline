@@ -148,6 +148,7 @@ namespace LiXuFeng.PackageManager.Editor.Config
 
     public class LocalConfig : Config
     {
+        public string PackageExtension;
         public bool CheckBundle;
         public string EnumConfigPath, PackageMapsFolderPath, RootPath;
         public string PackageConfigPath { get { return System.IO.Path.Combine(RootPath, packageConfigPath); } }

@@ -473,7 +473,9 @@ namespace LiXuFeng.PackageManager.Editor
 				menu.AddItem(new GUIContent("定位"), false, () => { Locate(item); });
 				menu.AddSeparator(null);
 			}
-			if (item.hasChildren)
+            menu.AddItem(new GUIContent("Reveal In Finder"), false, () => { EditorUtility.RevealInFinder(item.path); });
+            menu.AddSeparator(null);
+            if (item.hasChildren)
 			{
 				menu.AddItem(new GUIContent("全部展开"), false, () => { SetExpandedRecursiveForAllSelection(true); });
 				menu.AddItem(new GUIContent("全部折叠"), false, () => { SetExpandedRecursiveForAllSelection(false); });

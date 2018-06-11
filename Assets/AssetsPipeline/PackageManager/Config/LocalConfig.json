@@ -1,4 +1,5 @@
 {
+	"PackageExtension": ".zip",
     "CheckBundle": true,
     "EnumConfigPath": "Assets/AssetsPipeline/PublicConfigs/TagEnumConfig.json",
     "PackageMapsFolderPath": "Assets/AssetsPipeline/PackageManager/Config/PackageMaps",

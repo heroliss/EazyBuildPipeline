@@ -153,7 +153,9 @@ namespace LiXuFeng.PackageManager.Editor
         {
             if (CheckAllPackageItem())
             {
-                bool ensure = EditorUtility.DisplayDialog("Package", "确定应用当前配置？", "确定", "取消");
+                bool ensure = EditorUtility.DisplayDialog("Package", string.Format("确定应用当前配置？\n\n压缩程度：{0}",
+                    Configs.configs.PackageConfig.CompressionValue),
+                    "确定", "取消");
                 if (ensure)
                 {
                     try
@@ -169,7 +171,13 @@ namespace LiXuFeng.PackageManager.Editor
 
                         EditorUtility.ClearProgressBar();
                         TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
-                        EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds), "确定");
+                        if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
+                            "显示文件", "关闭"))
+                        {
+                            string firstPackagePath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.TagName +
+                                "/" + Configs.g.packageTree.Packages[0].displayName + Configs.configs.LocalConfig.PackageExtension);
+                            EditorUtility.RevealInFinder(firstPackagePath);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -201,10 +209,11 @@ namespace LiXuFeng.PackageManager.Editor
             }
             Directory.CreateDirectory(packagesFolderPath);
 
+            byte[] buffer = new byte[20971520]; //20M缓存,不够会自动扩大
             for (int pi = 0; pi < packagesCount; pi++)
             {
                 var package = packageMap[pi];
-                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, package.PackageName + ".zip"), FileMode.Create))
+                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, package.PackageName + Configs.configs.LocalConfig.PackageExtension), FileMode.Create))
                 {
                     using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                     {
@@ -224,7 +233,7 @@ namespace LiXuFeng.PackageManager.Editor
                                 lastTime = Time.realtimeSinceStartup;
                             }
                             //AddFileToZipStream(zipStream, bundleManifestPath, bundleManifestRelativePath);
-                            AddFileToZipStream(zipStream, bundlePath, bundleRelativePath);
+                            AddFileToZipStream(zipStream, bundlePath, bundleRelativePath, buffer);
                             count++;
                         }
 
@@ -242,14 +251,17 @@ namespace LiXuFeng.PackageManager.Editor
             }
         }
 
-        private static void AddFileToZipStream(ZipOutputStream zipStream, string sourceFilePath, string targetPathInZip)
+        private static void AddFileToZipStream(ZipOutputStream zipStream, string sourceFilePath, string targetPathInZip, byte[] buffer)
         {
             using (FileStream fileStream = new FileStream(sourceFilePath, FileMode.Open))
             {
                 ZipEntry zipEntry = new ZipEntry(targetPathInZip);
                 zipStream.PutNextEntry(zipEntry);
                 int fileLength = (int)fileStream.Length;
-                byte[] buffer = new byte[fileLength];
+                if (buffer.Length < fileLength)
+                {
+                    buffer = new byte[fileLength];
+                }
                 fileStream.Read(buffer, 0, fileLength);
                 zipStream.Write(buffer, 0, fileLength);
             }
@@ -267,7 +279,7 @@ namespace LiXuFeng.PackageManager.Editor
             {
                 RecursiveCheckItem(item);
             }
-            if(wrongItems.Count != 0)
+            if (wrongItems.Count != 0)
             {
                 EditorUtility.DisplayDialog("提示", "发现" + wrongItems.Count + "个有问题的项，请修复后再应用", "确定");
                 FrameAndSelectPackageTreeItems(wrongItems);
@@ -275,7 +287,7 @@ namespace LiXuFeng.PackageManager.Editor
             }
             if (emptyItems.Count != 0)
             {
-                if(EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空文件夹或包，是否继续？", 
+                if (EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空文件夹或包，是否继续？",
                     "返回", "继续打包"))
                 {
                     FrameAndSelectPackageTreeItems(emptyItems);
@@ -295,6 +307,7 @@ namespace LiXuFeng.PackageManager.Editor
                 Configs.g.packageTree.FrameItem(ids[i]);
             }
             Configs.g.packageTree.SetSelection(ids);
+            Configs.g.packageTree.SetFocus();
         }
 
         private void RecursiveCheckItem(PackageTreeItem packageItem)
@@ -356,7 +369,7 @@ namespace LiXuFeng.PackageManager.Editor
             Config.Configs newConfigs = new Config.Configs();
             newConfigs.LoadLocalConfig();
             newConfigs.LocalConfig.RootPath = rootPath;
-            if(!newConfigs.LoadAllConfigsByLocalConfig()) return;
+            if (!newConfigs.LoadAllConfigsByLocalConfig()) return;
             Configs.configs = newConfigs;
             InitSelectedIndex();
             LoadMaps();
@@ -500,22 +513,22 @@ namespace LiXuFeng.PackageManager.Editor
                   s, count, Configs.configs.PackageConfig.Path, Configs.configs.TagEnumConfig.Path), "确定");
             return -1;
         }
-       
+
         private void ClickedSave()
-		{
-			bool ensure = true;
-			if (Configs.g.packageTree.Dirty)
-			{
-				ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + savedConfigNames[selectedMapIndex], "覆盖保存", "取消");
-			}
-			if (!ensure) return;
-
-			SaveCurrentMap();
-		}
-
-		private void SaveCurrentMap()
         {
-			try
+            bool ensure = true;
+            if (Configs.g.packageTree.Dirty)
+            {
+                ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + savedConfigNames[selectedMapIndex], "覆盖保存", "取消");
+            }
+            if (!ensure) return;
+
+            SaveCurrentMap();
+        }
+
+        private void SaveCurrentMap()
+        {
+            try
             {
                 List<Config.PackageMapConfig.Package> packages = GetPackageMap();
                 Configs.configs.PackageMapConfig.Packages = packages;
@@ -526,10 +539,10 @@ namespace LiXuFeng.PackageManager.Editor
             }
 
             catch (Exception e)
-			{
-				EditorUtility.DisplayDialog("保存", "保存Package树时发生错误：\n" + e.Message, "确定");
-			}
-		}
+            {
+                EditorUtility.DisplayDialog("保存", "保存Package树时发生错误：\n" + e.Message, "确定");
+            }
+        }
 
         private List<Config.PackageMapConfig.Package> GetPackageMap()
         {
@@ -631,7 +644,7 @@ namespace LiXuFeng.PackageManager.Editor
         private void ShowMapDropdown()
         {
             if (Configs.g.packageTree.Dirty)
-            { 
+            {
                 try
                 {
                     savedConfigNames[selectedMapIndex] += "*";

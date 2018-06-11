@@ -115,7 +115,7 @@ namespace LiXuFeng.BundleManager.Editor
                 return;
             }
             if (EditorUserBuildSettings.activeBuildTarget != target)
-            {//TODO: 是否允许强制运行？
+            {
                 EditorUtility.DisplayDialog("Build Bundles", string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target), "确定");
                 return;
             }
