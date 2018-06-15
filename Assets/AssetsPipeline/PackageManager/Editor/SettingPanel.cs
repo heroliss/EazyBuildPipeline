@@ -174,7 +174,7 @@ namespace LiXuFeng.PackageManager.Editor
                         if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                             "显示文件", "关闭"))
                         {
-                            string firstPackagePath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.TagName +
+                            string firstPackagePath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.Tag +
                                 "/" + Configs.g.packageTree.Packages[0].displayName + Configs.configs.LocalConfig.PackageExtension);
                             EditorUtility.RevealInFinder(firstPackagePath);
                         }
@@ -191,8 +191,8 @@ namespace LiXuFeng.PackageManager.Editor
         private void ApplyAllPackages()
         {
             float lastTime = Time.realtimeSinceStartup;
-            string bundlesFolderPath = Path.Combine(Configs.configs.LocalConfig.BundlePath, Configs.configs.TagName);
-            string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.TagName);
+            string bundlesFolderPath = Path.Combine(Configs.configs.LocalConfig.BundlePath, Configs.configs.Tag);
+            string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.Tag);
             var packageMap = GetPackageMap();
             int count = 0;
             int total = 0;

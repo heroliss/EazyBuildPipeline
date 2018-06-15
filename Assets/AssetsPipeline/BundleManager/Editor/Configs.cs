@@ -19,7 +19,7 @@ namespace LiXuFeng.BundleManager.Editor
         {
             public Action OnChangeRootPath = () => { };
             public Action OnChangeTags = () => { };
-            public Action<BuildTarget, int, string> Apply = (x, y, z) => { };
+            public AssetBundleManagement2.AssetBundleMainWindow mainTab;
         }
         public static void Init()
         {
@@ -41,6 +41,7 @@ namespace LiXuFeng.BundleManager.Editor.Config
         public LocalConfig LocalConfig = new LocalConfig() { Path = "Assets/AssetsPipeline/BundleManager/Config/LocalConfig.json" };
         public BundleManagerConfig BundleManagerConfig = new BundleManagerConfig();
         public TagEnumConfig TagEnumConfig = new TagEnumConfig();
+        public string Tag { get { return string.Join("_", BundleManagerConfig.CurrentTags); } }
 
         public bool LoadAllConfigsByLocalConfig()
         {
@@ -142,6 +143,8 @@ namespace LiXuFeng.BundleManager.Editor.Config
     {
         public string[] CurrentTags;
         public int CurrentBuildAssetBundleOptionsValue;
+        public int CurrentResourceVersion;
+        public int CurrentBundleVersion;
         public bool Applying;
         public BuildAssetBundleOptions CompressionOption
         {

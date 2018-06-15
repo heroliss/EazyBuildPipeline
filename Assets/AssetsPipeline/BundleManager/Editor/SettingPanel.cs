@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace LiXuFeng.BundleManager.Editor
         GUILayoutOption[] defaultOptions;
         private GUILayoutOption[] dropdownOptions;
         private GUILayoutOption[] miniButtonOptions;
+        private GUILayoutOption[] labelOptions;
+        private GUILayoutOption[] inputOptions;
 
         private void InitStyles()
         {
@@ -33,6 +36,9 @@ namespace LiXuFeng.BundleManager.Editor
             defaultOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(90) };
             dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
             miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
+            labelOptions = new GUILayoutOption[] { GUILayout.MinWidth(40), GUILayout.MaxWidth(110) };
+            inputOptions = new GUILayoutOption[] { GUILayout.Width(40) };
+
         }
 
         public void OnEnable()
@@ -71,6 +77,11 @@ namespace LiXuFeng.BundleManager.Editor
             {
                 ShowTagsDropdown();
                 GUILayout.FlexibleSpace();
+                EditorGUILayout.LabelField("Resource Version:", labelOptions);
+                Configs.configs.BundleManagerConfig.CurrentResourceVersion = EditorGUILayout.IntField(Configs.configs.BundleManagerConfig.CurrentResourceVersion, inputOptions);
+                EditorGUILayout.LabelField("  Bundle Version:", labelOptions);
+                Configs.configs.BundleManagerConfig.CurrentBundleVersion = EditorGUILayout.IntField(Configs.configs.BundleManagerConfig.CurrentBundleVersion, inputOptions);
+                //压缩选项
                 int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, compressionEnum, dropdownStyle, dropdownOptions);
                 if (selectedCompressionIndex_new != selectedCompressionIndex)
                 {
@@ -102,7 +113,7 @@ namespace LiXuFeng.BundleManager.Editor
 
         private void ClickedApply()
         {
-            //执行前的各种验证
+            //准备参数和验证
             BuildTarget target = BuildTarget.NoTarget;
             string targetStr = Configs.configs.BundleManagerConfig.CurrentTags[0];
             try
@@ -119,20 +130,76 @@ namespace LiXuFeng.BundleManager.Editor
                 EditorUtility.DisplayDialog("Build Bundles", string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target), "确定");
                 return;
             }
-
             int optionsValue = Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue;
-            string tags = string.Join("_", Configs.configs.BundleManagerConfig.CurrentTags);
-            string path = Path.Combine(Configs.configs.LocalConfig.BundlesFolderPath, tags);
+            int resourceVersion = Configs.configs.BundleManagerConfig.CurrentResourceVersion;
+            int bundleVersion = Configs.configs.BundleManagerConfig.CurrentBundleVersion;
+            string tagPath = Path.Combine(Configs.configs.LocalConfig.BundlesFolderPath, Configs.configs.Tag);
 
-            bool ensure = EditorUtility.DisplayDialog("BundleManager", string.Format("确定应用当前配置？\n\n目标平台：{0}，\n参数：{1}，\n输出路径：{2}", target, optionsValue, path), "确定", "取消");
+            //开始应用          
+            bool ensure = EditorUtility.DisplayDialog("Build Bundles", string.Format("确定应用当前配置？\n\n" +
+                "目标平台: {0}\n 输出路径: {1} \n Resources Version: {2} \n Bundle Version: {3}\n 参数: {4}",
+                target, tagPath, resourceVersion, bundleVersion, optionsValue), "确定", "取消");
             if (ensure)
             {
-                Configs.configs.BundleManagerConfig.Applying = true;
-                Configs.configs.BundleManagerConfig.Save();
-                Configs.g.Apply(target, optionsValue, path);
-                Configs.configs.BundleManagerConfig.Applying = false;
-                Configs.configs.BundleManagerConfig.Save();
+                try
+                {
+                    Configs.configs.BundleManagerConfig.Applying = true;
+                    Configs.configs.BundleManagerConfig.Save();
+                    Apply(target, tagPath, resourceVersion, bundleVersion, optionsValue);
+                    Configs.configs.BundleManagerConfig.Applying = false;
+                    Configs.configs.BundleManagerConfig.Save();
+                }
+                catch (Exception e)
+                {
+                    EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles时发生错误：" + e.Message, "确定");
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
+                }
             }
+        }
+
+        private void Apply(BuildTarget target, string tagPath, int resourceVersion, int bundleVersion, int optionsValue)
+        {
+            EditorUtility.DisplayProgressBar("Build Bundles", "Getting Bunild Maps...", 0);
+            AssetBundleBuild[] buildMap = Configs.g.mainTab.GetBuildMap_extension();
+
+            EditorUtility.DisplayProgressBar("Build Bundles", "正在重建目录:" + tagPath, 0.02f);
+            if (Directory.Exists(tagPath))
+            {
+                Directory.Delete(tagPath, true); //清空目录
+            }
+            string infoPath = Path.Combine(tagPath, "_Info");
+            string bundlesPath = Path.Combine(tagPath, "Bundles");
+            Directory.CreateDirectory(infoPath);
+            Directory.CreateDirectory(bundlesPath);
+
+            EditorUtility.DisplayProgressBar("Build Bundles", "开始创建AssetBundles...", 0.1f);
+            var manifest = BuildPipeline.BuildAssetBundles(bundlesPath, buildMap, (BuildAssetBundleOptions)optionsValue, target);
+            if (manifest == null)
+            {
+                EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles失败！详情请查看Console面板。", "确定");
+            }
+            else
+            {
+                EditorUtility.DisplayProgressBar("Build Bundles", "Creating Info Files...", 0.95f);
+                File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(buildMap));
+                File.WriteAllText(Path.Combine(infoPath, "Versions.json"), JsonConvert.SerializeObject(new Dictionary<string, int> {
+                    { "ResourceVersion", resourceVersion },
+                    { "BundleVersion", bundleVersion } }));
+                RenameMainBundleManifest(bundlesPath);
+                EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles成功！", "确定");
+            }
+        }
+
+        private void RenameMainBundleManifest(string folderPath)
+        {
+            string oldName = Path.GetFileName(folderPath);
+            string oldPath = Path.Combine(folderPath, oldName);
+            string newPath = Path.Combine(folderPath, "assetbundlemanifest");
+            File.Move(oldPath, newPath);
+            File.Move(oldPath + ".manifest", newPath + ".manifest");
         }
 
         private void ChangeRootPathIfChanged(string path)

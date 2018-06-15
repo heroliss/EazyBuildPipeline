@@ -41,32 +41,33 @@ namespace LiXuFeng.PackageManager.Editor.Config
         public PackageMapConfig PackageMapConfig = new PackageMapConfig();
         public LocalConfig LocalConfig = new LocalConfig() { Path = "Assets/AssetsPipeline/PackageManager/Config/LocalConfig.json" };
         public PackageConfig PackageConfig = new PackageConfig();
+        public string Tag { get { return string.Join("_", PackageConfig.CurrentTags); } }
 
-        public string TagName
-        {
-            get
-            {
-                int i;
-                string tagName = "";
-                for (i = 0; i < PackageConfig.CurrentTags.Length; i++)
-                {
-					if (!string.IsNullOrEmpty(PackageConfig.CurrentTags[i]))
-					{
-						tagName += PackageConfig.CurrentTags[i] + "_";
-					}
-                }
-				if (!string.IsNullOrEmpty(tagName))
-				{
-					tagName = tagName.Remove(tagName.Length - 1);
-				}
-				return tagName;
-            }
-        }
+        //    public string TagName
+        //    {
+        //        get
+        //        {
+        //            int i;
+        //            string tagName = "";
+        //            for (i = 0; i < PackageConfig.CurrentTags.Length; i++)
+        //            {
+        //	if (!string.IsNullOrEmpty(PackageConfig.CurrentTags[i]))
+        //	{
+        //		tagName += PackageConfig.CurrentTags[i] + "_";
+        //	}
+        //            }
+        //if (!string.IsNullOrEmpty(tagName))
+        //{
+        //	tagName = tagName.Remove(tagName.Length - 1);
+        //}
+        //return tagName;
+        //        }
+        //    }
         public int PathHandCount
         {
             get
             {
-                return LocalConfig.BundlePath.Length + TagName.Length + 2;
+                return LocalConfig.BundlePath.Length + Tag.Length + 2;
             }
         }
         public bool LoadAllConfigsByLocalConfig()

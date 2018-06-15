@@ -14,11 +14,6 @@ namespace AssetBundleManagement2
             OnEnable();
         }
 
-        internal void BuildBundles_extension(BuildTarget target,int optionsValue, string path)
-        {
-            buildTab.ExecuteBuild_extension(target, optionsValue, path);
-        }
-
         internal void OnDestroy_extension()
         {
             OnDestroy();
@@ -38,6 +33,11 @@ namespace AssetBundleManagement2
         internal void Update_extension()
         {
             Update();
+        }
+
+        internal AssetBundleBuild[] GetBuildMap_extension()
+        {
+            return buildTab.GetBuildMap_extension();
         }
     }
 }

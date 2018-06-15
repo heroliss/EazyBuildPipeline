@@ -135,7 +135,7 @@ namespace LiXuFeng.PackageManager.Editor
                 return root;
 			}
 
-            string rootPath = Path.Combine(assetBundlesFolderPath, Configs.configs.TagName);
+            string rootPath = Path.Combine(assetBundlesFolderPath, Configs.configs.Tag);
 
             BundleTreeItem rootFolderItem = new BundleTreeItem()
             {

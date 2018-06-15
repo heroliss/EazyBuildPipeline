@@ -28,7 +28,7 @@ namespace LiXuFeng.BundleManager.Editor
             settingPanel.OnEnable();
 
             mainTab = new AssetBundleManagement2.AssetBundleMainWindow();
-            Configs.g.Apply += mainTab.BuildBundles_extension;
+            Configs.g.mainTab = mainTab;
             mainTab.OnEnable_extension();
         }
         private void OnDisable()
@@ -39,6 +39,7 @@ namespace LiXuFeng.BundleManager.Editor
         private void OnDestroy()
         {
             mainTab.OnDestroy_extension();
+            mainTab.Close();
         }
         private void OnGUI()
         {
