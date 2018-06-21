@@ -19,13 +19,16 @@ namespace LiXuFeng.PackageManager.Editor
         int folderID = 0;
         int bundleID = 0;
         int packageCount, folderCount, bundleCount;
-        GUIStyle labelErrorStyle;
+        private GUIStyle labelErrorStyle;
+        private GUIStyle inDropDownStyle;
+        private GUIStyle inToggleStyle;
+
         public List<PackageTreeItem> Packages = new List<PackageTreeItem>();
 
         #region 列枚举
         enum ColumnEnum
         {
-            Name, Connection
+            Name, Connection, Necessery, DeploymentLocation, CopyToStreaming, FileName
         }
         #endregion
 
@@ -70,7 +73,8 @@ namespace LiXuFeng.PackageManager.Editor
 
             labelErrorStyle = new GUIStyle(EditorStyles.label);
             labelErrorStyle.normal.textColor = new Color(1, 0.3f, 0.3f);
-
+            inDropDownStyle = new GUIStyle("IN DropDown");
+            inToggleStyle = new GUIStyle("OL ToggleWhite");
             Reload();
         }
 
@@ -178,6 +182,33 @@ namespace LiXuFeng.PackageManager.Editor
             return root;
         }
 
+        public void UpdateAllFileName()
+        {
+            foreach (var package in Packages)
+            {
+                switch (Configs.configs.PackageMapConfig.PackageMode)
+                {
+                    case "Addon":
+                        package.fileName = string.Format("{0}_addon_{1}_{2}_{3}{4}",
+                            Configs.configs.PackageConfig.CurrentTags[0].ToLower(),
+                            Configs.configs.PackageMapConfig.PackageVersion,
+                            "default", package.displayName,
+                            Configs.configs.LocalConfig.PackageExtension);
+                        break;
+                    case "Patch":
+                        package.fileName = string.Format("{0}_patch_{1}_{2}{3}",
+                          Configs.configs.PackageConfig.CurrentTags[0].ToLower(),
+                          Configs.g.bundleTree.BundleVersions.ResourceVersion,
+                          package.displayName,
+                          Configs.configs.LocalConfig.PackageExtension);
+                        break;
+                    default:
+                        package.fileName = package.displayName + Configs.configs.LocalConfig.PackageExtension;
+                        break;
+                }
+            }
+        }
+
         private void BuildTreeFromMap(TreeViewItem root)
         {
             foreach (var package in Configs.configs.PackageMapConfig.Packages)
@@ -192,6 +223,9 @@ namespace LiXuFeng.PackageManager.Editor
                     packageColor = color,
                     isPackage = true,
                     icon = compressionIcon,
+                    necessery = package.Necessery,
+                    deploymentLocation = package.DeploymentLocation,
+                    copyToStreaming = package.CopyToStreaming
                 };
                 p.package = p;
                 BuildPackageTreeFromBundleTree(package, p);
@@ -199,6 +233,7 @@ namespace LiXuFeng.PackageManager.Editor
                 root.AddChild(p);
                 Packages.Add(p);
             }
+            UpdateAllFileName();
         }
 
         private void BuildPackageTreeFromBundleTree(PackageMapConfig.Package package, PackageTreeItem p)
@@ -355,6 +390,7 @@ namespace LiXuFeng.PackageManager.Editor
                 item.displayName = newName;
                 Dirty = true;
             }
+            UpdateAllFileName();
         }
 
         private bool CheckName(string newName, int id)
@@ -392,6 +428,10 @@ namespace LiXuFeng.PackageManager.Editor
                 CellGUI(args.GetCellRect(i), item, (ColumnEnum)args.GetColumn(i), ref args);
             }
         }
+        
+        //TODO：这两个枚举放置何处？
+        string[] necesseryEnum = new string[] { "Immediate", "Delayed" };
+        string[] deploymentLocationEnum = new string[] { "Built-in", "Server" };
 
         private void CellGUI(Rect rect, PackageTreeItem item, ColumnEnum column, ref RowGUIArgs args)
         {
@@ -409,6 +449,48 @@ namespace LiXuFeng.PackageManager.Editor
                 case ColumnEnum.Connection:
                     item.package.packageColor = EditorGUI.ColorField(new Rect(rect.x/* + Packages.IndexOf(item.package) * (rect.height + 4)*/,
                             rect.y, rect.height, rect.height), new GUIContent("", "选择颜色"), item.package.packageColor, false, false, false, new ColorPickerHDRConfig(0, 1, 0, 1));
+                    break;
+                case ColumnEnum.FileName:
+                    if (item.isPackage)
+                    {
+                        GUI.Label(rect, item.fileName);
+                    }
+                    break;
+                case ColumnEnum.Necessery:
+                    if (item.isPackage && Configs.configs.PackageMapConfig.PackageMode == "Addon")
+                    {
+                        int index = necesseryEnum.IndexOf(item.necessery);
+                        int index_new = EditorGUI.Popup(rect, index, necesseryEnum, inDropDownStyle);
+                        if (index_new != index)
+                        {
+                            item.necessery = necesseryEnum[index_new];
+                            Dirty = true;
+                        }
+                    }
+                    break;
+                case ColumnEnum.DeploymentLocation:
+                    if (item.isPackage && Configs.configs.PackageMapConfig.PackageMode == "Addon")
+                    {
+                        int index = deploymentLocationEnum.IndexOf(item.deploymentLocation);
+                        int index_new = EditorGUI.Popup(rect, index, deploymentLocationEnum, inDropDownStyle);
+                        if (index_new != index)
+                        {
+                            item.deploymentLocation = deploymentLocationEnum[index_new];
+                            Dirty = true;
+                        }
+                    }
+                    break;
+                case ColumnEnum.CopyToStreaming:
+                    if (item.isPackage && Configs.configs.PackageMapConfig.PackageMode == "Addon")
+                    {
+                        Rect rect_new = new Rect(rect.x + rect.width / 2 - 8, rect.y, 16, rect.height);
+                        bool selected = EditorGUI.Toggle(rect_new, item.copyToStreaming, inToggleStyle);
+                        if (selected != item.copyToStreaming)
+                        {
+                            item.copyToStreaming = selected;
+                            Dirty = true;
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -443,6 +525,50 @@ namespace LiXuFeng.PackageManager.Editor
                     sortingArrowAlignment = TextAlignment.Center,
                     width = 28,
                     minWidth = 28,
+                    autoResize = false,
+                    allowToggleVisibility = true
+                },
+                new MultiColumnHeaderState.Column
+                {
+                    headerContent = new GUIContent("Necessery"),
+                    headerTextAlignment = TextAlignment.Left,
+                    sortedAscending = true,
+                    sortingArrowAlignment = TextAlignment.Center,
+                    width = 90,
+                    minWidth = 50,
+                    autoResize = false,
+                    allowToggleVisibility = true
+                },
+                new MultiColumnHeaderState.Column
+                {
+                    headerContent = new GUIContent("Location"),
+                    headerTextAlignment = TextAlignment.Left,
+                    sortedAscending = true,
+                    sortingArrowAlignment = TextAlignment.Center,
+                    width = 80,
+                    minWidth = 50,
+                    autoResize = false,
+                    allowToggleVisibility = true
+                },
+                new MultiColumnHeaderState.Column
+                {
+                    headerContent = new GUIContent("CopyToStreaming"),
+                    headerTextAlignment = TextAlignment.Center,
+                    sortedAscending = true,
+                    sortingArrowAlignment = TextAlignment.Center,
+                    width = 120,
+                    minWidth = 30,
+                    autoResize = false,
+                    allowToggleVisibility = true
+                },
+                new MultiColumnHeaderState.Column
+                {
+                    headerContent = new GUIContent("FileName"),
+                    headerTextAlignment = TextAlignment.Left,
+                    sortedAscending = true,
+                    sortingArrowAlignment = TextAlignment.Center,
+                    width = 300,
+                    minWidth = 100,
                     autoResize = false,
                     allowToggleVisibility = true
                 },

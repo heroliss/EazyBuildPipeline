@@ -23,10 +23,10 @@ namespace LiXuFeng.PackageManager.Editor
         private Rect leftRect;
         private Rect rightRect;
         [SerializeField]
-        private float m_splitterPercent = 0.5f;
+        private float m_splitterPercent = 0.4f;
         private float k_SplitterWidth = 3;
         private bool m_ResizingSplitter;
-        private float k_fixedPanelHight = 100;
+        private float k_fixedPanelHight = 130;
         private float k_fixedSpace = 3;
         private bool firstShow = true;
         private MultiColumnHeaderState bundleTreeHeaderState;

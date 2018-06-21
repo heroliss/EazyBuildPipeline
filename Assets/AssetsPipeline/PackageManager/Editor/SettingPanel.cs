@@ -9,21 +9,28 @@ namespace LiXuFeng.PackageManager.Editor
 {
     public class SettingPanel
     {
-        int[] selectedIndexs;
+        string[] PackageModes = new string[] { "Addon", "Patch" };
+        string[] luaSources = new string[] { "None", "Origin", "ByteCode", "Encrypted" };
+        int[] compressionLevels = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        string[] compressionLevelsStr = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+        int[] selectedTagIndexs;
+        int selectedMapIndex;
+        private int selectedPackageModeIndex;
+        private int selectedLuaSourceIndex;
         List<PackageTreeItem> wrongItems;
         List<PackageTreeItem> emptyItems;
-        int selectedMapIndex;
 
         bool firstShow = true;
-        GUIStyle dropdownStyle;
-        GUIStyle buttonStyle;
+        private GUIStyle dropdownStyle;
+        private GUIStyle buttonStyle;
         private GUIStyle labelStyle;
-        GUILayoutOption[] defaultOptions;
+        private GUILayoutOption[] buttonOptions;
         private GUILayoutOption[] dropdownOptions;
         private GUILayoutOption[] miniDropdownOptions;
         private GUILayoutOption[] miniButtonOptions;
-        GUILayoutOption[] popupOptions;
+        private GUILayoutOption[] popupOptions;
         private GUILayoutOption[] labelOptions;
+        private GUILayoutOption[] shortLabelOptions;
         private List<string> savedConfigNames = new List<string>();
         private bool creatingNewConfig;
 
@@ -31,13 +38,14 @@ namespace LiXuFeng.PackageManager.Editor
         {
             dropdownStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
             buttonStyle = new GUIStyle("Button") { fixedHeight = 0, fixedWidth = 0 };
-            labelStyle = new GUIStyle("label") { fixedWidth = 0, fixedHeight = 0, alignment = TextAnchor.MiddleRight };
-            defaultOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
-            dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
+            labelStyle = new GUIStyle(EditorStyles.label) { fixedWidth = 0, fixedHeight = 0, alignment = TextAnchor.MiddleLeft };
+            buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
+            dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(80) };
             miniDropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
             miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
             popupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
-            labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MinWidth(55), GUILayout.MaxWidth(55) };
+            labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(55) };
+            shortLabelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
         }
 
         public void OnEnable()
@@ -63,52 +71,99 @@ namespace LiXuFeng.PackageManager.Editor
             {
                 creatingNewConfig = false;
             }
-            using (new GUILayout.AreaScope(rect, new GUIContent(), EditorStyles.helpBox))
+            using (new GUILayout.AreaScope(rect, new GUIContent()))
             {
-                GUILayout.FlexibleSpace();
-                using (new EditorGUILayout.HorizontalScope())
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {
-                    EditorGUILayout.LabelField("根目录:", GUILayout.Width(45));
-                    string path = EditorGUILayout.DelayedTextField(Configs.configs.LocalConfig.RootPath);
-                    if (GUILayout.Button("...", miniButtonOptions))
-                    {
-                        path = EditorUtility.OpenFolderPanel("打开根目录", Configs.configs.LocalConfig.RootPath, null);
-                    }
-                    ChangeRootPathIfChanged(path);
-                }
-                GUILayout.FlexibleSpace();
-                using (new EditorGUILayout.HorizontalScope())
-                {
-                    ShowTagsDropdown();
                     GUILayout.FlexibleSpace();
-                    GUILayout.Space(10);
-                    if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, defaultOptions)) ClickedNew();
-                    if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonStyle, defaultOptions)) ClickedSave();
+                    using (new EditorGUILayout.HorizontalScope())
                     {
-                        if (creatingNewConfig)
+                        EditorGUILayout.LabelField("根目录:", GUILayout.Width(45));
+                        string path = EditorGUILayout.DelayedTextField(Configs.configs.LocalConfig.RootPath);
+                        if (GUILayout.Button("...", miniButtonOptions))
                         {
-                            ShowInputField();
+                            path = EditorUtility.OpenFolderPanel("打开根目录", Configs.configs.LocalConfig.RootPath, null);
                         }
-                        else
-                        {
-                            ShowMapDropdown();
-                        }
+                        ChangeRootPathIfChanged(path);
                     }
+                    GUILayout.FlexibleSpace();
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        ShowTagsDropdown();
+                        GUILayout.FlexibleSpace();
+                        GUILayout.Space(10);
+                        if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions)) ClickedNew();
+                        if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonStyle, buttonOptions)) ClickedSave();
+                        {
+                            if (creatingNewConfig)
+                            {
+                                ShowInputField();
+                            }
+                            else
+                            {
+                                ShowMapDropdown();
+                            }
+                        }
 
-                    if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), buttonStyle, GUILayout.Height(25)))
-                        ClickedShowConfigFile();
-                }
-                GUILayout.FlexibleSpace();
-                using (new EditorGUILayout.HorizontalScope())
-                {
-                    EditorGUILayout.LabelField("压缩程度:", labelStyle, labelOptions);
-                    Configs.configs.PackageConfig.CompressionValue = EditorGUILayout.IntPopup(Configs.configs.PackageConfig.CompressionValue, new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" },
-                        new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, dropdownStyle, miniDropdownOptions);
+                        if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), buttonStyle, GUILayout.Height(25)))
+                            ClickedShowConfigFile();
+                    }
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, defaultOptions)) ClickedRevert();
-                    if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, defaultOptions)) ClickedApply();
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        GUILayout.FlexibleSpace();
+                        EditorGUILayout.LabelField("模式:", labelStyle, shortLabelOptions);
+                        int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, PackageModes, dropdownStyle, dropdownOptions);
+                        if (selectedPackageModeIndex != currentPackageModeIndex_new)
+                        {
+                            selectedPackageModeIndex = currentPackageModeIndex_new;
+                            Configs.configs.PackageMapConfig.PackageMode = PackageModes[selectedPackageModeIndex];
+                            Configs.g.packageTree.UpdateAllFileName();
+                            Configs.g.packageTree.Dirty = true;
+                        }
+                        GUILayout.Space(10);
+                        EditorGUILayout.LabelField("Lua:", labelStyle, shortLabelOptions);
+                        int currentLuaSourceIndex_new = EditorGUILayout.Popup(selectedLuaSourceIndex, luaSources, dropdownStyle, dropdownOptions);
+                        if (selectedLuaSourceIndex != currentLuaSourceIndex_new)
+                        {
+                            selectedLuaSourceIndex = currentLuaSourceIndex_new;
+                            Configs.configs.PackageMapConfig.LuaSource = luaSources[selectedLuaSourceIndex];
+                            Configs.g.packageTree.Dirty = true;
+                        }
+                        GUILayout.Space(10);
+                        EditorGUILayout.LabelField("压缩等级:", labelStyle, labelOptions);
+                        int compressionLevel_new = EditorGUILayout.IntPopup(Configs.configs.PackageMapConfig.CompressionLevel, compressionLevelsStr,
+                            compressionLevels, dropdownStyle, miniDropdownOptions);
+                        if (compressionLevel_new != Configs.configs.PackageMapConfig.CompressionLevel)
+                        {
+                            Configs.configs.PackageMapConfig.CompressionLevel = compressionLevel_new;
+                            Configs.g.packageTree.Dirty = true;
+                        }
+                        GUILayout.Space(20);
+                        if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions)) ClickedRevert();
+                        if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions)) ClickedApply();
+                    }
+                    GUILayout.FlexibleSpace();
                 }
-                GUILayout.FlexibleSpace();
+                using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+                {
+                    EditorGUILayout.LabelField("Resource Version: " + Configs.g.bundleTree.BundleVersions.ResourceVersion, labelStyle, GUILayout.MaxWidth(150));
+                    EditorGUILayout.LabelField("  Bundle Version: " + Configs.g.bundleTree.BundleVersions.BundleVersion, labelStyle, GUILayout.MaxWidth(150));
+                    GUILayout.FlexibleSpace();
+                    if (Configs.configs.PackageMapConfig.PackageMode == "Addon")
+                    {
+                        EditorGUILayout.LabelField("Package Version:", labelStyle, GUILayout.MaxWidth(110));
+                        string packageVersion_new = EditorGUILayout.TextField(Configs.configs.PackageMapConfig.PackageVersion);
+                        {
+                            if (packageVersion_new != Configs.configs.PackageMapConfig.PackageVersion)
+                            {
+                                Configs.configs.PackageMapConfig.PackageVersion = packageVersion_new;
+                                Configs.g.packageTree.UpdateAllFileName();
+                                Configs.g.packageTree.Dirty = true;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -118,15 +173,22 @@ namespace LiXuFeng.PackageManager.Editor
             int i = 0;
             foreach (var tagType in Configs.configs.TagEnumConfig.Tags.Values)
             {
-                selectedIndexs_new[i] = EditorGUILayout.Popup(selectedIndexs[i], tagType, dropdownStyle, dropdownOptions);
-                if (selectedIndexs_new[i] != selectedIndexs[i])
+                selectedIndexs_new[i] = EditorGUILayout.Popup(selectedTagIndexs[i], tagType, dropdownStyle, dropdownOptions);
+                if (selectedIndexs_new[i] != selectedTagIndexs[i])
                 {
-                    selectedIndexs[i] = selectedIndexs_new[i];
-                    Configs.configs.PackageConfig.CurrentTags[i] = tagType[selectedIndexs[i]];
-                    Configs.g.OnChangeTags();
+                    selectedTagIndexs[i] = selectedIndexs_new[i];
+                    Configs.configs.PackageConfig.CurrentTags[i] = tagType[selectedTagIndexs[i]];
+                    OnChangeTags();
                 }
                 i++;
             }
+        }
+
+        private void OnChangeTags()
+        {
+            Configs.g.bundleTree.Reload();
+            Configs.g.packageTree.ReConnectWithBundleTree();
+            Configs.g.packageTree.UpdateAllFileName();
         }
 
         private void ClickedRevert()
@@ -154,7 +216,7 @@ namespace LiXuFeng.PackageManager.Editor
             if (CheckAllPackageItem())
             {
                 bool ensure = EditorUtility.DisplayDialog("Package", string.Format("确定应用当前配置？\n\n压缩程度：{0}",
-                    Configs.configs.PackageConfig.CompressionValue),
+                    Configs.configs.PackageMapConfig.CompressionLevel),
                     "确定", "取消");
                 if (ensure)
                 {
@@ -217,7 +279,7 @@ namespace LiXuFeng.PackageManager.Editor
                 {
                     using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                     {
-                        zipStream.SetLevel(Configs.configs.PackageConfig.CompressionValue);
+                        zipStream.SetLevel(Configs.configs.PackageMapConfig.CompressionLevel);
                         int bundlesCount = package.Bundles.Count;
                         for (int i = 0; i < bundlesCount; i++)
                         {
@@ -287,8 +349,8 @@ namespace LiXuFeng.PackageManager.Editor
             }
             if (emptyItems.Count != 0)
             {
-                if (EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空文件夹或包，是否继续？",
-                    "返回", "继续打包"))
+                if (!EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空文件夹或包，是否继续？",
+                    "继续打包", "返回"))
                 {
                     FrameAndSelectPackageTreeItems(emptyItems);
                     return false;
@@ -376,16 +438,25 @@ namespace LiXuFeng.PackageManager.Editor
             ConfigToIndex();
             Configs.configs.LocalConfig.Save();
             HandleApplyingWarning();
-            Configs.g.OnChangeRootPath();
+            OnChangeRootPath();
+        }
+
+        private void OnChangeRootPath()
+        {
+            //必须bundletree先reload
+            Configs.g.bundleTree.Reload();
+            Configs.g.packageTree.Reload();
         }
 
         private void InitSelectedIndex()
         {
             selectedMapIndex = -1;
-            selectedIndexs = new int[Configs.configs.TagEnumConfig.Tags.Count];
-            for (int i = 0; i < selectedIndexs.Length; i++)
+            selectedLuaSourceIndex = -1;
+            selectedPackageModeIndex = -1;
+            selectedTagIndexs = new int[Configs.configs.TagEnumConfig.Tags.Count];
+            for (int i = 0; i < selectedTagIndexs.Length; i++)
             {
-                selectedIndexs[i] = -1;
+                selectedTagIndexs[i] = -1;
             }
         }
 
@@ -397,7 +468,6 @@ namespace LiXuFeng.PackageManager.Editor
             LoadMaps();
             ConfigToIndex();
             HandleApplyingWarning();
-            Configs.g.OnChangeRootPath();
         }
 
         private void LoadMaps()
@@ -485,7 +555,7 @@ namespace LiXuFeng.PackageManager.Editor
             int i = 0;
             foreach (var item in Configs.configs.TagEnumConfig.Tags.Values)
             {
-                selectedIndexs[i] = GetIndex(item, Configs.configs.PackageConfig.CurrentTags[i], i);
+                selectedTagIndexs[i] = GetIndex(item, Configs.configs.PackageConfig.CurrentTags[i], i);
                 i++;
             }
             if (Configs.configs.PackageConfig.CurrentPackageMap == null)
@@ -495,8 +565,10 @@ namespace LiXuFeng.PackageManager.Editor
             string extension = Path.GetExtension(Configs.configs.PackageConfig.CurrentPackageMap);
             selectedMapIndex = savedConfigNames.IndexOf(Configs.configs.PackageConfig.CurrentPackageMap.Remove(
                 Configs.configs.PackageConfig.CurrentPackageMap.Length - extension.Length, extension.Length));
+            selectedLuaSourceIndex = luaSources.IndexOf(Configs.configs.PackageMapConfig.LuaSource);
+            selectedPackageModeIndex = PackageModes.IndexOf(Configs.configs.PackageMapConfig.PackageMode);
         }
-
+        
         private int GetIndex(string[] sList, string s, int count)
         {
             if (string.IsNullOrEmpty(s)) return -1;
@@ -554,7 +626,10 @@ namespace LiXuFeng.PackageManager.Editor
                     Bundles = new List<string>(),
                     EmptyFolders = new List<string>(),
                     PackageName = package.displayName,
-                    Color = ColorUtility.ToHtmlStringRGB(package.packageColor)
+                    Color = ColorUtility.ToHtmlStringRGB(package.packageColor),
+                    CopyToStreaming = package.copyToStreaming,
+                    DeploymentLocation = package.deploymentLocation,
+                    Necessery = package.necessery
                 };
                 if (package.hasChildren)
                 {
@@ -701,16 +776,22 @@ namespace LiXuFeng.PackageManager.Editor
                     newPackageMapConfig.Load();
                     //至此加载成功
                     Configs.configs.PackageConfig.CurrentPackageMap = newPackageMap;
-                    Configs.configs.PackageMapConfig.Path = newPackageMapConfig.Path;
-                    Configs.configs.PackageMapConfig.Packages = newPackageMapConfig.Packages;
+                    Configs.configs.PackageMapConfig = newPackageMapConfig;
                     selectedMapIndex = selectedMapIndex_new;
-                    Configs.g.OnChangeMap();
+                    ConfigToIndex();
+                    OnChangeMap();
                 }
                 catch (Exception e)
                 {
                     EditorUtility.DisplayDialog("切换map", "切换Map配置时发生错误：" + e.Message, "确定");
                 }
             }
+        }
+
+        private void OnChangeMap()
+        {
+            Configs.g.bundleTree.ClearAllConnection();
+            Configs.g.packageTree.Reload();
         }
     }
 }

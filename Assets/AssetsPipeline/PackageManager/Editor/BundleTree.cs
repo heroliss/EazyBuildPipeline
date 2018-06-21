@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -21,8 +22,12 @@ namespace LiXuFeng.PackageManager.Editor
 		GUIStyle labelBundleStyle;
 		GUIStyle colorBlockStyle;
 
-		#region 列枚举
-		enum ColumnEnum
+        public struct BundleVersionsStruct { public int ResourceVersion; public int BundleVersion; }
+        public BundleVersionsStruct BundleVersions;
+        public AssetBundleBuild[] BundleBuildMap;
+
+        #region 列枚举
+        enum ColumnEnum
 		{
 			Name, Connection
 		}
@@ -82,10 +87,6 @@ namespace LiXuFeng.PackageManager.Editor
 			#endregion
 
 			InitStyles();
-			//刚打开窗口时执行各自的两个构造函数，相当于 bundleTree.Reload();packageTree.Relaod();
-			Configs.g.OnChangeRootPath += () => { Reload(); Configs.g.packageTree.Reload(); };//必须bundletree先reload
-			Configs.g.OnChangeMap += () => { ClearAllConnection(); Configs.g.packageTree.Reload(); };
-			Configs.g.OnChangeTags += () => { Reload(); Configs.g.packageTree.ReConnectWithBundleTree(); };
 
 			bundleDic = new Dictionary<string, BundleTreeItem>();
 			folderDic = new Dictionary<string, BundleTreeItem>();
@@ -93,7 +94,7 @@ namespace LiXuFeng.PackageManager.Editor
 			Reload();
 		}
 
-		private void ClearAllConnection()
+		public void ClearAllConnection()
 		{
 			foreach (var item in bundleDic.Values)
 			{
@@ -136,6 +137,7 @@ namespace LiXuFeng.PackageManager.Editor
 			}
 
             string rootPath = Path.Combine(assetBundlesFolderPath, Configs.configs.Tag);
+            rootPath = Path.Combine(rootPath, "Bundles");
 
             BundleTreeItem rootFolderItem = new BundleTreeItem()
             {
@@ -162,6 +164,7 @@ namespace LiXuFeng.PackageManager.Editor
 				EditorUtility.DisplayDialog("提示", "有 " + checkFailedItems.Count +
 					" 个manifest文件缺少对应的bundle文件！\n（这些项已标记为警告色:黄色）", "确定");
 			}
+            LoadBundleInfo();
 			return rootFolderItem;
 		}
 		protected override IList<TreeViewItem> BuildRows(TreeViewItem root)
@@ -171,11 +174,11 @@ namespace LiXuFeng.PackageManager.Editor
 			//SortIfNeeded(root, rows);
 			return rows;
 		}
-		#endregion
+        #endregion
 
 
-		#region GUI
-		protected override bool CanBeParent(TreeViewItem item)
+        #region GUI
+        protected override bool CanBeParent(TreeViewItem item)
 		{
 			return ((BundleTreeItem)item).isFolder;
 		}
@@ -273,11 +276,28 @@ namespace LiXuFeng.PackageManager.Editor
 			var state = new MultiColumnHeaderState(columns);
 			return state;
 		}
-		#endregion
+        #endregion
 
 
-		#region 数据处理
-		void AddDirectories(BundleTreeItem parent)
+        #region 数据处理
+        private void LoadBundleInfo()
+        {
+            try
+            {
+                BundleVersions = new BundleVersionsStruct() { BundleVersion = -1, ResourceVersion = -1 };
+                BundleBuildMap = null;
+                string path = Path.Combine(Configs.configs.LocalConfig.BundlePath, Configs.configs.Tag);
+                string versionPath = Path.Combine(path, "_Info/Versions.json");
+                string buildMapPath = Path.Combine(path, "_Info/BuildMap.json");
+                BundleVersions = JsonConvert.DeserializeObject<BundleVersionsStruct>(File.ReadAllText(versionPath));
+                BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
+            }
+            catch //(Exception e)
+            {
+                //EditorUtility.DisplayDialog("错误", "读取" + Configs.configs.Tag + "中AssetBundle相关信息时发生错误：" + e.Message, "确定");
+            }
+        }
+        void AddDirectories(BundleTreeItem parent)
 		{
 			string[] directories = Directory.GetDirectories(parent.path);
 			foreach (string path in directories)

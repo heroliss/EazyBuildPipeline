@@ -13,9 +13,6 @@ namespace LiXuFeng.PackageManager.Editor
         public static GlobalReference g;
         public class GlobalReference
         {
-            public Action OnChangeRootPath = () => { };
-            public Action OnChangeTags = () => { };
-            public Action OnChangeMap = () => { };
             public PackageTree packageTree;
             public BundleTree bundleTree;
         }
@@ -143,8 +140,15 @@ namespace LiXuFeng.PackageManager.Editor.Config
             public string Color;
             public List<string> Bundles;
             public List<string> EmptyFolders;
+            public string Necessery;
+            public string DeploymentLocation;
+            public bool CopyToStreaming;
         }
         public List<Package> Packages = new List<Package>();
+        public string PackageVersion;
+        public string PackageMode;
+        public string LuaSource;
+        public int CompressionLevel = -1;
     }
 
     public class LocalConfig : Config
@@ -182,7 +186,6 @@ namespace LiXuFeng.PackageManager.Editor.Config
     {
         public string[] CurrentTags;
         public string CurrentPackageMap;
-        public int CompressionValue = -1;
         public bool Applying;
     }
 
