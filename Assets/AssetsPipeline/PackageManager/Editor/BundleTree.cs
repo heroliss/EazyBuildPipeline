@@ -122,7 +122,7 @@ namespace LiXuFeng.PackageManager.Editor
 			bundleDic.Clear();
 			folderDic.Clear();
 
-			string assetBundlesFolderPath = Configs.configs.LocalConfig.BundlePath;
+			string assetBundlesFolderPath = Configs.configs.LocalConfig.BundleRootPath;
 			if (!Directory.Exists(assetBundlesFolderPath))
 			{
 				EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + assetBundlesFolderPath, "确定");
@@ -136,8 +136,7 @@ namespace LiXuFeng.PackageManager.Editor
                 return root;
 			}
 
-            string rootPath = Path.Combine(assetBundlesFolderPath, Configs.configs.Tag);
-            rootPath = Path.Combine(rootPath, "Bundles");
+            string rootPath = Configs.configs.BundlePath;
 
             BundleTreeItem rootFolderItem = new BundleTreeItem()
             {
@@ -286,15 +285,14 @@ namespace LiXuFeng.PackageManager.Editor
             {
                 BundleVersions = new BundleVersionsStruct() { BundleVersion = -1, ResourceVersion = -1 };
                 BundleBuildMap = null;
-                string path = Path.Combine(Configs.configs.LocalConfig.BundlePath, Configs.configs.Tag);
-                string versionPath = Path.Combine(path, "_Info/Versions.json");
-                string buildMapPath = Path.Combine(path, "_Info/BuildMap.json");
+                string versionPath = Path.Combine(Configs.configs.BundleInfoPath, "Versions.json");
+                string buildMapPath = Path.Combine(Configs.configs.BundleInfoPath, "BuildMap.json");
                 BundleVersions = JsonConvert.DeserializeObject<BundleVersionsStruct>(File.ReadAllText(versionPath));
                 BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
             }
             catch //(Exception e)
             {
-                //EditorUtility.DisplayDialog("错误", "读取" + Configs.configs.Tag + "中AssetBundle相关信息时发生错误：" + e.Message, "确定");
+                //EditorUtility.DisplayDialog("错误", "在" + Configs.configs.BundleInfoPath + "中加载信息时发生错误：" + e.Message, "确定");
             }
         }
         void AddDirectories(BundleTreeItem parent)
@@ -341,8 +339,8 @@ namespace LiXuFeng.PackageManager.Editor
 					{
 						isFolder = false,
 						verify = true,
-						path = filePath,
-						relativePath = filePath.Remove(0, Configs.configs.PathHandCount).Replace('\\', '/'),
+						path = bundlePath,
+						relativePath = bundlePath.Remove(0, Configs.configs.PathHandCount).Replace('\\', '/'),
 						bundlePath = bundlePath,
 						displayName = bundleName,
 						icon = bundleIcon,
@@ -493,7 +491,7 @@ namespace LiXuFeng.PackageManager.Editor
 				menu.AddItem(new GUIContent("定位"), false, () => { Locate(item); });
 				menu.AddSeparator(null);
 			}
-            menu.AddItem(new GUIContent("Reveal In Finder"), false, () => { EditorUtility.RevealInFinder(item.path); });
+            menu.AddItem(new GUIContent("Reveal In Finder"), false, () => { EditorUtility.RevealInFinder(item.path + ".manifest"); });
             menu.AddSeparator(null);
             if (item.hasChildren)
 			{

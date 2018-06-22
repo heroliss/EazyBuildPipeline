@@ -28,6 +28,11 @@ namespace LiXuFeng.PackageManager.Editor
             configs = null;
             g = null;
         }
+
+        public static string[] NecesseryEnum = new string[] { "Immediate", "Delayed" };
+        public static string[] DeploymentLocationEnum = new string[] { "Built-in", "Server" };
+        public static string[] PackageModeEnum = new string[] { "Addon", "Patch" };
+        public static string[] LuaSourceEnum = new string[] { "None", "Origin", "ByteCode", "Encrypted" };
     }
 }
 namespace LiXuFeng.PackageManager.Editor.Config
@@ -39,6 +44,8 @@ namespace LiXuFeng.PackageManager.Editor.Config
         public LocalConfig LocalConfig = new LocalConfig() { Path = "Assets/AssetsPipeline/PackageManager/Config/LocalConfig.json" };
         public PackageConfig PackageConfig = new PackageConfig();
         public string Tag { get { return string.Join("_", PackageConfig.CurrentTags); } }
+        public string BundlePath { get { return Path.Combine(LocalConfig.BundleRootPath, Tag + "/Bundles"); } }
+        public string BundleInfoPath { get { return Path.Combine(LocalConfig.BundleRootPath, Tag + "/_Info"); } }
 
         //    public string TagName
         //    {
@@ -64,7 +71,7 @@ namespace LiXuFeng.PackageManager.Editor.Config
         {
             get
             {
-                return LocalConfig.BundlePath.Length + Tag.Length + 2;
+                return BundlePath.Length + 1;
             }
         }
         public bool LoadAllConfigsByLocalConfig()
@@ -79,7 +86,7 @@ namespace LiXuFeng.PackageManager.Editor.Config
             {
                 UnityEditor.EditorUtility.DisplayDialog("错误", "加载枚举配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + TagEnumConfig.Path
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags), "确定");
+                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
                 success = false;
             }
             try
@@ -143,8 +150,10 @@ namespace LiXuFeng.PackageManager.Editor.Config
             public string Necessery;
             public string DeploymentLocation;
             public bool CopyToStreaming;
+            [NonSerialized]
+            public string FileName; //TODO: 仅用于程序中数据传递
         }
-        public List<Package> Packages = new List<Package>();
+        public List<Package> Packages = new List<Package>(); //该项不随改动而改动
         public string PackageVersion;
         public string PackageMode;
         public string LuaSource;
@@ -157,8 +166,8 @@ namespace LiXuFeng.PackageManager.Editor.Config
         public bool CheckBundle;
         public string EnumConfigPath, PackageMapsFolderPath, RootPath;
         public string PackageConfigPath { get { return System.IO.Path.Combine(RootPath, packageConfigPath); } }
-        public string BundlePath { get { return System.IO.Path.Combine(RootPath, bundlePath); } }
-        public string PackagePath { get { return System.IO.Path.Combine(RootPath, packagePath); } }
+        public string BundleRootPath { get { return System.IO.Path.Combine(RootPath, bundlePath); } }
+        public string PackageRootPath { get { return System.IO.Path.Combine(RootPath, packagePath); } }
         [SerializeField]
         private string packageConfigPath, bundlePath, packagePath;
     }
@@ -178,7 +187,7 @@ namespace LiXuFeng.PackageManager.Editor.Config
         }
         public override void Save()
         {
-            File.WriteAllText(Path, JsonConvert.SerializeObject(Tags));
+            File.WriteAllText(Path, JsonConvert.SerializeObject(Tags, Formatting.Indented));
         }
     }
 

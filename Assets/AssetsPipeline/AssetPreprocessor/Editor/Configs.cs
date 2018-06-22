@@ -54,7 +54,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor.Config
             {
                 UnityEditor.EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + TagEnumConfig.Path
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags), "确定");
+                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
                 success = false;
             }
 
@@ -167,7 +167,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor.Config
         }
         public override void Save()
         {
-            File.WriteAllText(Path, JsonConvert.SerializeObject(Tags));
+            File.WriteAllText(Path, JsonConvert.SerializeObject(Tags, Formatting.Indented));
         }
     }
 

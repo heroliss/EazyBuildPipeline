@@ -1,7 +1,9 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,10 +11,8 @@ namespace LiXuFeng.PackageManager.Editor
 {
     public class SettingPanel
     {
-        string[] PackageModes = new string[] { "Addon", "Patch" };
-        string[] luaSources = new string[] { "None", "Origin", "ByteCode", "Encrypted" };
-        int[] compressionLevels = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        string[] compressionLevelsStr = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+        int[] compressionLevelEnum = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        string[] compressionLevelsEnumStr = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
         int[] selectedTagIndexs;
         int selectedMapIndex;
         private int selectedPackageModeIndex;
@@ -113,27 +113,27 @@ namespace LiXuFeng.PackageManager.Editor
                     {
                         GUILayout.FlexibleSpace();
                         EditorGUILayout.LabelField("模式:", labelStyle, shortLabelOptions);
-                        int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, PackageModes, dropdownStyle, dropdownOptions);
+                        int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, Configs.PackageModeEnum, dropdownStyle, dropdownOptions);
                         if (selectedPackageModeIndex != currentPackageModeIndex_new)
                         {
                             selectedPackageModeIndex = currentPackageModeIndex_new;
-                            Configs.configs.PackageMapConfig.PackageMode = PackageModes[selectedPackageModeIndex];
+                            Configs.configs.PackageMapConfig.PackageMode = Configs.PackageModeEnum[selectedPackageModeIndex];
                             Configs.g.packageTree.UpdateAllFileName();
                             Configs.g.packageTree.Dirty = true;
                         }
                         GUILayout.Space(10);
                         EditorGUILayout.LabelField("Lua:", labelStyle, shortLabelOptions);
-                        int currentLuaSourceIndex_new = EditorGUILayout.Popup(selectedLuaSourceIndex, luaSources, dropdownStyle, dropdownOptions);
+                        int currentLuaSourceIndex_new = EditorGUILayout.Popup(selectedLuaSourceIndex, Configs.LuaSourceEnum, dropdownStyle, dropdownOptions);
                         if (selectedLuaSourceIndex != currentLuaSourceIndex_new)
                         {
                             selectedLuaSourceIndex = currentLuaSourceIndex_new;
-                            Configs.configs.PackageMapConfig.LuaSource = luaSources[selectedLuaSourceIndex];
+                            Configs.configs.PackageMapConfig.LuaSource = Configs.LuaSourceEnum[selectedLuaSourceIndex];
                             Configs.g.packageTree.Dirty = true;
                         }
                         GUILayout.Space(10);
                         EditorGUILayout.LabelField("压缩等级:", labelStyle, labelOptions);
-                        int compressionLevel_new = EditorGUILayout.IntPopup(Configs.configs.PackageMapConfig.CompressionLevel, compressionLevelsStr,
-                            compressionLevels, dropdownStyle, miniDropdownOptions);
+                        int compressionLevel_new = EditorGUILayout.IntPopup(Configs.configs.PackageMapConfig.CompressionLevel, compressionLevelsEnumStr,
+                            compressionLevelEnum, dropdownStyle, miniDropdownOptions);
                         if (compressionLevel_new != Configs.configs.PackageMapConfig.CompressionLevel)
                         {
                             Configs.configs.PackageMapConfig.CompressionLevel = compressionLevel_new;
@@ -236,8 +236,8 @@ namespace LiXuFeng.PackageManager.Editor
                         if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                             "显示文件", "关闭"))
                         {
-                            string firstPackagePath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.Tag +
-                                "/" + Configs.g.packageTree.Packages[0].displayName + Configs.configs.LocalConfig.PackageExtension);
+                            string firstPackagePath = Path.Combine(Configs.configs.LocalConfig.PackageRootPath, Configs.configs.Tag +
+                                "/" + Configs.g.packageTree.Packages[0].fileName);
                             EditorUtility.RevealInFinder(firstPackagePath);
                         }
                     }
@@ -250,11 +250,14 @@ namespace LiXuFeng.PackageManager.Editor
             }
         }
 
+        struct BundleVersionStruct { public string BundleName; public string Version; }; //TODO：临时方案
+        struct DownloadFlagStruct { public int flag_; public string name_; public int location_; public bool hasDownloaded_; };
+
         private void ApplyAllPackages()
         {
             float lastTime = Time.realtimeSinceStartup;
-            string bundlesFolderPath = Path.Combine(Configs.configs.LocalConfig.BundlePath, Configs.configs.Tag);
-            string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackagePath, Configs.configs.Tag);
+            string bundlesFolderPath = Configs.configs.BundlePath;
+            string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackageRootPath, Configs.configs.Tag);
             var packageMap = GetPackageMap();
             int count = 0;
             int total = 0;
@@ -264,6 +267,13 @@ namespace LiXuFeng.PackageManager.Editor
             }
             int packagesCount = packageMap.Count;
 
+            //TODO:构建map改进方法
+            //if (Configs.g.bundleTree.BundleBuildMap == null)
+            //{
+            //    throw new ApplicationException("BuildMap is null");
+            //}
+            //string mapContent = JsonConvert.SerializeObject(BuildAsset2BundleMap(Configs.g.bundleTree.BundleBuildMap), Formatting.Indented);
+
             EditorUtility.DisplayProgressBar("Build Packages", "正在重建目录:" + packagesFolderPath, 0);
             if (Directory.Exists(packagesFolderPath))
             {
@@ -271,21 +281,105 @@ namespace LiXuFeng.PackageManager.Editor
             }
             Directory.CreateDirectory(packagesFolderPath);
 
+            string bundlesRootPathInPackage = "AssetBundles/" + Configs.configs.PackageConfig.CurrentTags[0].ToLower() + "/AssetBundles/";
+            string extraInfoFilePathInPackage = "AssetBundles/" + Configs.configs.PackageConfig.CurrentTags[0].ToLower() + "/extra_info";
+            string bundleVersionFilePathInPackage = "AssetBundles/" + Configs.configs.PackageConfig.CurrentTags[0].ToLower() + "/bundle_version";
+            string mapFilePathInPackage = "AssetBundles/" + Configs.configs.PackageConfig.CurrentTags[0].ToLower() + "/maps/map";
+            string streamingPath = Path.Combine("Assets/StreamingAssets/AssetBundles", Configs.configs.PackageConfig.CurrentTags[0]);
             byte[] buffer = new byte[20971520]; //20M缓存,不够会自动扩大
+
+            //以下为整体上Addon和Patch的不同
+            switch (Configs.configs.PackageMapConfig.PackageMode)
+            {
+                case "Patch":
+                    mapFilePathInPackage += "_" + Configs.g.bundleTree.BundleVersions.BundleVersion;
+                    break;
+
+                case "Addon":
+                    //得到需要拷贝到Streaming中的Bundles
+                    List<string> bundlesCopyToStreaming = new List<string>();
+                    foreach (var package in packageMap)
+                    {
+                        if (package.CopyToStreaming)
+                        {
+                            bundlesCopyToStreaming = bundlesCopyToStreaming.Union(package.Bundles).ToList();
+                        }
+                    }
+                    //重建StreamingAssets/AssetBundles/[Platform]目录
+                    if (Directory.Exists(streamingPath))
+                    {
+                        Directory.Delete(streamingPath, true);
+                    }
+                    Directory.CreateDirectory(streamingPath);
+                    
+                    //构建download_flag.json
+                    List<DownloadFlagStruct> flagList = new List<DownloadFlagStruct>();
+                    foreach (var package in packageMap)
+                    {
+                        flagList.Add(new DownloadFlagStruct()
+                        {
+                            name_ = package.FileName,
+                            flag_ = Configs.NecesseryEnum.IndexOf(package.Necessery),
+                            location_ = Configs.DeploymentLocationEnum.IndexOf(package.DeploymentLocation),
+                            hasDownloaded_ = package.CopyToStreaming //TODO:确定是否这样做
+                        });
+                    }
+                    string downloadFlagContent = JsonConvert.SerializeObject(flagList, Formatting.Indented);
+                    File.WriteAllText(Path.Combine(streamingPath, "download_flag.json"), downloadFlagContent);
+                    
+                    //构建小包
+                    string miniPackagePath = Path.Combine(streamingPath, string.Join("_", new string[]{
+                        Configs.configs.PackageConfig.CurrentTags[0].ToLower(),
+                        Configs.configs.PackageMapConfig.PackageMode.ToLower(),
+                        Configs.configs.PackageMapConfig.PackageVersion,
+                        "default"})) + Configs.configs.LocalConfig.PackageExtension;
+                    using (FileStream zipFileStream = new FileStream(miniPackagePath, FileMode.Create))
+                    {
+                        using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
+                        {
+                            zipStream.SetLevel(Configs.configs.PackageMapConfig.CompressionLevel);
+
+                            //构建extra_info
+                            BuildExtraInfoInZipStream(extraInfoFilePathInPackage, Path.GetFileNameWithoutExtension(miniPackagePath), zipStream);
+
+                            //构建bundle_version
+                            BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, bundlesCopyToStreaming, zipStream);
+
+                            //构建map
+                            BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
+
+                            //添加Lua
+                            BuildLuaInZipStream(buffer, zipStream);
+                        }
+                    }
+
+                    //拷贝Assetbundle
+                    string bundlesRootPathInStreaming = Path.Combine(streamingPath, "AssetBundles");
+                    foreach (var bundle in bundlesCopyToStreaming) 
+                    {
+                        string targetPath = Path.Combine(bundlesRootPathInStreaming, bundle);
+                        Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                        File.Copy(Path.Combine(bundlesFolderPath, bundle), targetPath, false); //这里不允许覆盖，若已存在则抛出异常
+                    }
+                    break;
+                default:
+                    throw new ApplicationException("不能识别模式：" + Configs.configs.PackageMapConfig.PackageMode);
+            }
+
             for (int pi = 0; pi < packagesCount; pi++)
             {
                 var package = packageMap[pi];
-                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, package.PackageName + Configs.configs.LocalConfig.PackageExtension), FileMode.Create))
+                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, package.FileName), FileMode.Create))
                 {
                     using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                     {
                         zipStream.SetLevel(Configs.configs.PackageMapConfig.CompressionLevel);
+
+                        //构建Bundles
                         int bundlesCount = package.Bundles.Count;
                         for (int i = 0; i < bundlesCount; i++)
                         {
-                            var bundleManifestRelativePath = package.Bundles[i];
-                            string bundleRelativePath = bundleManifestRelativePath.Remove(bundleManifestRelativePath.Length - 9, 9);
-                            //string bundleManifestPath = Path.Combine(bundlesFolderPath, bundleManifestRelativePath);
+                            string bundleRelativePath = package.Bundles[i];
                             string bundlePath = Path.Combine(bundlesFolderPath, bundleRelativePath);
                             if (Time.realtimeSinceStartup - lastTime > 0.06f)
                             {
@@ -294,26 +388,127 @@ namespace LiXuFeng.PackageManager.Editor
                                     bundleRelativePath, (float)count / total);
                                 lastTime = Time.realtimeSinceStartup;
                             }
-                            //AddFileToZipStream(zipStream, bundleManifestPath, bundleManifestRelativePath);
-                            AddFileToZipStream(zipStream, bundlePath, bundleRelativePath, buffer);
+                            AddFileToZipStream(zipStream, bundlePath, Path.Combine(bundlesRootPathInPackage, bundleRelativePath), buffer);
                             count++;
                         }
 
+                        //构建空目录
                         int emptyFolderCount = package.EmptyFolders.Count;
                         EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : (-/{5})  总计:({3}/{4})",
                                     package.PackageName, pi + 1, packagesCount, count + 1, total, emptyFolderCount),
                                     "Empty Folders", (float)count / total);
-
                         for (int i = 0; i < emptyFolderCount; i++)
                         {
                             zipStream.PutNextEntry(new ZipEntry(package.EmptyFolders[i] + "/") { });
+                        }
+
+                        //构建extra_info
+                        BuildExtraInfoInZipStream(extraInfoFilePathInPackage, Path.GetFileNameWithoutExtension(package.FileName), zipStream);
+
+                        //构建bundle_version
+                        BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, package.Bundles, zipStream);
+
+                        //以下为每个包中Patch和Addon独有内容
+                        switch (Configs.configs.PackageMapConfig.PackageMode)
+                        {
+                            case "Patch":
+                                //构建map
+                                BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
+                                //添加Lua
+                                BuildLuaInZipStream(buffer, zipStream);
+                                break;
+
+                            case "Addon":
+                                break;
+                            default:
+                                throw new ApplicationException("不能识别模式：" + Configs.configs.PackageMapConfig.PackageMode);
                         }
                     }
                 }
             }
         }
 
-        private static void AddFileToZipStream(ZipOutputStream zipStream, string sourceFilePath, string targetPathInZip, byte[] buffer)
+        private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)
+        {
+            switch (Configs.configs.PackageMapConfig.LuaSource)
+            {
+                case "None":
+                    break;
+                case "Origin":
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScripts", "Lua/LuaScripts32", buffer, "*.lua");
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScripts", "Lua/LuaScripts64", buffer, "*.lua");
+                    break;
+                case "ByteCode":
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsByteCode32", "Lua/LuaScripts32", buffer, "*.lua");
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsByteCode64", "Lua/LuaScripts64", buffer, "*.lua");
+                    break;
+                case "Encrypted":
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted32", "Lua/LuaScripts32", buffer, "*.lua");
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted64", "Lua/LuaScripts64", buffer, "*.lua");
+                    break;
+                default:
+                    throw new ApplicationException("不能识别Lua源：" + Configs.configs.PackageMapConfig.LuaSource);
+            }
+        }
+
+        private void BuildMapInZipStream(string mapFilePath, byte[] buffer, ZipOutputStream zipStream)
+        {
+            //AddBytesToZipStream(zipStream, mapFilePath, System.Text.Encoding.Default.GetBytes(mapContent));
+            AddFileToZipStream(zipStream, Path.Combine(Configs.configs.BundleInfoPath, "map"), mapFilePath, buffer);
+        }
+
+        private void BuildBundleVersionInfoInZipStream(string bundleVersionFilePath, List<string> bundles, ZipOutputStream zipStream)
+        {
+            string bundleVersion = Configs.g.bundleTree.BundleVersions.BundleVersion.ToString();
+            List<BundleVersionStruct> bundleVersionList = new List<BundleVersionStruct>();
+            foreach (var item in bundles)
+            {
+                bundleVersionList.Add(new BundleVersionStruct() { BundleName = item, Version = bundleVersion });
+            }
+            string bundleVersionContent = JsonConvert.SerializeObject(bundleVersionList, Formatting.Indented);
+            AddBytesToZipStream(zipStream, bundleVersionFilePath, System.Text.Encoding.Default.GetBytes(bundleVersionContent));
+        }
+
+        private void BuildExtraInfoInZipStream(string extraInfoFilePath, string fileNameWithoutExtension, ZipOutputStream zipStream)
+        {
+            string extraInfoContent = JsonConvert.SerializeObject(new Dictionary<string, string>() {
+                            { "brief_desc", fileNameWithoutExtension },
+                            { "res_version", Configs.g.bundleTree.BundleVersions.ResourceVersion.ToString() }
+                        }, Formatting.Indented);
+            AddBytesToZipStream(zipStream, extraInfoFilePath, System.Text.Encoding.Default.GetBytes(extraInfoContent));
+        }
+
+        /// <summary>
+        /// 将目录下所有文件按照原目录结构加入压缩流（不包含空文件夹）
+        /// </summary>
+        /// <param name="zipStream"></param>
+        /// <param name="sourceFolderPath">源目录路径，必须不是/开头或结尾</param>
+        /// <param name="targetFolderPath"></param>
+        /// <param name="buffer"></param>
+        /// <param name="searchPattern"></param>
+        private void AddDirectoryToZipStream(ZipOutputStream zipStream, string sourceFolderPath, string targetFolderPath, byte[] buffer, string searchPattern = "*")
+        {
+            int length = sourceFolderPath.Length + 1;
+            foreach (var filePath in Directory.GetFiles(sourceFolderPath, searchPattern, SearchOption.AllDirectories))
+            {
+                AddFileToZipStream(zipStream, filePath, Path.Combine(targetFolderPath, filePath.Remove(0, length)), buffer);
+            }
+        }
+
+        private Dictionary<string, string> BuildAsset2BundleMap(AssetBundleBuild[] buildMap)
+        {
+            Dictionary<string, string> map = new Dictionary<string, string>();
+            foreach (var item in buildMap)
+            {
+                foreach (string assetName in item.assetNames)
+                {
+                    map.Add(assetName, item.assetBundleName);
+                }
+            }
+            return map;
+        }
+
+        private void AddFileToZipStream(ZipOutputStream zipStream, string sourceFilePath, string targetPathInZip, byte[] buffer)
         {
             using (FileStream fileStream = new FileStream(sourceFilePath, FileMode.Open))
             {
@@ -327,6 +522,13 @@ namespace LiXuFeng.PackageManager.Editor
                 fileStream.Read(buffer, 0, fileLength);
                 zipStream.Write(buffer, 0, fileLength);
             }
+        }
+
+        private void AddBytesToZipStream(ZipOutputStream zipStream, string targetPathInZip, byte[] bytes)
+        {
+            ZipEntry zipEntry = new ZipEntry(targetPathInZip);
+            zipStream.PutNextEntry(zipEntry);
+            zipStream.Write(bytes, 0, bytes.Length);
         }
 
         private bool CheckAllPackageItem()
@@ -565,10 +767,10 @@ namespace LiXuFeng.PackageManager.Editor
             string extension = Path.GetExtension(Configs.configs.PackageConfig.CurrentPackageMap);
             selectedMapIndex = savedConfigNames.IndexOf(Configs.configs.PackageConfig.CurrentPackageMap.Remove(
                 Configs.configs.PackageConfig.CurrentPackageMap.Length - extension.Length, extension.Length));
-            selectedLuaSourceIndex = luaSources.IndexOf(Configs.configs.PackageMapConfig.LuaSource);
-            selectedPackageModeIndex = PackageModes.IndexOf(Configs.configs.PackageMapConfig.PackageMode);
+            selectedLuaSourceIndex = Configs.LuaSourceEnum.IndexOf(Configs.configs.PackageMapConfig.LuaSource);
+            selectedPackageModeIndex = Configs.PackageModeEnum.IndexOf(Configs.configs.PackageMapConfig.PackageMode);
         }
-        
+
         private int GetIndex(string[] sList, string s, int count)
         {
             if (string.IsNullOrEmpty(s)) return -1;
@@ -616,6 +818,7 @@ namespace LiXuFeng.PackageManager.Editor
             }
         }
 
+        //由于PackageMapConfig不会随Package的修改而更新，所以必须由此函数获取package信息
         private List<Config.PackageMapConfig.Package> GetPackageMap()
         {
             var packages = new List<Config.PackageMapConfig.Package>();
@@ -629,7 +832,8 @@ namespace LiXuFeng.PackageManager.Editor
                     Color = ColorUtility.ToHtmlStringRGB(package.packageColor),
                     CopyToStreaming = package.copyToStreaming,
                     DeploymentLocation = package.deploymentLocation,
-                    Necessery = package.necessery
+                    Necessery = package.necessery,
+                    FileName = package.fileName
                 };
                 if (package.hasChildren)
                 {

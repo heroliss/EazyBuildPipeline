@@ -270,7 +270,7 @@ namespace LiXuFeng.PackageManager.Editor
                     relativePath += "/";
                 }
                 string bundleName = Path.GetFileNameWithoutExtension(folderNames[i]);
-                relativePath += bundleName + ".manifest";
+                relativePath += bundleName;
                 FindOrCreateBundleItemByBundleName(parent, bundleName, relativePath);
             }
             //遍历所有空文件夹数组添加丢失的空文件夹
@@ -428,10 +428,6 @@ namespace LiXuFeng.PackageManager.Editor
                 CellGUI(args.GetCellRect(i), item, (ColumnEnum)args.GetColumn(i), ref args);
             }
         }
-        
-        //TODO：这两个枚举放置何处？
-        string[] necesseryEnum = new string[] { "Immediate", "Delayed" };
-        string[] deploymentLocationEnum = new string[] { "Built-in", "Server" };
 
         private void CellGUI(Rect rect, PackageTreeItem item, ColumnEnum column, ref RowGUIArgs args)
         {
@@ -459,11 +455,11 @@ namespace LiXuFeng.PackageManager.Editor
                 case ColumnEnum.Necessery:
                     if (item.isPackage && Configs.configs.PackageMapConfig.PackageMode == "Addon")
                     {
-                        int index = necesseryEnum.IndexOf(item.necessery);
-                        int index_new = EditorGUI.Popup(rect, index, necesseryEnum, inDropDownStyle);
+                        int index = Configs.NecesseryEnum.IndexOf(item.necessery);
+                        int index_new = EditorGUI.Popup(rect, index, Configs.NecesseryEnum, inDropDownStyle);
                         if (index_new != index)
                         {
-                            item.necessery = necesseryEnum[index_new];
+                            item.necessery = Configs.NecesseryEnum[index_new];
                             Dirty = true;
                         }
                     }
@@ -471,11 +467,11 @@ namespace LiXuFeng.PackageManager.Editor
                 case ColumnEnum.DeploymentLocation:
                     if (item.isPackage && Configs.configs.PackageMapConfig.PackageMode == "Addon")
                     {
-                        int index = deploymentLocationEnum.IndexOf(item.deploymentLocation);
-                        int index_new = EditorGUI.Popup(rect, index, deploymentLocationEnum, inDropDownStyle);
+                        int index = Configs.DeploymentLocationEnum.IndexOf(item.deploymentLocation);
+                        int index_new = EditorGUI.Popup(rect, index, Configs.DeploymentLocationEnum, inDropDownStyle);
                         if (index_new != index)
                         {
-                            item.deploymentLocation = deploymentLocationEnum[index_new];
+                            item.deploymentLocation = Configs.DeploymentLocationEnum[index_new];
                             Dirty = true;
                         }
                     }
