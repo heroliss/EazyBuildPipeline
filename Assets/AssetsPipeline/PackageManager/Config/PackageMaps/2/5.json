@@ -4,36 +4,52 @@
             "PackageName": "New Package",
             "Color": "139EFF",
             "Bundles": [
-                "aaa/1.txt.manifest",
-                "1.txt.manifest"
+                "newfolder108/newbundle109"
             ],
-            "EmptyFolders": []
+            "EmptyFolders": [],
+            "Necessery": "",
+            "DeploymentLocation": "",
+            "CopyToStreaming": false
         },
         {
             "PackageName": "New Package 1",
             "Color": "FF0C5F",
-            "Bundles": [
-                "newbundle106.manifest",
-                "newbundle107.manifest"
-            ],
-            "EmptyFolders": []
+            "Bundles": [],
+            "EmptyFolders": [],
+            "Necessery": "",
+            "DeploymentLocation": "",
+            "CopyToStreaming": false
         },
         {
             "PackageName": "New Package 2",
             "Color": "D97DFF",
-            "Bundles": [
-                "newbundle106.manifest",
-                "iOS_HD_ZH_HK.manifest"
-            ],
-            "EmptyFolders": []
+            "Bundles": [],
+            "EmptyFolders": [],
+            "Necessery": "",
+            "DeploymentLocation": "",
+            "CopyToStreaming": false
         },
         {
             "PackageName": "New Package 3",
             "Color": "FF6C6C",
-            "Bundles": [
-                "newbundle107.manifest"
-            ],
-            "EmptyFolders": []
+            "Bundles": [],
+            "EmptyFolders": [],
+            "Necessery": "",
+            "DeploymentLocation": "",
+            "CopyToStreaming": false
+        },
+        {
+            "PackageName": "New Package 4",
+            "Color": "7A73FF",
+            "Bundles": [],
+            "EmptyFolders": [],
+            "Necessery": "",
+            "DeploymentLocation": "",
+            "CopyToStreaming": false
         }
-    ]
+    ],
+    "PackageVersion": "1.24.5",
+    "PackageMode": "Addon",
+    "LuaSource": "Encrypted",
+    "CompressionLevel": 4
 }

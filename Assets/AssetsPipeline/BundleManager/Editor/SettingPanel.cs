@@ -180,17 +180,19 @@ namespace LiXuFeng.BundleManager.Editor
             if (manifest == null)
             {
                 EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles失败！详情请查看Console面板。", "确定");
+                return;
             }
-            else
-            {
-                EditorUtility.DisplayProgressBar("Build Bundles", "Creating Info Files...", 0.95f);
-                File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(buildMap));
-                File.WriteAllText(Path.Combine(infoPath, "Versions.json"), JsonConvert.SerializeObject(new Dictionary<string, int> {
+
+            RenameMainBundleManifest(bundlesPath);
+            EditorUtility.DisplayProgressBar("Build Bundles", "Creating Info Files...", 0.95f);
+            File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(buildMap, Formatting.Indented));
+            File.WriteAllText(Path.Combine(infoPath, "Versions.json"), JsonConvert.SerializeObject(new Dictionary<string, int> {
                     { "ResourceVersion", resourceVersion },
-                    { "BundleVersion", bundleVersion } }));
-                RenameMainBundleManifest(bundlesPath);
-                EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles成功！", "确定");
-            }
+                    { "BundleVersion", bundleVersion } }, Formatting.Indented));
+            //此处保留旧map文件的生成
+            AssetBundleManagement.ABExtractItemBuilder.BuildMapperFile(AssetBundleManagement.ABExtractItemBuilder.BuildAssetMapper(buildMap), Path.Combine(infoPath, "map"));
+
+            EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles成功！", "确定");
         }
 
         private void RenameMainBundleManifest(string folderPath)
