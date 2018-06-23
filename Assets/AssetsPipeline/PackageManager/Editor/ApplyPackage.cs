@@ -13,7 +13,7 @@ namespace LiXuFeng.PackageManager.Editor
     {
         struct BundleVersionStruct { public string BundleName; public string Version; };
         struct DownloadFlagStruct { public int flag_; public string name_; public int location_; public bool hasDownloaded_; };
-
+        
         public void ApplyAllPackages(List<Config.PackageMapConfig.Package> packageMap)
         {
             float lastTime = Time.realtimeSinceStartup;
@@ -21,6 +21,7 @@ namespace LiXuFeng.PackageManager.Editor
             string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackageRootPath, Configs.configs.Tag);
             int count = 0;
             int total = 0;
+            float progress = 0;
             foreach (var package in packageMap)
             {
                 total += package.Bundles.Count;
@@ -34,7 +35,7 @@ namespace LiXuFeng.PackageManager.Editor
             //}
             //string mapContent = JsonConvert.SerializeObject(BuildAsset2BundleMap(Configs.g.bundleTree.BundleBuildMap), Formatting.Indented);
 
-            EditorUtility.DisplayProgressBar("Build Packages", "正在重建目录:" + packagesFolderPath, 0);
+            EditorUtility.DisplayProgressBar("正在重建Package目录", packagesFolderPath, progress);progress += 0.01f;
             if (Directory.Exists(packagesFolderPath))
             {
                 Directory.Delete(packagesFolderPath, true);
@@ -56,6 +57,7 @@ namespace LiXuFeng.PackageManager.Editor
                     break;
 
                 case "Addon":
+                    EditorUtility.DisplayProgressBar("正在获取需要拷贝到Streaming中的Bundles信息", "", progress);progress += 0.01f;
                     //得到需要拷贝到Streaming中的Bundles
                     List<string> bundlesCopyToStreaming = new List<string>();
                     foreach (var package in packageMap)
@@ -66,6 +68,7 @@ namespace LiXuFeng.PackageManager.Editor
                         }
                     }
                     //重建StreamingAssets/AssetBundles/[Platform]目录
+                    EditorUtility.DisplayProgressBar("正在重建StreamingAssets目录:", streamingPath, progress);progress += 0.01f;
                     if (Directory.Exists(streamingPath))
                     {
                         Directory.Delete(streamingPath, true);
@@ -73,6 +76,7 @@ namespace LiXuFeng.PackageManager.Editor
                     Directory.CreateDirectory(streamingPath);
 
                     //构建download_flag.json
+                    EditorUtility.DisplayProgressBar("正在StreamingAssets中构建文件", "download_flag.json", progress);progress += 0.01f;
                     List<DownloadFlagStruct> flagList = new List<DownloadFlagStruct>();
                     foreach (var package in packageMap)
                     {
@@ -93,6 +97,7 @@ namespace LiXuFeng.PackageManager.Editor
                         Configs.configs.PackageMapConfig.PackageMode.ToLower(),
                         Configs.configs.PackageMapConfig.PackageVersion,
                         "default"})) + Configs.configs.LocalConfig.PackageExtension;
+                    EditorUtility.DisplayProgressBar("正在向StreamingAssets中构建miniPackage", Path.GetFileName(miniPackagePath), progress);progress += 0.01f;
                     using (FileStream zipFileStream = new FileStream(miniPackagePath, FileMode.Create))
                     {
                         using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
@@ -115,17 +120,28 @@ namespace LiXuFeng.PackageManager.Editor
 
                     //拷贝Assetbundle
                     string bundlesRootPathInStreaming = Path.Combine(streamingPath, "AssetBundles");
-                    foreach (var bundle in bundlesCopyToStreaming)
+                    int bundlesCopyToStreamingCount = bundlesCopyToStreaming.Count;
+                    for (int i = 0; i < bundlesCopyToStreamingCount; i++)
                     {
+                        string bundle = bundlesCopyToStreaming[i];
+                        if (Time.realtimeSinceStartup - lastTime > 0.06f)
+                        {
+                            EditorUtility.DisplayProgressBar(string.Format("正在向StreamingAssets中拷贝Bundles({0}/{1})", 
+                                i + 1, bundlesCopyToStreamingCount),
+                                bundle, progress + (float)i / bundlesCopyToStreamingCount * 0.1f);//拷贝Assetbundle过程占整个过程的10%
+                            lastTime = Time.realtimeSinceStartup;
+                        }
                         string targetPath = Path.Combine(bundlesRootPathInStreaming, bundle);
                         Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
                         File.Copy(Path.Combine(bundlesFolderPath, bundle), targetPath, false); //这里不允许覆盖，若已存在则抛出异常
                     }
+                    progress += 0.1f;
                     break;
                 default:
                     throw new ApplicationException("不能识别模式：" + Configs.configs.PackageMapConfig.PackageMode);
             }
 
+            float restProgress = 1 - progress;
             for (int pi = 0; pi < packagesCount; pi++)
             {
                 var package = packageMap[pi];
@@ -145,7 +161,7 @@ namespace LiXuFeng.PackageManager.Editor
                             {
                                 EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
                                     package.PackageName, pi + 1, packagesCount, i + 1, bundlesCount, count + 1, total),
-                                    bundleRelativePath, (float)count / total);
+                                    bundleRelativePath, progress + (float)count / total * restProgress);
                                 lastTime = Time.realtimeSinceStartup;
                             }
                             AddFileToZipStream(zipStream, bundlePath, Path.Combine(bundlesRootPathInPackage, bundleRelativePath), buffer);
@@ -154,9 +170,9 @@ namespace LiXuFeng.PackageManager.Editor
 
                         //构建空目录
                         int emptyFolderCount = package.EmptyFolders.Count;
-                        EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : (-/{5})  总计:({3}/{4})",
-                                    package.PackageName, pi + 1, packagesCount, count + 1, total, emptyFolderCount),
-                                    "Empty Folders", (float)count / total);
+                        EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                                package.PackageName, pi + 1, packagesCount, bundlesCount, bundlesCount, count, total),
+                                string.Format("Empty Folders (Total:{0})", emptyFolderCount), progress + (float)count / total * restProgress);
                         for (int i = 0; i < emptyFolderCount; i++)
                         {
                             zipStream.PutNextEntry(new ZipEntry(package.EmptyFolders[i] + "/") { });
@@ -173,8 +189,14 @@ namespace LiXuFeng.PackageManager.Editor
                         {
                             case "Patch":
                                 //构建map
+                                EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                                    package.PackageName, pi + 1, packagesCount, bundlesCount, bundlesCount, count, total),
+                                    "Building Map...", progress + (float)count / total * restProgress);
                                 BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
                                 //添加Lua
+                                EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                                    package.PackageName, pi + 1, packagesCount, bundlesCount, bundlesCount, count, total),
+                                    "Adding Lua...", progress + (float)count / total * restProgress);
                                 BuildLuaInZipStream(buffer, zipStream);
                                 break;
 

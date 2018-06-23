@@ -212,8 +212,7 @@ namespace LiXuFeng.PackageManager.Editor
         {
             if (CheckAllPackageItem())
             {
-                bool ensure = EditorUtility.DisplayDialog("Package", string.Format("确定应用当前配置？\n\n压缩程度：{0}",
-                    Configs.configs.PackageMapConfig.CompressionLevel),
+                bool ensure = EditorUtility.DisplayDialog("Package", string.Format("确定应用当前配置？"),
                     "确定", "取消");
                 if (ensure)
                 {
