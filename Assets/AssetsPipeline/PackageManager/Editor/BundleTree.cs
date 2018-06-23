@@ -511,6 +511,19 @@ namespace LiXuFeng.PackageManager.Editor
 				SetExpandedRecursive(i, b);
 			}
 		}
-		#endregion
-	}
+        #endregion
+
+        public void FrameAndSelectItems(List<BundleTreeItem> items)
+        {
+            int selectItemsCount = Mathf.Min(items.Count, 1000);
+            var ids = new int[selectItemsCount];
+            for (int i = 0; i < ids.Length; i++)
+            {
+                ids[i] = items[i].id;
+                FrameItem(ids[i]);
+            }
+            SetSelection(ids);
+            SetFocus();
+        }
+    }
 }

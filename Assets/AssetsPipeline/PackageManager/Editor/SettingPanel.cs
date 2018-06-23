@@ -1,9 +1,6 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -227,7 +224,7 @@ namespace LiXuFeng.PackageManager.Editor
 
                         Configs.configs.PackageConfig.Applying = true;
                         Configs.configs.PackageConfig.Save();
-                        ApplyAllPackages();
+                        new ApplyPackage().ApplyAllPackages(GetPackageMap());
                         Configs.configs.PackageConfig.Applying = false;
                         Configs.configs.PackageConfig.Save();
 
@@ -250,286 +247,6 @@ namespace LiXuFeng.PackageManager.Editor
             }
         }
 
-        struct BundleVersionStruct { public string BundleName; public string Version; }; //TODO：临时方案
-        struct DownloadFlagStruct { public int flag_; public string name_; public int location_; public bool hasDownloaded_; };
-
-        private void ApplyAllPackages()
-        {
-            float lastTime = Time.realtimeSinceStartup;
-            string bundlesFolderPath = Configs.configs.BundlePath;
-            string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackageRootPath, Configs.configs.Tag);
-            var packageMap = GetPackageMap();
-            int count = 0;
-            int total = 0;
-            foreach (var package in packageMap)
-            {
-                total += package.Bundles.Count;
-            }
-            int packagesCount = packageMap.Count;
-
-            //TODO:构建map改进方法
-            //if (Configs.g.bundleTree.BundleBuildMap == null)
-            //{
-            //    throw new ApplicationException("BuildMap is null");
-            //}
-            //string mapContent = JsonConvert.SerializeObject(BuildAsset2BundleMap(Configs.g.bundleTree.BundleBuildMap), Formatting.Indented);
-
-            EditorUtility.DisplayProgressBar("Build Packages", "正在重建目录:" + packagesFolderPath, 0);
-            if (Directory.Exists(packagesFolderPath))
-            {
-                Directory.Delete(packagesFolderPath, true);
-            }
-            Directory.CreateDirectory(packagesFolderPath);
-
-            string bundlesRootPathInPackage = "AssetBundles/" + Configs.configs.PackageConfig.CurrentTags[0].ToLower() + "/AssetBundles/";
-            string extraInfoFilePathInPackage = "AssetBundles/" + Configs.configs.PackageConfig.CurrentTags[0].ToLower() + "/extra_info";
-            string bundleVersionFilePathInPackage = "AssetBundles/" + Configs.configs.PackageConfig.CurrentTags[0].ToLower() + "/bundle_version";
-            string mapFilePathInPackage = "AssetBundles/" + Configs.configs.PackageConfig.CurrentTags[0].ToLower() + "/maps/map";
-            string streamingPath = Path.Combine("Assets/StreamingAssets/AssetBundles", Configs.configs.PackageConfig.CurrentTags[0]);
-            byte[] buffer = new byte[20971520]; //20M缓存,不够会自动扩大
-
-            //以下为整体上Addon和Patch的不同
-            switch (Configs.configs.PackageMapConfig.PackageMode)
-            {
-                case "Patch":
-                    mapFilePathInPackage += "_" + Configs.g.bundleTree.BundleVersions.BundleVersion;
-                    break;
-
-                case "Addon":
-                    //得到需要拷贝到Streaming中的Bundles
-                    List<string> bundlesCopyToStreaming = new List<string>();
-                    foreach (var package in packageMap)
-                    {
-                        if (package.CopyToStreaming)
-                        {
-                            bundlesCopyToStreaming = bundlesCopyToStreaming.Union(package.Bundles).ToList();
-                        }
-                    }
-                    //重建StreamingAssets/AssetBundles/[Platform]目录
-                    if (Directory.Exists(streamingPath))
-                    {
-                        Directory.Delete(streamingPath, true);
-                    }
-                    Directory.CreateDirectory(streamingPath);
-                    
-                    //构建download_flag.json
-                    List<DownloadFlagStruct> flagList = new List<DownloadFlagStruct>();
-                    foreach (var package in packageMap)
-                    {
-                        flagList.Add(new DownloadFlagStruct()
-                        {
-                            name_ = package.FileName,
-                            flag_ = Configs.NecesseryEnum.IndexOf(package.Necessery),
-                            location_ = Configs.DeploymentLocationEnum.IndexOf(package.DeploymentLocation),
-                            hasDownloaded_ = package.CopyToStreaming //TODO:确定是否这样做
-                        });
-                    }
-                    string downloadFlagContent = JsonConvert.SerializeObject(flagList, Formatting.Indented);
-                    File.WriteAllText(Path.Combine(streamingPath, "download_flag.json"), downloadFlagContent);
-                    
-                    //构建小包
-                    string miniPackagePath = Path.Combine(streamingPath, string.Join("_", new string[]{
-                        Configs.configs.PackageConfig.CurrentTags[0].ToLower(),
-                        Configs.configs.PackageMapConfig.PackageMode.ToLower(),
-                        Configs.configs.PackageMapConfig.PackageVersion,
-                        "default"})) + Configs.configs.LocalConfig.PackageExtension;
-                    using (FileStream zipFileStream = new FileStream(miniPackagePath, FileMode.Create))
-                    {
-                        using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
-                        {
-                            zipStream.SetLevel(Configs.configs.PackageMapConfig.CompressionLevel);
-
-                            //构建extra_info
-                            BuildExtraInfoInZipStream(extraInfoFilePathInPackage, Path.GetFileNameWithoutExtension(miniPackagePath), zipStream);
-
-                            //构建bundle_version
-                            BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, bundlesCopyToStreaming, zipStream);
-
-                            //构建map
-                            BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
-
-                            //添加Lua
-                            BuildLuaInZipStream(buffer, zipStream);
-                        }
-                    }
-
-                    //拷贝Assetbundle
-                    string bundlesRootPathInStreaming = Path.Combine(streamingPath, "AssetBundles");
-                    foreach (var bundle in bundlesCopyToStreaming) 
-                    {
-                        string targetPath = Path.Combine(bundlesRootPathInStreaming, bundle);
-                        Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-                        File.Copy(Path.Combine(bundlesFolderPath, bundle), targetPath, false); //这里不允许覆盖，若已存在则抛出异常
-                    }
-                    break;
-                default:
-                    throw new ApplicationException("不能识别模式：" + Configs.configs.PackageMapConfig.PackageMode);
-            }
-
-            for (int pi = 0; pi < packagesCount; pi++)
-            {
-                var package = packageMap[pi];
-                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, package.FileName), FileMode.Create))
-                {
-                    using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
-                    {
-                        zipStream.SetLevel(Configs.configs.PackageMapConfig.CompressionLevel);
-
-                        //构建Bundles
-                        int bundlesCount = package.Bundles.Count;
-                        for (int i = 0; i < bundlesCount; i++)
-                        {
-                            string bundleRelativePath = package.Bundles[i];
-                            string bundlePath = Path.Combine(bundlesFolderPath, bundleRelativePath);
-                            if (Time.realtimeSinceStartup - lastTime > 0.06f)
-                            {
-                                EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
-                                    package.PackageName, pi + 1, packagesCount, i + 1, bundlesCount, count + 1, total),
-                                    bundleRelativePath, (float)count / total);
-                                lastTime = Time.realtimeSinceStartup;
-                            }
-                            AddFileToZipStream(zipStream, bundlePath, Path.Combine(bundlesRootPathInPackage, bundleRelativePath), buffer);
-                            count++;
-                        }
-
-                        //构建空目录
-                        int emptyFolderCount = package.EmptyFolders.Count;
-                        EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : (-/{5})  总计:({3}/{4})",
-                                    package.PackageName, pi + 1, packagesCount, count + 1, total, emptyFolderCount),
-                                    "Empty Folders", (float)count / total);
-                        for (int i = 0; i < emptyFolderCount; i++)
-                        {
-                            zipStream.PutNextEntry(new ZipEntry(package.EmptyFolders[i] + "/") { });
-                        }
-
-                        //构建extra_info
-                        BuildExtraInfoInZipStream(extraInfoFilePathInPackage, Path.GetFileNameWithoutExtension(package.FileName), zipStream);
-
-                        //构建bundle_version
-                        BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, package.Bundles, zipStream);
-
-                        //以下为每个包中Patch和Addon独有内容
-                        switch (Configs.configs.PackageMapConfig.PackageMode)
-                        {
-                            case "Patch":
-                                //构建map
-                                BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
-                                //添加Lua
-                                BuildLuaInZipStream(buffer, zipStream);
-                                break;
-
-                            case "Addon":
-                                break;
-                            default:
-                                throw new ApplicationException("不能识别模式：" + Configs.configs.PackageMapConfig.PackageMode);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)
-        {
-            switch (Configs.configs.PackageMapConfig.LuaSource)
-            {
-                case "None":
-                    break;
-                case "Origin":
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScripts", "Lua/LuaScripts32", buffer, "*.lua");
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScripts", "Lua/LuaScripts64", buffer, "*.lua");
-                    break;
-                case "ByteCode":
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsByteCode32", "Lua/LuaScripts32", buffer, "*.lua");
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsByteCode64", "Lua/LuaScripts64", buffer, "*.lua");
-                    break;
-                case "Encrypted":
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted32", "Lua/LuaScripts32", buffer, "*.lua");
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted64", "Lua/LuaScripts64", buffer, "*.lua");
-                    break;
-                default:
-                    throw new ApplicationException("不能识别Lua源：" + Configs.configs.PackageMapConfig.LuaSource);
-            }
-        }
-
-        private void BuildMapInZipStream(string mapFilePath, byte[] buffer, ZipOutputStream zipStream)
-        {
-            //AddBytesToZipStream(zipStream, mapFilePath, System.Text.Encoding.Default.GetBytes(mapContent));
-            AddFileToZipStream(zipStream, Path.Combine(Configs.configs.BundleInfoPath, "map"), mapFilePath, buffer);
-        }
-
-        private void BuildBundleVersionInfoInZipStream(string bundleVersionFilePath, List<string> bundles, ZipOutputStream zipStream)
-        {
-            string bundleVersion = Configs.g.bundleTree.BundleVersions.BundleVersion.ToString();
-            List<BundleVersionStruct> bundleVersionList = new List<BundleVersionStruct>();
-            foreach (var item in bundles)
-            {
-                bundleVersionList.Add(new BundleVersionStruct() { BundleName = item, Version = bundleVersion });
-            }
-            string bundleVersionContent = JsonConvert.SerializeObject(bundleVersionList, Formatting.Indented);
-            AddBytesToZipStream(zipStream, bundleVersionFilePath, System.Text.Encoding.Default.GetBytes(bundleVersionContent));
-        }
-
-        private void BuildExtraInfoInZipStream(string extraInfoFilePath, string fileNameWithoutExtension, ZipOutputStream zipStream)
-        {
-            string extraInfoContent = JsonConvert.SerializeObject(new Dictionary<string, string>() {
-                            { "brief_desc", fileNameWithoutExtension },
-                            { "res_version", Configs.g.bundleTree.BundleVersions.ResourceVersion.ToString() }
-                        }, Formatting.Indented);
-            AddBytesToZipStream(zipStream, extraInfoFilePath, System.Text.Encoding.Default.GetBytes(extraInfoContent));
-        }
-
-        /// <summary>
-        /// 将目录下所有文件按照原目录结构加入压缩流（不包含空文件夹）
-        /// </summary>
-        /// <param name="zipStream"></param>
-        /// <param name="sourceFolderPath">源目录路径，必须不是/开头或结尾</param>
-        /// <param name="targetFolderPath"></param>
-        /// <param name="buffer"></param>
-        /// <param name="searchPattern"></param>
-        private void AddDirectoryToZipStream(ZipOutputStream zipStream, string sourceFolderPath, string targetFolderPath, byte[] buffer, string searchPattern = "*")
-        {
-            int length = sourceFolderPath.Length + 1;
-            foreach (var filePath in Directory.GetFiles(sourceFolderPath, searchPattern, SearchOption.AllDirectories))
-            {
-                AddFileToZipStream(zipStream, filePath, Path.Combine(targetFolderPath, filePath.Remove(0, length)), buffer);
-            }
-        }
-
-        private Dictionary<string, string> BuildAsset2BundleMap(AssetBundleBuild[] buildMap)
-        {
-            Dictionary<string, string> map = new Dictionary<string, string>();
-            foreach (var item in buildMap)
-            {
-                foreach (string assetName in item.assetNames)
-                {
-                    map.Add(assetName, item.assetBundleName);
-                }
-            }
-            return map;
-        }
-
-        private void AddFileToZipStream(ZipOutputStream zipStream, string sourceFilePath, string targetPathInZip, byte[] buffer)
-        {
-            using (FileStream fileStream = new FileStream(sourceFilePath, FileMode.Open))
-            {
-                ZipEntry zipEntry = new ZipEntry(targetPathInZip);
-                zipStream.PutNextEntry(zipEntry);
-                int fileLength = (int)fileStream.Length;
-                if (buffer.Length < fileLength)
-                {
-                    buffer = new byte[fileLength];
-                }
-                fileStream.Read(buffer, 0, fileLength);
-                zipStream.Write(buffer, 0, fileLength);
-            }
-        }
-
-        private void AddBytesToZipStream(ZipOutputStream zipStream, string targetPathInZip, byte[] bytes)
-        {
-            ZipEntry zipEntry = new ZipEntry(targetPathInZip);
-            zipStream.PutNextEntry(zipEntry);
-            zipStream.Write(bytes, 0, bytes.Length);
-        }
 
         private bool CheckAllPackageItem()
         {
@@ -537,41 +254,119 @@ namespace LiXuFeng.PackageManager.Editor
             {
                 return false;
             }
+            //检查配置
+            if (string.IsNullOrEmpty(Configs.configs.PackageMapConfig.PackageMode))
+            {
+                EditorUtility.DisplayDialog("提示", "请设置打包模式", "确定");
+                return false;
+            }
+            if (string.IsNullOrEmpty(Configs.configs.PackageMapConfig.LuaSource))
+            {
+                EditorUtility.DisplayDialog("提示", "请设置Lua源", "确定");
+                return false;
+            }
+            if (Configs.configs.PackageMapConfig.CompressionLevel == -1)
+            {
+                EditorUtility.DisplayDialog("提示", "请设置压缩等级", "确定");
+                return false;
+            }
+            if (Configs.LuaSourceEnum.IndexOf(Configs.configs.PackageMapConfig.LuaSource) == -1)
+            {
+                EditorUtility.DisplayDialog("错误", "不能识别Lua源：" + Configs.configs.PackageMapConfig.LuaSource, "确定");
+                return false;
+            }
+
+            switch (Configs.configs.PackageMapConfig.PackageMode)
+            {
+                case "Addon":
+                    if (string.IsNullOrEmpty(Configs.configs.PackageMapConfig.PackageVersion))
+                    {
+                        EditorUtility.DisplayDialog("提示", "请设置Package Version", "确定");
+                        return false;
+                    }
+                    char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
+                    int index = Configs.configs.PackageMapConfig.PackageVersion.IndexOfAny(invalidFileNameChars);
+                    if (index >= 0)
+                    {
+                        EditorUtility.DisplayDialog("提示", "Package Version中不能包含非法字符：" + invalidFileNameChars[index], "确定");
+                        return false;
+                    }
+                    foreach (var package in Configs.g.packageTree.Packages)
+                    {
+                        if (string.IsNullOrEmpty(package.deploymentLocation))
+                        {
+                            EditorUtility.DisplayDialog("提示", "请设置Location", "确定");
+                            return false;
+                        }
+                        if (string.IsNullOrEmpty(package.necessery))
+                        {
+                            EditorUtility.DisplayDialog("提示", "请设置Necessery", "确定");
+                            return false;
+                        }
+                        //不能识别Location和Necessery的情况不可能发生，因为该值由枚举中获得
+                    }                   
+                    break;
+                case "Patch":
+                    break;
+                default:
+                    EditorUtility.DisplayDialog("错误", "不能识别模式：" + Configs.configs.PackageMapConfig.PackageMode, "确定");
+                    return false;
+            }
+            //检查缺失项和空项
             wrongItems = new List<PackageTreeItem>();
             emptyItems = new List<PackageTreeItem>();
             foreach (PackageTreeItem item in Configs.g.packageTree.Packages)
             {
                 RecursiveCheckItem(item);
             }
+            //缺失提示
             if (wrongItems.Count != 0)
             {
                 EditorUtility.DisplayDialog("提示", "发现" + wrongItems.Count + "个有问题的项，请修复后再应用", "确定");
-                FrameAndSelectPackageTreeItems(wrongItems);
+                Configs.g.packageTree.FrameAndSelectItems(wrongItems);
                 return false;
             }
+
+            //检查Bundle是否全部加入Package或重复加入Package
+            List<BundleTreeItem> omittedBundleList = new List<BundleTreeItem>();
+            List<BundleTreeItem> repeatedBundleList = new List<BundleTreeItem>();
+            foreach (var bundle in Configs.g.bundleTree.bundleDic.Values)
+            {
+                if (bundle.packageItems.Count == 0)
+                {
+                    omittedBundleList.Add(bundle);
+                }
+                else if (bundle.packageItems.Count > 1)
+                {
+                    repeatedBundleList.Add(bundle);
+                }
+            }
+            if (Configs.configs.PackageMapConfig.PackageMode == "Addon") //仅在addon模式下提示遗漏bundle
+            {
+                if (omittedBundleList.Count != 0)
+                {
+                    if (!EditorUtility.DisplayDialog("提示", "发现" + omittedBundleList.Count + "个遗漏的Bundle，是否继续？", "继续", "返回"))
+                    { Configs.g.bundleTree.FrameAndSelectItems(omittedBundleList); return false; }
+
+                }
+            }
+            if (repeatedBundleList.Count != 0)
+            {
+                if (!EditorUtility.DisplayDialog("提示", "发现" + repeatedBundleList.Count + "个重复打包的Bundle，是否继续？", "继续", "返回"))
+                { Configs.g.bundleTree.FrameAndSelectItems(repeatedBundleList); return false; }
+            }
+            
+            //空项提示
             if (emptyItems.Count != 0)
             {
                 if (!EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空文件夹或包，是否继续？",
-                    "继续打包", "返回"))
+                    "继续", "返回"))
                 {
-                    FrameAndSelectPackageTreeItems(emptyItems);
+                    Configs.g.packageTree.FrameAndSelectItems(emptyItems);
                     return false;
                 }
             }
             return true;
-        }
-
-        private void FrameAndSelectPackageTreeItems(List<PackageTreeItem> items)
-        {
-            int selectItemsCount = Mathf.Min(items.Count, 1000);
-            var ids = new int[selectItemsCount];
-            for (int i = 0; i < ids.Length; i++)
-            {
-                ids[i] = items[i].id;
-                Configs.g.packageTree.FrameItem(ids[i]);
-            }
-            Configs.g.packageTree.SetSelection(ids);
-            Configs.g.packageTree.SetFocus();
         }
 
         private void RecursiveCheckItem(PackageTreeItem packageItem)

@@ -903,5 +903,18 @@ namespace LiXuFeng.PackageManager.Editor
             RecursiveUpdateParentComplete((PackageTreeItem)parent.parent);
         }
         #endregion
+
+        public void FrameAndSelectItems(List<PackageTreeItem> items)
+        {
+            int selectItemsCount = Mathf.Min(items.Count, 1000);
+            var ids = new int[selectItemsCount];
+            for (int i = 0; i < ids.Length; i++)
+            {
+                ids[i] = items[i].id;
+                FrameItem(ids[i]);
+            }
+            SetSelection(ids);
+            SetFocus();
+        }
     }
 }
