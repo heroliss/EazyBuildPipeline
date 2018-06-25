@@ -47,7 +47,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
 			GUILayout.FlexibleSpace();
 			using (new EditorGUILayout.HorizontalScope())
 			{
-				EditorGUILayout.LabelField("根目录:", GUILayout.Width(45));
+				EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
 				string path = EditorGUILayout.DelayedTextField(Configs.configs.LocalConfig.RootPath);
 				if (GUILayout.Button("...", GUILayout.MaxWidth(24)))
 				{

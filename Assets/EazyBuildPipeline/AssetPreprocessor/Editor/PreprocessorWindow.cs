@@ -17,7 +17,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
         Dictionary<string, Dictionary<string, Dictionary<string, GroupPanel>>> groupPanels;
         string currentPlatform = "";
 
-        [MenuItem("AssetsPipeline/AssetPreprocessor")]
+        [MenuItem("Window/BuildPipeline/AssetPreprocessor")]
         public static void ShowWindow()
         {
             GetWindow<PreprocessorWindow>();

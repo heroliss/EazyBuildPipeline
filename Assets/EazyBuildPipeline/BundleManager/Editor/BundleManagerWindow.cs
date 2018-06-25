@@ -11,7 +11,7 @@ namespace LiXuFeng.BundleManager.Editor
         private SettingPanel settingPanel;
         private float settingPanelHeight = 70;
         
-        [MenuItem("AssetsPipeline/BundleManager")]
+        [MenuItem("Window/BuildPipeline/BundleManager")]
         static void ShowWindow()
         {
             GetWindow<BundleManagerWindow>();

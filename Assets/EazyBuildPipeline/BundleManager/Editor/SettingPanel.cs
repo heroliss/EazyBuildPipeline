@@ -12,7 +12,7 @@ namespace LiXuFeng.BundleManager.Editor
     {
         Dictionary<string, BuildAssetBundleOptions> compressionDic = new Dictionary<string, BuildAssetBundleOptions>
         {
-            { "不压缩",BuildAssetBundleOptions.UncompressedAssetBundle },
+            { "Uncompress",BuildAssetBundleOptions.UncompressedAssetBundle },
             { "LZMA",BuildAssetBundleOptions.None },
             { "LZ4" ,BuildAssetBundleOptions.ChunkBasedCompression}
         };
@@ -25,6 +25,7 @@ namespace LiXuFeng.BundleManager.Editor
         GUIStyle buttonStyle;
         GUILayoutOption[] defaultOptions;
         private GUILayoutOption[] dropdownOptions;
+        private GUILayoutOption[] dropdownOptions2;
         private GUILayoutOption[] miniButtonOptions;
         private GUILayoutOption[] labelOptions;
         private GUILayoutOption[] inputOptions;
@@ -35,6 +36,7 @@ namespace LiXuFeng.BundleManager.Editor
             buttonStyle = new GUIStyle("Button") { fixedHeight = 0, fixedWidth = 0 };
             defaultOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(90) };
             dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
+            dropdownOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
             miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
             labelOptions = new GUILayoutOption[] { GUILayout.MinWidth(40), GUILayout.MaxWidth(110) };
             inputOptions = new GUILayoutOption[] { GUILayout.Width(40) };
@@ -64,7 +66,7 @@ namespace LiXuFeng.BundleManager.Editor
             GUILayout.FlexibleSpace();
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField("根目录:", GUILayout.Width(45));
+                EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
                 string path = EditorGUILayout.DelayedTextField(Configs.configs.LocalConfig.RootPath);
                 if (GUILayout.Button("...", miniButtonOptions))
                 {
@@ -81,8 +83,9 @@ namespace LiXuFeng.BundleManager.Editor
                 Configs.configs.BundleManagerConfig.CurrentResourceVersion = EditorGUILayout.IntField(Configs.configs.BundleManagerConfig.CurrentResourceVersion, inputOptions);
                 EditorGUILayout.LabelField("  Bundle Version:", labelOptions);
                 Configs.configs.BundleManagerConfig.CurrentBundleVersion = EditorGUILayout.IntField(Configs.configs.BundleManagerConfig.CurrentBundleVersion, inputOptions);
+                GUILayout.Space(10);
                 //压缩选项
-                int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, compressionEnum, dropdownStyle, dropdownOptions);
+                int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, compressionEnum, dropdownStyle, dropdownOptions2);
                 if (selectedCompressionIndex_new != selectedCompressionIndex)
                 {
                     Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue -= (int)compressionDic[compressionEnum[selectedCompressionIndex]];

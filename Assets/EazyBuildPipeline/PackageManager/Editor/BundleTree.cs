@@ -463,8 +463,8 @@ namespace LiXuFeng.PackageManager.Editor
 
 		private void AddGlobalMenuItem(GenericMenu menu)
 		{
-			menu.AddItem(new GUIContent("展开所有项"), false, () => { ExpandAll(); });
-			menu.AddItem(new GUIContent("折叠所有项"), false, () => { CollapseAll(); });
+			menu.AddItem(new GUIContent("Expand All"), false, () => { ExpandAll(); });
+			menu.AddItem(new GUIContent("Collapse All"), false, () => { CollapseAll(); });
 		}
 
 		protected override void ContextClickedItem(int id)
@@ -475,7 +475,7 @@ namespace LiXuFeng.PackageManager.Editor
 			{
 				foreach (var package in Configs.g.packageTree.Packages)
 				{
-					menu.AddItem(new GUIContent("添加到/" + package.displayName), false, () =>
+					menu.AddItem(new GUIContent("Add To/" + package.displayName), false, () =>
 					  {
 						  List<TreeViewItem> bundles = new List<TreeViewItem>();
                           foreach (var i in GetSelection())
@@ -490,15 +490,15 @@ namespace LiXuFeng.PackageManager.Editor
 			}
 			if (item.packageItems.Count > 0)
 			{
-				menu.AddItem(new GUIContent("定位"), false, () => { Locate(item); });
+				menu.AddItem(new GUIContent("Locate"), false, () => { Locate(item); });
 				menu.AddSeparator(null);
 			}
             menu.AddItem(new GUIContent("Reveal In Finder"), false, () => { EditorUtility.RevealInFinder(item.path + ".manifest"); });
             menu.AddSeparator(null);
             if (item.hasChildren)
 			{
-				menu.AddItem(new GUIContent("全部展开"), false, () => { SetExpandedRecursiveForAllSelection(true); });
-				menu.AddItem(new GUIContent("全部折叠"), false, () => { SetExpandedRecursiveForAllSelection(false); });
+				menu.AddItem(new GUIContent("Recursive Expand"), false, () => { SetExpandedRecursiveForAllSelection(true); });
+				menu.AddItem(new GUIContent("Recursive Collapse"), false, () => { SetExpandedRecursiveForAllSelection(false); });
 				menu.AddSeparator(null);
 			}
 			AddGlobalMenuItem(menu);

@@ -9,7 +9,7 @@ namespace LiXuFeng.PackageManager.Editor
     {
         private PackageManagerTab tab;
 
-        [MenuItem("AssetsPipeline/PackageManager")]
+        [MenuItem("Window/BuildPipeline/PackageManager")]
         static void ShowWindow()
         {
             GetWindow<PackageManagerWindow>();

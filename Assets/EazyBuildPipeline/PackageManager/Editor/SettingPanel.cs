@@ -28,6 +28,7 @@ namespace LiXuFeng.PackageManager.Editor
         private GUILayoutOption[] popupOptions;
         private GUILayoutOption[] labelOptions;
         private GUILayoutOption[] shortLabelOptions;
+        private GUILayoutOption[] shortLabelOptions2;
         private List<string> savedConfigNames = new List<string>();
         private bool creatingNewConfig;
 
@@ -41,8 +42,9 @@ namespace LiXuFeng.PackageManager.Editor
             miniDropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
             miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
             popupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
-            labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(55) };
+            labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
             shortLabelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
+            shortLabelOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(40) };
         }
 
         public void OnEnable()
@@ -109,7 +111,7 @@ namespace LiXuFeng.PackageManager.Editor
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         GUILayout.FlexibleSpace();
-                        EditorGUILayout.LabelField("Mode:", labelStyle, shortLabelOptions);
+                        EditorGUILayout.LabelField("Mode:", labelStyle, shortLabelOptions2);
                         int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, Configs.PackageModeEnum, dropdownStyle, dropdownOptions);
                         if (selectedPackageModeIndex != currentPackageModeIndex_new)
                         {

@@ -618,8 +618,8 @@ namespace LiXuFeng.PackageManager.Editor
         {
             menu.AddItem(new GUIContent("New Package"), false, CreatePackage);
             menu.AddSeparator(null);
-            menu.AddItem(new GUIContent("展开所有项"), false, ExpandAll);
-            menu.AddItem(new GUIContent("折叠所有项"), false, CollapseAll);
+            menu.AddItem(new GUIContent("Expand All"), false, ExpandAll);
+            menu.AddItem(new GUIContent("Collapse All"), false, CollapseAll);
         }
 
         protected override void ContextClickedItem(int id)
@@ -628,20 +628,20 @@ namespace LiXuFeng.PackageManager.Editor
             GenericMenu menu = new GenericMenu();
             if (!item.isPackage)
             {
-                menu.AddItem(new GUIContent("定位"), false, () => { Locate(item); });
+                menu.AddItem(new GUIContent("Locate"), false, () => { Locate(item); });
                 menu.AddSeparator(null);
             }
             else
             {
-                menu.AddItem(new GUIContent("重命名"), false, () => { BeginRename(item); });
+                menu.AddItem(new GUIContent("Rename"), false, () => { BeginRename(item); });
                 menu.AddSeparator(null);
             }
-            menu.AddItem(new GUIContent("删除"), false, () => { DeletePackageItem(GetSelection()); });
+            menu.AddItem(new GUIContent("Delete"), false, () => { DeletePackageItem(GetSelection()); });
             menu.AddSeparator(null);
             if (item.hasChildren)
             {
-                menu.AddItem(new GUIContent("全部展开"), false, () => { SetExpandedRecursiveForAllSelection(true); });
-                menu.AddItem(new GUIContent("全部折叠"), false, () => { SetExpandedRecursiveForAllSelection(false); });
+                menu.AddItem(new GUIContent("Recursive Expand"), false, () => { SetExpandedRecursiveForAllSelection(true); });
+                menu.AddItem(new GUIContent("Recursive Collapse"), false, () => { SetExpandedRecursiveForAllSelection(false); });
                 menu.AddSeparator(null);
             }
             AddGlobalMenuItem(menu);
