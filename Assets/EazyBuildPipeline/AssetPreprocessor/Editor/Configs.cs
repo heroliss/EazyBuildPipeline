@@ -4,12 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using LiXuFeng.AssetPreprocessor.Editor.Config;
+using EazyBuildPipeline.AssetPreprocessor.Editor.Config;
 using System.Linq;
 using Newtonsoft.Json;
 using UnityEditor;
 
-namespace LiXuFeng.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     public static class Configs
     {
@@ -32,7 +32,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
     }
 }
 
-namespace LiXuFeng.AssetPreprocessor.Editor.Config
+namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
 {
     public class Configs
     {

@@ -7,7 +7,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace LiXuFeng.PackageManager.Editor
+namespace EazyBuildPipeline.PackageManager.Editor
 {
     class ApplyPackage
     {

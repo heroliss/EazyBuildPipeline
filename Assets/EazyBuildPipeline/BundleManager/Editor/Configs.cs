@@ -4,12 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using LiXuFeng.AssetPreprocessor.Editor.Config;
+using EazyBuildPipeline.AssetPreprocessor.Editor.Config;
 using System.Linq;
 using Newtonsoft.Json;
 using UnityEditor;
 
-namespace LiXuFeng.BundleManager.Editor
+namespace EazyBuildPipeline.BundleManager.Editor
 {
     public static class Configs
     {
@@ -34,7 +34,7 @@ namespace LiXuFeng.BundleManager.Editor
     }
 }
 
-namespace LiXuFeng.BundleManager.Editor.Config
+namespace EazyBuildPipeline.BundleManager.Editor.Config
 {
     public class Configs
     {

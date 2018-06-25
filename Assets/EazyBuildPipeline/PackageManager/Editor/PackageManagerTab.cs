@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace LiXuFeng.PackageManager.Editor
+namespace EazyBuildPipeline.PackageManager.Editor
 {
     //[System.Serializable]
     public class PackageManagerTab

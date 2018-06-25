@@ -5,7 +5,7 @@ using UnityEditor;
 using System;
 using System.Linq;
 
-namespace LiXuFeng.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     public class GroupPanel
     {

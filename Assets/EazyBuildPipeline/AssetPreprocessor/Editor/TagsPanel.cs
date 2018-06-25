@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace LiXuFeng.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     public class TagsPanel
     {

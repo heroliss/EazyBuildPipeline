@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine.Assertions;
 using System;
 
-namespace LiXuFeng.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     public class PreprocessorWindow : EditorWindow
     {
@@ -17,7 +17,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
         Dictionary<string, Dictionary<string, Dictionary<string, GroupPanel>>> groupPanels;
         string currentPlatform = "";
 
-        [MenuItem("Window/BuildPipeline/AssetPreprocessor")]
+        [MenuItem("Window/EazyBuildPipeline/AssetPreprocessor")]
         public static void ShowWindow()
         {
             GetWindow<PreprocessorWindow>();

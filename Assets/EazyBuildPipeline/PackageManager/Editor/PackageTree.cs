@@ -2,13 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using LiXuFeng.PackageManager.Editor.Config;
+using EazyBuildPipeline.PackageManager.Editor.Config;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace LiXuFeng.PackageManager.Editor
+namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class PackageTree : TreeView
     {

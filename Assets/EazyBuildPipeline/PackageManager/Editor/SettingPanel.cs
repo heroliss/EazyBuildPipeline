@@ -4,7 +4,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace LiXuFeng.PackageManager.Editor
+namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class SettingPanel
     {

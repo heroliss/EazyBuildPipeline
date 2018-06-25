@@ -6,7 +6,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace LiXuFeng.PackageManager.Editor
+namespace EazyBuildPipeline.PackageManager.Editor
 {
     public static class Configs
     {
@@ -36,7 +36,7 @@ namespace LiXuFeng.PackageManager.Editor
         public static string[] LuaSourceEnum = new string[] { "None", "Origin", "ByteCode", "Encrypted" };
     }
 }
-namespace LiXuFeng.PackageManager.Editor.Config
+namespace EazyBuildPipeline.PackageManager.Editor.Config
 {
     public class Configs
     {

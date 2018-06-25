@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace LiXuFeng.PackageManager.Editor
+namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class PackageManagerWindow : EditorWindow
     {
         private PackageManagerTab tab;
 
-        [MenuItem("Window/BuildPipeline/PackageManager")]
+        [MenuItem("Window/EazyBuildPipeline/PackageManager")]
         static void ShowWindow()
         {
             GetWindow<PackageManagerWindow>();

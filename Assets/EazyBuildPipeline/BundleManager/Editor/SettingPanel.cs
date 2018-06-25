@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace LiXuFeng.BundleManager.Editor
+namespace EazyBuildPipeline.BundleManager.Editor
 {
     public class SettingPanel
     {

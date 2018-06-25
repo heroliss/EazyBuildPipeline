@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace LiXuFeng
+namespace EazyBuildPipeline
 {
     public static class ArrayExtension
     {

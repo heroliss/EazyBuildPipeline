@@ -4,7 +4,7 @@ using System.IO;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace LiXuFeng.PackageManager.Editor
+namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class BundleTreeItem : TreeViewItem
     {

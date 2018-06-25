@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace LiXuFeng.BundleManager.Editor
+namespace EazyBuildPipeline.BundleManager.Editor
 {
     public class BundleManagerWindow : EditorWindow
     {
@@ -11,7 +11,7 @@ namespace LiXuFeng.BundleManager.Editor
         private SettingPanel settingPanel;
         private float settingPanelHeight = 70;
         
-        [MenuItem("Window/BuildPipeline/BundleManager")]
+        [MenuItem("Window/EazyBuildPipeline/BundleManager")]
         static void ShowWindow()
         {
             GetWindow<BundleManagerWindow>();

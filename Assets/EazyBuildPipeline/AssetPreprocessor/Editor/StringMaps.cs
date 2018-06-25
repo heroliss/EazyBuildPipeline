@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace LiXuFeng.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     public static class StringMaps
     {
