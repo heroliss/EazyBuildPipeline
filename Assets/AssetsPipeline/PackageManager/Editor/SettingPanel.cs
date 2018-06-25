@@ -75,7 +75,7 @@ namespace LiXuFeng.PackageManager.Editor
                     GUILayout.FlexibleSpace();
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField("根目录:", GUILayout.Width(45));
+                        EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
                         string path = EditorGUILayout.DelayedTextField(Configs.configs.LocalConfig.RootPath);
                         if (GUILayout.Button("...", miniButtonOptions))
                         {
@@ -109,7 +109,7 @@ namespace LiXuFeng.PackageManager.Editor
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         GUILayout.FlexibleSpace();
-                        EditorGUILayout.LabelField("模式:", labelStyle, shortLabelOptions);
+                        EditorGUILayout.LabelField("Mode:", labelStyle, shortLabelOptions);
                         int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, Configs.PackageModeEnum, dropdownStyle, dropdownOptions);
                         if (selectedPackageModeIndex != currentPackageModeIndex_new)
                         {
@@ -128,7 +128,7 @@ namespace LiXuFeng.PackageManager.Editor
                             Configs.g.packageTree.Dirty = true;
                         }
                         GUILayout.Space(10);
-                        EditorGUILayout.LabelField("压缩等级:", labelStyle, labelOptions);
+                        EditorGUILayout.LabelField("CompressLevel:", labelStyle, labelOptions);
                         int compressionLevel_new = EditorGUILayout.IntPopup(Configs.configs.PackageMapConfig.CompressionLevel, compressionLevelsEnumStr,
                             compressionLevelEnum, dropdownStyle, miniDropdownOptions);
                         if (compressionLevel_new != Configs.configs.PackageMapConfig.CompressionLevel)
@@ -138,7 +138,7 @@ namespace LiXuFeng.PackageManager.Editor
                         }
                         GUILayout.Space(20);
                         if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions)) ClickedRevert();
-                        if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions)) ClickedApply();
+                        if (GUILayout.Button(new GUIContent("Build"), buttonStyle, buttonOptions)) ClickedApply();
                     }
                     GUILayout.FlexibleSpace();
                 }
@@ -149,7 +149,7 @@ namespace LiXuFeng.PackageManager.Editor
                     GUILayout.FlexibleSpace();
                     if (Configs.configs.PackageMapConfig.PackageMode == "Addon")
                     {
-                        EditorGUILayout.LabelField("Package Version:", labelStyle, GUILayout.MaxWidth(110));
+                        EditorGUILayout.LabelField("Addon Version:", labelStyle, GUILayout.MaxWidth(110));
                         string packageVersion_new = EditorGUILayout.TextField(Configs.configs.PackageMapConfig.PackageVersion);
                         {
                             if (packageVersion_new != Configs.configs.PackageMapConfig.PackageVersion)
@@ -198,12 +198,12 @@ namespace LiXuFeng.PackageManager.Editor
             string path = "";
             try
             {
-                path = Path.Combine(Configs.configs.LocalConfig.PackageMapsFolderPath, savedConfigNames[selectedMapIndex] + ".json");
+                path = Path.Combine(Configs.configs.LocalConfig.Local_PackageMapsFolderPath, savedConfigNames[selectedMapIndex] + ".json");
             }
             catch { }
             if (!File.Exists(path))
             {
-                path = Configs.configs.LocalConfig.PackageMapsFolderPath;
+                path = Configs.configs.LocalConfig.Local_PackageMapsFolderPath;
             }
             EditorUtility.RevealInFinder(path);
         }
@@ -212,7 +212,7 @@ namespace LiXuFeng.PackageManager.Editor
         {
             if (CheckAllPackageItem())
             {
-                bool ensure = EditorUtility.DisplayDialog("Package", string.Format("确定应用当前配置？"),
+                bool ensure = EditorUtility.DisplayDialog("Build Packages", string.Format("确定应用当前配置？"),
                     "确定", "取消");
                 if (ensure)
                 {
@@ -232,7 +232,7 @@ namespace LiXuFeng.PackageManager.Editor
                         if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                             "显示文件", "关闭"))
                         {
-                            string firstPackagePath = Path.Combine(Configs.configs.LocalConfig.PackageRootPath, Configs.configs.Tag +
+                            string firstPackagePath = Path.Combine(Configs.configs.LocalConfig.PackageFolderPath, Configs.configs.Tag +
                                 "/" + Configs.g.packageTree.Packages[0].fileName);
                             EditorUtility.RevealInFinder(firstPackagePath);
                         }
@@ -280,7 +280,7 @@ namespace LiXuFeng.PackageManager.Editor
                 case "Addon":
                     if (string.IsNullOrEmpty(Configs.configs.PackageMapConfig.PackageVersion))
                     {
-                        EditorUtility.DisplayDialog("提示", "请设置Package Version", "确定");
+                        EditorUtility.DisplayDialog("提示", "请设置Addon Version", "确定");
                         return false;
                     }
                     char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
@@ -292,14 +292,14 @@ namespace LiXuFeng.PackageManager.Editor
                     }
                     foreach (var package in Configs.g.packageTree.Packages)
                     {
-                        if (string.IsNullOrEmpty(package.deploymentLocation))
-                        {
-                            EditorUtility.DisplayDialog("提示", "请设置Location", "确定");
-                            return false;
-                        }
                         if (string.IsNullOrEmpty(package.necessery))
                         {
                             EditorUtility.DisplayDialog("提示", "请设置Necessery", "确定");
+                            return false;
+                        }
+                        if (string.IsNullOrEmpty(package.deploymentLocation))
+                        {
+                            EditorUtility.DisplayDialog("提示", "请设置Location", "确定");
                             return false;
                         }
                         //不能识别Location和Necessery的情况不可能发生，因为该值由枚举中获得
@@ -472,7 +472,7 @@ namespace LiXuFeng.PackageManager.Editor
             {
                 if (!string.IsNullOrEmpty(Configs.configs.PackageConfig.CurrentPackageMap))
                 {
-                    string mapsFolderPath = Configs.configs.LocalConfig.PackageMapsFolderPath;
+                    string mapsFolderPath = Configs.configs.LocalConfig.Local_PackageMapsFolderPath;
                     string currentMapPath = Path.Combine(mapsFolderPath, Configs.configs.PackageConfig.CurrentPackageMap);
                     Configs.configs.PackageMapConfig.Path = currentMapPath;
                     Configs.configs.PackageMapConfig.Load();
@@ -490,7 +490,7 @@ namespace LiXuFeng.PackageManager.Editor
                 Configs.configs.PackageMapConfig.Path = null;
             }
             savedConfigNames = new List<string>();
-            FindSavedConfigs(Configs.configs.LocalConfig.PackageMapsFolderPath);
+            FindSavedConfigs(Configs.configs.LocalConfig.Local_PackageMapsFolderPath);
         }
 
         private void FindSavedConfigs(string path)
@@ -602,13 +602,13 @@ namespace LiXuFeng.PackageManager.Editor
                 Configs.configs.PackageMapConfig.Packages = packages;
                 Configs.configs.PackageMapConfig.Save();
 
-                EditorUtility.DisplayDialog("保存", "保存Package树成功！", "确定");
+                EditorUtility.DisplayDialog("保存", "保存配置成功！", "确定");
                 Configs.g.packageTree.Dirty = false;
             }
 
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("保存", "保存Package树时发生错误：\n" + e.Message, "确定");
+                EditorUtility.DisplayDialog("保存", "保存配置时发生错误：\n" + e.Message, "确定");
             }
         }
 
@@ -676,7 +676,7 @@ namespace LiXuFeng.PackageManager.Editor
                 {
                     try
                     {
-                        string path = Path.Combine(Configs.configs.LocalConfig.PackageMapsFolderPath, s + ".json");
+                        string path = Path.Combine(Configs.configs.LocalConfig.Local_PackageMapsFolderPath, s + ".json");
                         if (File.Exists(path))
                             EditorUtility.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
                         else
@@ -700,7 +700,7 @@ namespace LiXuFeng.PackageManager.Editor
             File.Create(path).Close();
             EditorUtility.DisplayDialog("创建成功", "创建成功!", "确定");
             //更新列表
-            FindSavedConfigs(Configs.configs.LocalConfig.PackageMapsFolderPath);
+            FindSavedConfigs(Configs.configs.LocalConfig.Local_PackageMapsFolderPath);
             //保存
             Configs.configs.PackageMapConfig.Path = path;
             SaveCurrentMap();
@@ -747,7 +747,7 @@ namespace LiXuFeng.PackageManager.Editor
                 try
                 {
                     result = EditorUtility.DisplayDialog("PackageManager",
-                        "当前文件映射未保存，是否保存并覆盖 \" " + savedConfigNames[selectedMapIndex] + " \" ?", "保存并退出", "直接退出");
+                        "当前配置未保存，是否保存并覆盖 \" " + savedConfigNames[selectedMapIndex] + " \" ?", "保存并退出", "直接退出");
                 }
                 catch { }
                 if (result == true)
@@ -770,7 +770,7 @@ namespace LiXuFeng.PackageManager.Editor
                 {
                     var newPackageMapConfig = new Config.PackageMapConfig();
                     string newPackageMap = savedConfigNames[selectedMapIndex_new] + ".json";
-                    newPackageMapConfig.Path = Path.Combine(Configs.configs.LocalConfig.PackageMapsFolderPath, newPackageMap);
+                    newPackageMapConfig.Path = Path.Combine(Configs.configs.LocalConfig.Local_PackageMapsFolderPath, newPackageMap);
                     newPackageMapConfig.Load();
                     //至此加载成功
                     Configs.configs.PackageConfig.CurrentPackageMap = newPackageMap;

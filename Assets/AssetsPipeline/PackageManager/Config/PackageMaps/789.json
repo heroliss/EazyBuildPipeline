@@ -4,17 +4,17 @@
             "PackageName": "New Package",
             "Color": "C060FF",
             "Bundles": [
-                "newbundle106.manifest",
-                "newfolder108/newbundle109.manifest"
+                "newbundle106",
+                "newfolder108/newbundle109"
             ],
             "EmptyFolders": [],
-            "Necessery": "",
-            "DeploymentLocation": "",
+            "Necessery": "Immediate",
+            "DeploymentLocation": "Built-in",
             "CopyToStreaming": false
         }
     ],
-    "PackageVersion": "",
+    "PackageVersion": "12.45",
     "PackageMode": "Addon",
-    "LuaSource": "None",
+    "LuaSource": "ByteCode",
     "CompressionLevel": 0
 }

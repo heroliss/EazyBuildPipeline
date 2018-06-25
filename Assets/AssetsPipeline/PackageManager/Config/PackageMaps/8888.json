@@ -1,9 +1,10 @@
 {
     "Packages": [
         {
-            "PackageName": "New Package",
+            "PackageName": "New Package5",
             "Color": "6800FF",
             "Bundles": [
+                "aboriginalresources/atlas/qqqqqqqqqq",
                 "aboriginalresources/atlas/activitygifta_prefab",
                 "aboriginalresources/atlas/activitygiftb_prefab",
                 "aboriginalresources/atlas/alliancea_prefab",
@@ -2926,7 +2927,8 @@
                 "eazygamegraphics_art/shaders/skybox",
                 "eazygamegraphics_art/shaders/transparent",
                 "eazygamegraphics_art/shaders/transparent_legacy",
-                "eazygamegraphics_art/shaders/ui"
+                "eazygamegraphics_art/shaders/ui",
+                "eazygamegraphics_art/scenelightingentities_prefab"
             ],
             "EmptyFolders": [],
             "Necessery": "Delayed",
@@ -2937,5 +2939,5 @@
     "PackageVersion": "12.12456789",
     "PackageMode": "Addon",
     "LuaSource": "Encrypted",
-    "CompressionLevel": 4
+    "CompressionLevel": 1
 }

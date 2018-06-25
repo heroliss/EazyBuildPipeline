@@ -7,6 +7,7 @@ using UnityEngine;
 using LiXuFeng.AssetPreprocessor.Editor.Config;
 using System.Linq;
 using Newtonsoft.Json;
+using UnityEditor;
 
 namespace LiXuFeng.AssetPreprocessor.Editor
 {
@@ -35,8 +36,9 @@ namespace LiXuFeng.AssetPreprocessor.Editor.Config
 {
     public class Configs
     {
+        private readonly string localConfigSearchText = "LocalConfig AssetPreprocessor EazyBuildPipeline";
         public bool Dirty;
-        public LocalConfig LocalConfig = new LocalConfig() { Path = "Assets/AssetsPipeline/AssetPreprocessor/Config/LocalConfig.json" };
+        public LocalConfig LocalConfig = new LocalConfig();
         public PreprocessorConfig PreprocessorConfig = new PreprocessorConfig();
         public OptionsEnumConfig OptionsEnumConfig = new OptionsEnumConfig();
         public CurrentSavedConfig CurrentSavedConfig = new CurrentSavedConfig();
@@ -47,20 +49,25 @@ namespace LiXuFeng.AssetPreprocessor.Editor.Config
             bool success = true;
             try
             {
-                TagEnumConfig.Path = LocalConfig.TagEnumConfigPath;
+                string[] guids = AssetDatabase.FindAssets(LocalConfig.Global_TagEnumConfigName);
+                if (guids.Length == 0)
+                {
+                    throw new ApplicationException("未能找到全局Tag枚举配置文件，搜索文本：" + LocalConfig.Global_TagEnumConfigName);
+                }
+                TagEnumConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
                 TagEnumConfig.Load();
             }
             catch (Exception e)
             {
                 UnityEditor.EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + TagEnumConfig.Path
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
                 success = false;
             }
 
             try
             {
-                OptionsEnumConfig.Path = LocalConfig.OptionsEnumConfigPath;
+                OptionsEnumConfig.Path = LocalConfig.Local_OptionsEnumConfigPath;
                 OptionsEnumConfig.Load();
             }
             catch (Exception e)
@@ -84,7 +91,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor.Config
                             PreprocessorConfig.Save();
                         }
                         PreprocessorConfig.Load();
-                        CurrentSavedConfig.Path = Path.Combine(LocalConfig.SavedConfigsFolderPath, PreprocessorConfig.CurrentSavedConfigName);
+                        CurrentSavedConfig.Path = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, PreprocessorConfig.CurrentSavedConfigName);
                         if (PreprocessorConfig.CurrentSavedConfigName == "")
                         {
                             CurrentSavedConfig.Path = PreprocessorConfig.CurrentSavedConfigName = "";
@@ -120,13 +127,20 @@ namespace LiXuFeng.AssetPreprocessor.Editor.Config
         {
             try
             {
+                string[] guids = AssetDatabase.FindAssets(localConfigSearchText);
+                if (guids.Length == 0)
+                {
+                    throw new ApplicationException("未能找到本地配置文件! 搜索文本：" + localConfigSearchText);
+                }
+                LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.Path);
                 LocalConfig.Load();
             }
             catch (Exception e)
             {
                 UnityEditor.EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
                 return false;
             }
             return true;
@@ -144,12 +158,22 @@ namespace LiXuFeng.AssetPreprocessor.Editor.Config
 
     public class LocalConfig : Config
     {
-        public string OptionsEnumConfigPath, TagEnumConfigPath, SavedConfigsFolderPath, RootPath;
-        public string PreprocessorConfigPath { get { return System.IO.Path.Combine(RootPath, preProcessorConfigPath); } }
-        public string PreStoredAssetsFolderPath { get { return System.IO.Path.Combine(RootPath, preStoredAssetsFolderPath); } }
-		public string LogsFolderPath { get { return System.IO.Path.Combine(RootPath, logsFolderPath); } }
-        [SerializeField]
-        private string preProcessorConfigPath, preStoredAssetsFolderPath, logsFolderPath;
+        //本地配置路径
+        public string Global_TagEnumConfigName;
+        public string Local_OptionsEnumConfigPath { get { return System.IO.Path.Combine(LocalRootPath, Local_OptionsEnumConfigRelativePath); } }
+        public string Local_OptionsEnumConfigRelativePath;
+        public string Local_SavedConfigsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_SavedConfigsFolderRelativePath); } }
+        public string Local_SavedConfigsFolderRelativePath;
+        [NonSerialized]
+        public string LocalRootPath;
+        //Pipeline配置路径
+        public string RootPath;
+        public string PreprocessorConfigPath { get { return System.IO.Path.Combine(RootPath, PreProcessorConfigRelativePath); } }
+        public string PreProcessorConfigRelativePath;
+        public string PreStoredAssetsFolderPath { get { return System.IO.Path.Combine(RootPath, PreStoredAssetsFolderRelativePath); } }
+        public string PreStoredAssetsFolderRelativePath;
+		public string LogsFolderPath { get { return System.IO.Path.Combine(RootPath, LogsFolderRelativePath); } }
+        public string LogsFolderRelativePath;
     }
 
     public class TagEnumConfig : Config

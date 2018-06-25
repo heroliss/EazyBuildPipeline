@@ -37,17 +37,19 @@ namespace LiXuFeng.PackageManager.Editor
 		#region TreeView构建
 		void SetIcons()
 		{
-			folderIcon = EditorGUIUtility.FindTexture("Folder Icon");
-			string[] icons = AssetDatabase.FindAssets("BundleIcon");
-			foreach (string i in icons)
-			{
-				string name = AssetDatabase.GUIDToAssetPath(i);
-				if (name.Contains("BundleIcon.png"))
-					bundleIcon = (Texture2D)AssetDatabase.LoadAssetAtPath(name, typeof(Texture2D));
-				if (name.Contains("BundleIcon_Scene.png"))
-					bundleIcon_Scene = (Texture2D)AssetDatabase.LoadAssetAtPath(name, typeof(Texture2D));
-			}
-		}
+            try
+            {
+                folderIcon = EditorGUIUtility.FindTexture("Folder Icon");
+                string[] icons = AssetDatabase.FindAssets(Configs.configs.LocalConfig.Global_BundleIcon);
+                bundleIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(icons[0]));
+                icons = AssetDatabase.FindAssets(Configs.configs.LocalConfig.Global_BundleIcon_Scene);
+                bundleIcon_Scene = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(icons[0]));
+            }
+            catch (Exception e)
+            {
+                EditorUtility.DisplayDialog("错误", "加载Icon时发生错误：" + e.Message, "确定");
+            }
+        }
 
 		public BundleTree(TreeViewState treeViewState, MultiColumnHeader multiColumnHeader)
 				: base(treeViewState, multiColumnHeader)
@@ -122,7 +124,7 @@ namespace LiXuFeng.PackageManager.Editor
 			bundleDic.Clear();
 			folderDic.Clear();
 
-			string assetBundlesFolderPath = Configs.configs.LocalConfig.BundleRootPath;
+			string assetBundlesFolderPath = Configs.configs.LocalConfig.BundleFolderPath;
 			if (!Directory.Exists(assetBundlesFolderPath))
 			{
 				EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + assetBundlesFolderPath, "确定");

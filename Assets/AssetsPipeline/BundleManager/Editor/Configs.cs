@@ -38,7 +38,8 @@ namespace LiXuFeng.BundleManager.Editor.Config
 {
     public class Configs
     {
-        public LocalConfig LocalConfig = new LocalConfig() { Path = "Assets/AssetsPipeline/BundleManager/Config/LocalConfig.json" };
+        private readonly string localConfigSearchText = "LocalConfig BundleManager EazyBuildPipeline";
+        public LocalConfig LocalConfig = new LocalConfig();
         public BundleManagerConfig BundleManagerConfig = new BundleManagerConfig();
         public TagEnumConfig TagEnumConfig = new TagEnumConfig();
         public string Tag { get { return string.Join("_", BundleManagerConfig.CurrentTags); } }
@@ -48,14 +49,19 @@ namespace LiXuFeng.BundleManager.Editor.Config
             bool success = true;
             try
             {
-                TagEnumConfig.Path = LocalConfig.TagEnumConfigPath;
+                string[] guids = AssetDatabase.FindAssets(LocalConfig.Global_TagEnumConfigName);
+                if (guids.Length == 0)
+                {
+                    throw new ApplicationException("未能找到全局Tag枚举配置文件，搜索文本：" + LocalConfig.Global_TagEnumConfigName);
+                }
+                TagEnumConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
                 TagEnumConfig.Load();
             }
             catch (Exception e)
             {
                 EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + TagEnumConfig.Path
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
                 success = false;
             }
 
@@ -98,13 +104,20 @@ namespace LiXuFeng.BundleManager.Editor.Config
         {
             try
             {
+                string[] guids = AssetDatabase.FindAssets(localConfigSearchText);
+                if (guids.Length == 0)
+                {
+                    throw new ApplicationException("未能找到本地配置文件! 搜索文本：" + localConfigSearchText);
+                }
+                LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.Path);
                 LocalConfig.Load();
             }
             catch (Exception e)
             {
                 EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
                 return false;
             }
             return true;
@@ -113,11 +126,16 @@ namespace LiXuFeng.BundleManager.Editor.Config
 
     public class LocalConfig : Config
     {
-        public string TagEnumConfigPath, RootPath;
-        public string BundleManagerConfigPath { get { return System.IO.Path.Combine(RootPath, bundleManagerConfigPath); } }
-        public string BundlesFolderPath { get { return System.IO.Path.Combine(RootPath, bundlesFolderPath); } }
-        [SerializeField]
-        private string bundleManagerConfigPath, bundlesFolderPath;
+        //本地配置路径
+        public string Global_TagEnumConfigName;
+        [NonSerialized]
+        public string LocalRootPath;
+        //Pipeline配置路径
+        public string RootPath;
+        public string BundleManagerConfigPath { get { return System.IO.Path.Combine(RootPath, BundleManagerConfigRelativePath); } }
+        public string BundleManagerConfigRelativePath;
+        public string BundlesFolderPath { get { return System.IO.Path.Combine(RootPath, BundlesFolderRelativePath); } }
+        public string BundlesFolderRelativePath;
     }
 
     public class TagEnumConfig : Config

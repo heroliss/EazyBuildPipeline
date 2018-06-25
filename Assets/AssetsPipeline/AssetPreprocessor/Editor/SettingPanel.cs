@@ -22,7 +22,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
 		public void OnEnable()
 		{
 			firstShow = true;
-			FindSavedConfigs(Configs.configs.LocalConfig.SavedConfigsFolderPath);
+			FindSavedConfigs(Configs.configs.LocalConfig.Local_SavedConfigsFolderPath);
 			string extension = Path.GetExtension(Configs.configs.PreprocessorConfig.CurrentSavedConfigName);
             if (Configs.configs.PreprocessorConfig.CurrentSavedConfigName != null)
             {
@@ -312,12 +312,12 @@ namespace LiXuFeng.AssetPreprocessor.Editor
 			string path = "";
 			try
 			{
-				path = Path.Combine(Configs.configs.LocalConfig.SavedConfigsFolderPath, savedConfigNames[selectedSavedConfigIndex] + ".json");
+				path = Path.Combine(Configs.configs.LocalConfig.Local_SavedConfigsFolderPath, savedConfigNames[selectedSavedConfigIndex] + ".json");
 			}
 			catch { }
 			if (!File.Exists(path))
 			{
-				path = Configs.configs.LocalConfig.SavedConfigsFolderPath;
+				path = Configs.configs.LocalConfig.Local_SavedConfigsFolderPath;
 			}
 			EditorUtility.RevealInFinder(path);
 		}
@@ -349,7 +349,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
 				{
 					var newCurrentSavedConfig = new Config.CurrentSavedConfig();
 					string newConfigName = savedConfigNames[selectedIndex_new] + ".json";
-					newCurrentSavedConfig.Path = Path.Combine(Configs.configs.LocalConfig.SavedConfigsFolderPath, newConfigName);
+					newCurrentSavedConfig.Path = Path.Combine(Configs.configs.LocalConfig.Local_SavedConfigsFolderPath, newConfigName);
 					newCurrentSavedConfig.Load();
 					//至此加载成功
 					Configs.configs.PreprocessorConfig.CurrentSavedConfigName = newConfigName;
@@ -377,7 +377,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
 				{
 					try
 					{
-						string path = Path.Combine(Configs.configs.LocalConfig.SavedConfigsFolderPath, s + ".json");
+						string path = Path.Combine(Configs.configs.LocalConfig.Local_SavedConfigsFolderPath, s + ".json");
 						if (File.Exists(path))
 							EditorUtility.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
 						else
@@ -401,7 +401,7 @@ namespace LiXuFeng.AssetPreprocessor.Editor
 			File.Create(path).Close();
 			EditorUtility.DisplayDialog("创建成功", "创建成功!", "确定");
 			//更新列表
-			FindSavedConfigs(Configs.configs.LocalConfig.SavedConfigsFolderPath);
+			FindSavedConfigs(Configs.configs.LocalConfig.Local_SavedConfigsFolderPath);
 			//保存
 			Configs.configs.CurrentSavedConfig.Path = path;
 			Configs.configs.CurrentSavedConfig.Save();

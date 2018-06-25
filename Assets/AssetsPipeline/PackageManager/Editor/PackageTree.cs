@@ -354,12 +354,14 @@ namespace LiXuFeng.PackageManager.Editor
 
         void SetIcons()
         {
-            string[] icons = AssetDatabase.FindAssets("CompressIcon");
-            foreach (string i in icons)
+            try
             {
-                string name = AssetDatabase.GUIDToAssetPath(i);
-                if (name.Contains("CompressIcon.png"))
-                    compressionIcon = (Texture2D)AssetDatabase.LoadAssetAtPath(name, typeof(Texture2D));
+                string[] icons = AssetDatabase.FindAssets(Configs.configs.LocalConfig.Global_PackageIcon);
+                compressionIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(icons[0]));
+            }
+            catch(Exception e)
+            {
+                EditorUtility.DisplayDialog("错误", "加载Icon时发生错误：" + e.Message, "确定");
             }
         }
         #endregion
@@ -704,7 +706,7 @@ namespace LiXuFeng.PackageManager.Editor
         {
             if (string.IsNullOrEmpty(Configs.configs.PackageConfig.CurrentPackageMap))
             {
-                EditorUtility.DisplayDialog("新建配置", "请先选择配置或创建一个空配置", "确定");
+                EditorUtility.DisplayDialog("创建Package", "请先选择配置或创建一个空配置", "确定");
                 return;
             }
             Dirty = true;

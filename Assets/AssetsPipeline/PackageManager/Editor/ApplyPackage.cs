@@ -18,7 +18,7 @@ namespace LiXuFeng.PackageManager.Editor
         {
             float lastTime = Time.realtimeSinceStartup;
             string bundlesFolderPath = Configs.configs.BundlePath;
-            string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackageRootPath, Configs.configs.Tag);
+            string packagesFolderPath = Path.Combine(Configs.configs.LocalConfig.PackageFolderPath, Configs.configs.Tag);
             int count = 0;
             int total = 0;
             float progress = 0;
