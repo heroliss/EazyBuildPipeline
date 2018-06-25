@@ -34,6 +34,6 @@ sysinfo.txt
 /AssetsBuildConfigs
 /ProjectSettings
 /Assets/*
-!/Assets/AssetsPipeline
+!/Assets/EazyBuildPipeline
 *.meta
 /.vs
