@@ -154,8 +154,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             platform = "iPhone";
 #endif
             //TODO:这里能否再优化一下结构？
-            string copyFileArgs = "Assets/AssetsPipeline/AssetPreprocessor/Shell/CopyFile.sh " + Configs.configs.LocalConfig.LogsFolderPath + " Assets " + Configs.configs.LocalConfig.PreStoredAssetsFolderPath;
-			string changeMetaArgs = "Assets/AssetsPipeline/AssetPreprocessor/Shell/ModifyMeta.sh " + Configs.configs.LocalConfig.LogsFolderPath + " Assets " + platform;
+			string copyFileArgs = Path.Combine(Configs.configs.LocalConfig.Local_ShellsFolderPath, "CopyFile.sh") + " " + Configs.configs.LocalConfig.LogsFolderPath + " Assets " + Configs.configs.LocalConfig.PreStoredAssetsFolderPath;
+			string changeMetaArgs = Path.Combine(Configs.configs.LocalConfig.Local_ShellsFolderPath, "ModifyMeta.sh") + " " + Configs.configs.LocalConfig.LogsFolderPath + " Assets " + platform;
 			int changeMetaArgsLength = changeMetaArgs.Length;
 			foreach (var group in Configs.configs.CurrentSavedConfig.Groups)
 			{
@@ -468,9 +468,14 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 		float lastTime;
 		private void ClickedSyncDirectory()
 		{
-			if (!Directory.Exists(Configs.configs.LocalConfig.PreStoredAssetsFolderPath))
+			if (!Directory.Exists(Path.GetDirectoryName(Configs.configs.LocalConfig.PreStoredAssetsFolderPath)))
 			{
-				EditorUtility.DisplayDialog("同步目录", "同步失败，找不到目录:" + Configs.configs.LocalConfig.PreStoredAssetsFolderPath, "确定");
+				EditorUtility.DisplayDialog("同步目录", "同步失败，找不到目录:" +
+											Path.GetDirectoryName(Configs.configs.LocalConfig.PreStoredAssetsFolderPath), "确定");
+            }
+            if (!Directory.Exists(Configs.configs.LocalConfig.PreStoredAssetsFolderPath))
+            {
+                Directory.CreateDirectory(Configs.configs.LocalConfig.PreStoredAssetsFolderPath);
 				return;
 			}
 			bool ensure = EditorUtility.DisplayDialog("同步目录", "确定要同步Assets的完整目录结构到PreStoredAssets下？（仅添加）", "同步", "取消");

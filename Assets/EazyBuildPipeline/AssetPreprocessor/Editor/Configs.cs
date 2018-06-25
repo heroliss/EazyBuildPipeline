@@ -164,6 +164,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
         public string Local_OptionsEnumConfigRelativePath;
         public string Local_SavedConfigsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_SavedConfigsFolderRelativePath); } }
         public string Local_SavedConfigsFolderRelativePath;
+		public string Local_ShellsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_ShellsFolderRelativePath); } }
+        public string Local_ShellsFolderRelativePath;
         [NonSerialized]
         public string LocalRootPath;
         //Pipeline配置路径

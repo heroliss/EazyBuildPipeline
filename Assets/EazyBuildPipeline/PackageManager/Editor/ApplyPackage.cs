@@ -68,10 +68,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         }
                     }
                     //重建StreamingAssets/AssetBundles/[Platform]目录
-                    EditorUtility.DisplayProgressBar("正在重建StreamingAssets目录:", streamingPath, progress);progress += 0.01f;
-                    if (Directory.Exists(streamingPath))
+					EditorUtility.DisplayProgressBar("正在重建StreamingAssets目录:", "Assets/StreamingAssets/AssetBundles", progress);progress += 0.01f;
+					if (Directory.Exists("Assets/StreamingAssets/AssetBundles"))
                     {
-                        Directory.Delete(streamingPath, true);
+						Directory.Delete("Assets/StreamingAssets/AssetBundles", true);
                     }
                     Directory.CreateDirectory(streamingPath);
 

@@ -106,12 +106,15 @@ namespace EazyBuildPipeline.PackageManager.Editor
             #endregion
 
             //TODO: 临时解决settingPanel.OnGUI内部出现空指针异常的奇怪的问题,仅在Mac上出现
-            //try
-            //{
-                settingPanel.OnGUI(upFixedRect);
-            //}
-            //catch (NullReferenceException)
-            //{ }
+            try
+            {
+				settingPanel.OnGUI(upFixedRect);
+            }
+			catch (NullReferenceException)
+            { }
+			catch (InvalidOperationException)
+			{ }
+
             bundleTree.OnGUI(leftRect);
             packageTree.OnGUI(rightRect);
 

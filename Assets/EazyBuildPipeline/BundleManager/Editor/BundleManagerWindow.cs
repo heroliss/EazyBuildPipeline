@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System;
 
 namespace EazyBuildPipeline.BundleManager.Editor
 {
@@ -39,19 +40,28 @@ namespace EazyBuildPipeline.BundleManager.Editor
         private void OnDestroy()
         {
             mainTab.OnDestroy_extension();
-            mainTab.Close();
         }
         private void OnGUI()
         {
             using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), new GUIContent(), EditorStyles.helpBox))
             {
-                settingPanel.OnGUI();
+				try //TODO：临时解决不明异常
+				{
+					settingPanel.OnGUI();
+				}
+                catch (NullReferenceException)
+				{ }
             }
             Rect mainTabRect = new Rect(6, settingPanelHeight + 6 + 3,
                 position.width - 12, position.height - settingPanelHeight - 12 - 3);
             using (new GUILayout.AreaScope(mainTabRect, new GUIContent(), EditorStyles.helpBox))
             {
-                mainTab.OnGUI_extension(mainTabRect);
+                try //TODO：临时解决不明异常
+                {
+					mainTab.OnGUI_extension(mainTabRect);
+				}
+                catch
+				{ }
             }
         }
         private void OnFocus()

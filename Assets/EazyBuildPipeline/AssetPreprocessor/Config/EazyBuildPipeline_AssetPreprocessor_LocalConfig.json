@@ -2,7 +2,8 @@
     "Global_TagEnumConfigName": "TagEnumConfig EazyBuildPipeline",
     "Local_OptionsEnumConfigRelativePath": "OptionsEnumConfig.json",
     "Local_SavedConfigsFolderRelativePath": "SavedConfigs",
-    "RootPath": "C:/Users/herol/Desktop/dukto传送/ExamplePiplineRoot",
+    "Local_ShellsFolderRelativePath": "Shells",
+    "RootPath": "/Users/eazydev/qqqqq",
     "PreProcessorConfigRelativePath": "PreStoredAssets/_Config/PreprocessorConfig.json",
     "PreStoredAssetsFolderRelativePath": "PreStoredAssets/Assets",
     "LogsFolderRelativePath": "PreStoredAssets/_Logs"

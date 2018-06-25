@@ -3,7 +3,7 @@
         {
             "FullGroupName": "Language",
             "Options": [
-                "EN"
+                "ZH_TW"
             ]
         },
         {
@@ -24,8 +24,7 @@
             "FullGroupName": "Texture Import Settings Override/Format",
             "Options": [
                 "RGBA32 -> ASTC RGBA 4x4",
-                "RGB24 -> ASTC RGB 4x4",
-                "ETC2 RGBA 8bits -> ASTC RGBA 4x4"
+                "RGB24 -> ASTC RGB 4x4"
             ]
         },
         {
