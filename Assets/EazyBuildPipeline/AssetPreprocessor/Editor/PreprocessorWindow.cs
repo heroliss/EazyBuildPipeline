@@ -88,7 +88,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void OnGUI()
         {
-            using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), new GUIContent(), EditorStyles.helpBox))
+            using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), GUIContent.none, EditorStyles.helpBox))
             {
                 //TODO: 临时解决settingPanel.OnGUI内部出现空指针异常的奇怪的问题,仅在Mac上出现
                 try
@@ -100,7 +100,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             }
             using (new GUILayout.AreaScope(new Rect(6, settingPanelHeight + 6 + 3,
                 position.width - 12, position.height - settingPanelHeight - 12 - 3),
-                new GUIContent(), EditorStyles.helpBox))
+                GUIContent.none, EditorStyles.helpBox))
             {
                 using (var scrollScope = new GUILayout.ScrollViewScope(scrollPosition))
                 {

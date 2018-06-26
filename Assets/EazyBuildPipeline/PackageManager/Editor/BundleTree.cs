@@ -20,7 +20,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
 		private int fileLastID;
 		GUIStyle labelWarningStyle;
 		GUIStyle labelBundleStyle;
-		GUIStyle colorBlockStyle;
 
         public struct BundleVersionsStruct { public int ResourceVersion; public int BundleVersion; }
         public BundleVersionsStruct BundleVersions;
@@ -114,8 +113,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 			labelWarningStyle.normal.textColor = new Color(0.8f, 0.8f, 0f);
 			labelBundleStyle = new GUIStyle(EditorStyles.label);
 			labelBundleStyle.normal.textColor = new Color(0.3f, 0.8f, 0.7f);
-			colorBlockStyle = new GUIStyle("Button") { normal = new GUIStyleState() { background = new Texture2D(1, 1, TextureFormat.RGB24, false, false) }, alignment = TextAnchor.MiddleCenter };
-		}
+        }
 
 		protected override TreeViewItem BuildRoot()
 		{
@@ -210,18 +208,13 @@ namespace EazyBuildPipeline.PackageManager.Editor
 						item.displayName, item.style);
 					break;
 				case ColumnEnum.Connection:
-					Color defaultColor = GUI.color;
 					foreach (var p in item.packageItems)
 					{
-						GUI.color = p.package.packageColor;
-						//colorBlockStyle.normal.background.SetPixel(1, 1, p.package.packageColor);
 						float width = rect.height;
 						float x = rect.x;
-						if (!p.complete) { width /= 2; x += width / 2; }
-						if (GUI.Button(new Rect(x + Configs.g.packageTree.Packages.IndexOf(p.package) * (rect.height + 4),
-							rect.y, width, rect.height), new GUIContent(), colorBlockStyle)) LocatePackage(p);
+                        Rect r = new Rect(x + Configs.g.packageTree.Packages.IndexOf(p.package) * (rect.height + 4), rect.y, width, rect.height);
+                        if (GUI.Button(r, GUIContent.none, p.complete ? p.package.colorBlockStyle : p.package.colorBlockStyle_hollow)) LocatePackage(p);
 					}
-					GUI.color = defaultColor;
 					break;
 				default:
 					break;

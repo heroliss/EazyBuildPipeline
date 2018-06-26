@@ -70,7 +70,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 creatingNewConfig = false;
             }
-            using (new GUILayout.AreaScope(rect, new GUIContent()))
+            using (new GUILayout.AreaScope(rect, GUIContent.none))
             {
                 using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {

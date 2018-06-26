@@ -43,7 +43,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
         }
         private void OnGUI()
         {
-            using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), new GUIContent(), EditorStyles.helpBox))
+            using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), GUIContent.none, EditorStyles.helpBox))
             {
 				try //TODO：临时解决不明异常
 				{
@@ -54,7 +54,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             }
             Rect mainTabRect = new Rect(6, settingPanelHeight + 6 + 3,
                 position.width - 12, position.height - settingPanelHeight - 12 - 3);
-            using (new GUILayout.AreaScope(mainTabRect, new GUIContent(), EditorStyles.helpBox))
+            using (new GUILayout.AreaScope(mainTabRect, GUIContent.none, EditorStyles.helpBox))
             {
                 try //TODO：临时解决不明异常
                 {

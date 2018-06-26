@@ -430,7 +430,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 CellGUI(args.GetCellRect(i), item, (ColumnEnum)args.GetColumn(i), ref args);
             }
         }
-
+        ColorPickerHDRConfig colorPickerHDRConfig = new ColorPickerHDRConfig(0, 1, 0, 1);
         private void CellGUI(Rect rect, PackageTreeItem item, ColumnEnum column, ref RowGUIArgs args)
         {
             CenterRectUsingSingleLineHeight(ref rect);
@@ -445,8 +445,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         item.lost ? labelErrorStyle : (item.isPackage ? EditorStyles.label : item.bundleItem.style));
                     break;
                 case ColumnEnum.Connection:
-                    item.package.packageColor = EditorGUI.ColorField(new Rect(rect.x/* + Packages.IndexOf(item.package) * (rect.height + 4)*/,
-                            rect.y, rect.height, rect.height), new GUIContent("", "选择颜色"), item.package.packageColor, false, false, false, new ColorPickerHDRConfig(0, 1, 0, 1));
+                    Color color = EditorGUI.ColorField(new Rect(rect.x/* + Packages.IndexOf(item.package) * (rect.height + 4)*/,
+                            rect.y, rect.height, rect.height), GUIContent.none, item.package.packageColor, false, false, false, colorPickerHDRConfig);
+                    if (color != item.package.packageColor)
+                    {
+                        item.package.packageColor = color;
+                    }
                     break;
                 case ColumnEnum.FileName:
                     if (item.isPackage)
