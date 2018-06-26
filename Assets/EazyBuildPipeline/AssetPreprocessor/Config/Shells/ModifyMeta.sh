@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 if (( $# < 6 ));then echo "Need at least 6 Parameters"; exit 0;fi
 if [ ! -d $1 ];then mkdir -p $1;fi
 logFilePath="$1/$(date '+%Y-%m-%d_%H.%M.%S')_ModifyMeta.txt"
