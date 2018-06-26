@@ -1,11 +1,8 @@
 ﻿#pragma warning disable 0649
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using EazyBuildPipeline.AssetPreprocessor.Editor.Config;
-using System.Linq;
 using Newtonsoft.Json;
 using UnityEditor;
 
@@ -59,7 +56,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
+                EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + TagEnumConfig.Path
                     + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
                 success = false;
@@ -72,7 +69,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载选项配置文件时发生错误：" + e.Message
+                EditorUtility.DisplayDialog("错误", "加载选项配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + OptionsEnumConfig.Path
                     + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(OptionsEnumConfig, true), "确定");
                 success = false;
@@ -103,22 +100,22 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
                     }
                     else
                     {
-                        UnityEditor.EditorUtility.DisplayDialog("AssetsPreprocessor", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
+                        EditorUtility.DisplayDialog("AssetsPreprocessor", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
                        "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(PreprocessorConfig.Path), "确定");
                         success = false;
                     }
                 }
                 else
                 {
-                    UnityEditor.EditorUtility.DisplayDialog("AssetsPreprocessor", "根目录不存在:" + LocalConfig.RootPath, "确定");
+                    EditorUtility.DisplayDialog("AssetsPreprocessor", "根目录不存在:" + LocalConfig.RootPath, "确定");
                     success = false;
                 }
             }
             catch (Exception e)
             {
                 CurrentSavedConfig.Path = PreprocessorConfig.CurrentSavedConfigName = "";
-                UnityEditor.EditorUtility.DisplayDialog("AssetsPreprocessor", "加载当前配置时发生错误：" + e.Message, "确定");
-                success = false;
+                EditorUtility.DisplayDialog("AssetsPreprocessor", "加载当前配置时发生错误：" + e.Message, "确定");
+                success = true;
             }
             return success;
         }
@@ -138,7 +135,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
+                EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
                     + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
                 return false;

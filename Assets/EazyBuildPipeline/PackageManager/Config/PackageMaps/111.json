@@ -1,30 +1,7 @@
 {
-    "Packages": [
-        {
-            "PackageName": "New Package",
-            "Color": "FF974F",
-            "Bundles": [
-                "h/newbundle2"
-            ],
-            "EmptyFolders": [],
-            "Necessery": "Immediate",
-            "DeploymentLocation": "Built-in",
-            "CopyToStreaming": false
-        },
-        {
-            "PackageName": "New Package 1",
-            "Color": "FF5F0D",
-            "Bundles": [
-                "p/ttt/textures"
-            ],
-            "EmptyFolders": [],
-            "Necessery": "Delayed",
-            "DeploymentLocation": "Server",
-            "CopyToStreaming": false
-        }
-    ],
-    "PackageVersion": "1.2",
-    "PackageMode": "Addon",
-    "LuaSource": "Origin",
-    "CompressionLevel": 1
+    "Packages": [],
+    "PackageVersion": "",
+    "PackageMode": "",
+    "LuaSource": "",
+    "CompressionLevel": -1
 }

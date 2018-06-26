@@ -8,6 +8,6 @@
     "PackageConfigRelativePath": "BundlePackages/_Config/PackageConfig.json",
     "BundleFolderRelativePath": "AssetBundles",
     "PackageFolderRelativePath": "BundlePackages",
-    "PackageExtension": ".zip",
-    "CheckBundle": true
+    "PackageExtension": ".jpg",
+    "CheckBundle": false
 }

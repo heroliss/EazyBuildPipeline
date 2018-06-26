@@ -219,7 +219,7 @@ namespace EazyBuildPipeline.PackageManager.Editor.Config
 
     public class PackageConfig : Config
     {
-        public string[] CurrentTags;
+        public string[] CurrentTags = new string[0];
         public string CurrentPackageMap;
         public bool Applying;
     }
