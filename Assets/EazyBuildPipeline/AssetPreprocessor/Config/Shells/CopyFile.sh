@@ -1,4 +1,9 @@
 #!/bin/bash
+function Log()
+{
+    echo -e $* | awk -F ' \t ' '{printf ("%-10s \t %-21s \t %-200s \t %s\n", $1, $2, $3, $4)}' >> ${logFilePath} #此处用“ \t ”做分隔符，每列宽度依次应为4的倍数-2,-3,-0,-1...
+}
+
 if (( $# < 4 ));then echo "Need at least 4 Parameters"; exit 0;fi
 if [ ! -d $1 ];then mkdir -p $1;fi
 logFilePath="$1/$(date '+%Y-%m-%d_%H.%M.%S')_CopyFile.txt"
@@ -24,9 +29,11 @@ skipCount=0
 #开始信息
 echo "LogFilePath: ${logFilePath}"
 echo "Total: ${filesNum}"
-echo -e Shell: $0 >> ${logFilePath}
-echo -e Parameters: $* >> ${logFilePath}
-echo -e "Start at $(date '+%Y-%m-%d %H:%M:%S')\n" >> ${logFilePath}
+Log "Shell: $0"
+Log "Parameters: $*"
+Log "Start at $(date '+%Y-%m-%d %H:%M:%S')\n"
+Log "State \t Message \t Target File Path \t Source File Path"
+Log "---------- \t --------------------- \t -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- \t --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 for file in ${files[@]}
 do
@@ -38,26 +45,26 @@ do
         returnValue=$?
         if [ $returnValue != 0 ];then
             #错误信息
-            errorMessage="Error(${returnValue}): ${errorStr} \t FilePath: ${file} \t Operation: cp -f ${file} ${targetFile}"
+            errorMessage="Error(${returnValue}) \t ${errorStr} (Operation: cp -f) \t ${targetFile} \t ${file}"
             echo -e "Error: ${errorMessage}"
-            echo -e "${errorMessage}" >> ${logFilePath}
+            Log "${errorMessage}"
             #统计信息
             echo "Skip: ${skipCount}"
             echo "Success: ${successCount}"
             doneMessage="\nDone at $(date '+%Y-%m-%d %H:%M:%S') \nTotal: ${filesNum}\nSkip: ${skipCount}\nSuccess: ${successCount}"
-            echo -e "${doneMessage}" >> ${logFilePath}
+            Log "${doneMessage}"
 
             exit 1
         fi
         ((successCount++))
-        echo -e "Success: ${file} \t Copyto: ${targetFile}" >> ${logFilePath}
+        Log "Success \t  \t ${targetFile} \t ${file}"
     else
         ((skipCount++))
-        echo -e "Skip: ${file} \t Reason: TargetFile Not Exist. (${targetFile})" >> ${logFilePath}
+        Log "Skip \t TargetFile Not Exist. \t ${targetFile} \t ${file}"
     fi
 done
 #统计信息
 echo "Skip: ${skipCount}"
 echo "Success: ${successCount}"
 doneMessage="\nDone at $(date '+%Y-%m-%d %H:%M:%S') \nTotal: ${filesNum}\nSkip: ${skipCount}\nSuccess: ${successCount}"
-echo -e "${doneMessage}" >> ${logFilePath}
+Log "${doneMessage}"

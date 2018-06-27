@@ -1,4 +1,9 @@
-﻿#!/bin/bash
+#!/bin/bash
+function Log()
+{
+    echo -e $* | awk -F ' \t ' '{printf ("%-10s \t %-21s \t %s\n", $1, $2, $3)}' >> ${logFilePath} #此处用“ \t ”做分隔符，每列宽度依次应为4的倍数-2,-3,-0,-1...
+}
+
 if (( $# < 6 ));then echo "Need at least 6 Parameters"; exit 0;fi
 if [ ! -d $1 ];then mkdir -p $1;fi
 logFilePath="$1/$(date '+%Y-%m-%d_%H.%M.%S')_ModifyMeta.txt"
@@ -18,9 +23,11 @@ skipCount=0
 #开始信息
 echo "LogFilePath: ${logFilePath}"
 echo "Total: ${filesNum}"
-echo -e Shell: $0 >> ${logFilePath}
-echo -e Parameters: $* >> ${logFilePath}
-echo -e "Start at $(date '+%Y-%m-%d %H:%M:%S')\n" >> ${logFilePath}
+Log "Shell: $0"
+Log "Parameters: $*"
+Log "Start at $(date '+%Y-%m-%d %H:%M:%S')\n"
+Log "State \t Message \t Target File Path"
+Log "---------- \t --------------------- \t --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 for file in ${files[@]}
 do
@@ -31,14 +38,14 @@ do
     returnValue=$?
     if [ $returnValue != 0 ];then
         #错误信息
-        errorMessage="Error(${returnValue}): ${file_content} \t FilePath: ${file} \t Operation: cat"
+        errorMessage="Error(${returnValue}) \t ${file_content} (Operation: cat) \t ${file}"
         echo -e "Error: ${errorMessage}"
-        echo -e "${errorMessage}" >> ${logFilePath}
+        Log "${errorMessage}"
         #统计信息
         echo "Skip: ${skipCount}"
         echo "Success: ${successCount}"
         doneMessage="\nDone at $(date '+%Y-%m-%d %H:%M:%S') \nTotal: ${filesNum}\nSkip: ${skipCount}\nSuccess: ${successCount}"
-        echo -e "${doneMessage}" >> ${logFilePath}
+        Log "${doneMessage}"
 
         exit 1
     fi
@@ -58,38 +65,38 @@ do
         returnValue=$?
         if [ $returnValue != 0 ];then
             #错误信息
-            errorMessage="Error(${returnValue}): ${file_content} \t FilePath: ${file} \t Operation: sed -e ${operation}"
+            errorMessage="Error(${returnValue}) \t ${file_content} (Operation: sed -e ${operation}) \t ${file} "
             echo -e "Error: ${errorMessage}"
-            echo -e "${errorMessage}" >> ${logFilePath}
+            Log "${errorMessage}"
             #统计信息
             echo "Skip: ${skipCount}"
             echo "Success: ${successCount}"
             doneMessage="\nDone at $(date '+%Y-%m-%d %H:%M:%S') \nTotal: ${filesNum}\nSkip: ${skipCount}\nSuccess: ${successCount}"
-            echo -e "${doneMessage}" >> ${logFilePath}
+            Log "${doneMessage}"
 
             exit 2
         fi
     done
     if [ "${file_content}" == "${file_content_origin}" ];then
         ((skipCount++))
-        echo -e "Skip: ${file} \t Reason: No Change." >> ${logFilePath}
+        Log "Skip \t No Change. \t ${file}"
     else
         echo "${file_content}" > "${file}"
         returnValue=$?
         if [ $returnValue != 0 ];then
             #错误信息
-            errorMessage="Error(${returnValue}): Can Not Write File. \t FilePath: ${file} \t Operation: Write File."
+            errorMessage="Error(${returnValue}) \t Can Not Write File. \t ${file}"
             echo -e "Error: ${errorMessage}"
-            echo -e "${errorMessage}" >> ${logFilePath}
+            Log "${errorMessage}"
             #统计信息
             echo "Skip: ${skipCount}"
             echo "Success: ${successCount}"
             doneMessage="\nDone at $(date '+%Y-%m-%d %H:%M:%S') \nTotal: ${filesNum}\nSkip: ${skipCount}\nSuccess: ${successCount}"
-            echo -e "${doneMessage}" >> ${logFilePath}
+            Log "${doneMessage}"
 
             exit 3
         fi
-        echo -e "Success: ${file}" >> ${logFilePath}
+        Log "Success \t  \t ${file}"
         ((successCount++))
     fi
 done
@@ -97,4 +104,4 @@ done
 echo "Skip: ${skipCount}"
 echo "Success: ${successCount}"
 doneMessage="\nDone at $(date '+%Y-%m-%d %H:%M:%S') \nTotal: ${filesNum}\nSkip: ${skipCount}\nSuccess: ${successCount}"
-echo -e "${doneMessage}" >> ${logFilePath}
+Log "${doneMessage}"
