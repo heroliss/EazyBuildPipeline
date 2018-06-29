@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
-using System;
-using System.IO;
 
 namespace AssetBundleManagement2
 {
-    partial class AssetBundleMainWindow
+	partial class AssetBundleMainWindow
     {
         internal void OnEnable_extension()
         {

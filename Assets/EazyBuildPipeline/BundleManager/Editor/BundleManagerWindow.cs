@@ -44,25 +44,15 @@ namespace EazyBuildPipeline.BundleManager.Editor
         private void OnGUI()
         {
             using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), GUIContent.none, EditorStyles.helpBox))
-            {
-				try //TODO：临时解决不明异常
-				{
-					settingPanel.OnGUI();
-				}
-                catch (NullReferenceException)
-				{ }
-            }
-            Rect mainTabRect = new Rect(6, settingPanelHeight + 6 + 3,
+			{
+				settingPanel.OnGUI();
+			}
+			Rect mainTabRect = new Rect(6, settingPanelHeight + 6 + 3,
                 position.width - 12, position.height - settingPanelHeight - 12 - 3);
             using (new GUILayout.AreaScope(mainTabRect, GUIContent.none, EditorStyles.helpBox))
-            {
-                try //TODO：临时解决不明异常
-                {
-					mainTab.OnGUI_extension(mainTabRect);
-				}
-                catch
-				{ }
-            }
+			{
+				mainTab.OnGUI_extension(mainTabRect);
+			}
         }
         private void OnFocus()
         {

@@ -53,6 +53,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
 		public BundleTree(TreeViewState treeViewState, MultiColumnHeader multiColumnHeader)
 				: base(treeViewState, multiColumnHeader)
 		{
+			InitStyles();
+
 			SetIcons();
 
 			#region TreeView设置
@@ -86,12 +88,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
 			base.multiColumnHeader.sortedColumnIndex = -1;
 			//base.multiColumnHeader.sortingChanged += OnSortingChanged;
 			#endregion
-
-			InitStyles();
-
+            
 			bundleDic = new Dictionary<string, BundleTreeItem>();
 			folderDic = new Dictionary<string, BundleTreeItem>();
 			checkFailedItems = new List<BundleTreeItem>();
+
 			Reload();
 		}
 
@@ -110,9 +111,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
 		private void InitStyles()
 		{
 			labelWarningStyle = new GUIStyle(EditorStyles.label);
-			labelWarningStyle.normal.textColor = new Color(0.8f, 0.8f, 0f);
+			labelWarningStyle.normal.textColor = EditorGUIUtility.isProSkin ? new Color(0.8f, 0.8f, 0f) : new Color(0.6f, 0.5f, 0f);
 			labelBundleStyle = new GUIStyle(EditorStyles.label);
-			labelBundleStyle.normal.textColor = new Color(0.3f, 0.8f, 0.7f);
+			labelBundleStyle.normal.textColor = EditorGUIUtility.isProSkin ? new Color(0.3f, 0.8f, 0.7f) : new Color(0.0f, 0.4f, 0.0f);
         }
 
 		protected override TreeViewItem BuildRoot()

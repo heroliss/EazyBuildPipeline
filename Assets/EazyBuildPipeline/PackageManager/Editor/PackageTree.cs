@@ -36,33 +36,35 @@ namespace EazyBuildPipeline.PackageManager.Editor
         #region TreeView构建
         public PackageTree(TreeViewState treeViewState, MultiColumnHeader multiColumnHeader)
                 : base(treeViewState, multiColumnHeader)
-        {
-            SetIcons();
+		{
+			InitStyles();
 
-            #region TreeView设置
-            baseIndent = 0;
-            cellMargin = 5;
-            columnIndexForTreeFoldouts = 0;
-            //depthIndentWidth (get only)
-            extraSpaceBeforeIconAndLabel = 0;
-            //foldoutWidth (get only)
-            //hasSearch (get only)
-            //isDragging (get only)
-            //isInitialized (get only)
-            //base.multiColumnHeader
-            //rootItem (get only)
-            rowHeight = 20;
-            customFoldoutYOffset = (rowHeight - EditorGUIUtility.singleLineHeight) * 0.5f;
-            //searchString
-            showAlternatingRowBackgrounds = true;
-            showBorder = true;
-            //showingHorizontalScrollBar (get only)
-            //showingVerticalScrollBar (get only)
-            //state (get only)
-            //totalHeight (get only)
-            //treeViewControlID
-            //treeViewRect
-            #endregion
+			SetIcons();
+
+			#region TreeView设置
+			baseIndent = 0;
+			cellMargin = 5;
+			columnIndexForTreeFoldouts = 0;
+			//depthIndentWidth (get only)
+			extraSpaceBeforeIconAndLabel = 0;
+			//foldoutWidth (get only)
+			//hasSearch (get only)
+			//isDragging (get only)
+			//isInitialized (get only)
+			//base.multiColumnHeader
+			//rootItem (get only)
+			rowHeight = 20;
+			customFoldoutYOffset = (rowHeight - EditorGUIUtility.singleLineHeight) * 0.5f;
+			//searchString
+			showAlternatingRowBackgrounds = true;
+			showBorder = true;
+			//showingHorizontalScrollBar (get only)
+			//showingVerticalScrollBar (get only)
+			//state (get only)
+			//totalHeight (get only)
+			//treeViewControlID
+			//treeViewRect
+			#endregion
 
             #region MultiColumnHeader设置
             base.multiColumnHeader.canSort = false;
@@ -71,14 +73,18 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //base.multiColumnHeader.sortingChanged += OnSortingChanged;
             #endregion
 
-            labelErrorStyle = new GUIStyle(EditorStyles.label);
-            labelErrorStyle.normal.textColor = new Color(1, 0.3f, 0.3f);
-            inDropDownStyle = new GUIStyle("IN DropDown");
-            inToggleStyle = new GUIStyle("OL ToggleWhite");
-            Reload();
-        }
+			Reload();
+		}
 
-        public void ReConnectWithBundleTree()
+		private void InitStyles()
+		{
+			labelErrorStyle = new GUIStyle(EditorStyles.label);
+			labelErrorStyle.normal.textColor = new Color(1, 0.3f, 0.3f);
+			inDropDownStyle = new GUIStyle("IN DropDown");
+			inToggleStyle = new GUIStyle(EditorGUIUtility.isProSkin ? "OL ToggleWhite" : "OL Toggle");//这样做是因为OL Toggle样式在专业版皮肤下有Bug，因此用OL ToggleWhite代替
+		}
+
+		public void ReConnectWithBundleTree()
         {
             foreach (PackageTreeItem package in Packages)
             {

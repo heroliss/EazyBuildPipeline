@@ -8,7 +8,6 @@ using UnityEngine;
 
 namespace EazyBuildPipeline.PackageManager.Editor
 {
-    //[System.Serializable]
     public class PackageManagerTab
     {
         #region 成员变量
@@ -28,7 +27,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private bool m_ResizingSplitter;
         private float k_fixedPanelHight = 130;
         private float k_fixedSpace = 3;
-        private bool firstShow = true;
         private MultiColumnHeaderState bundleTreeHeaderState;
         private TreeViewState bundleTreeState;
         private MultiColumnHeader bundleTreeHeader;
@@ -104,25 +102,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 m_splitterRect.height = downFixedRect.height;
             }
             #endregion
-
-            //TODO: 临时解决settingPanel.OnGUI内部出现空指针异常的奇怪的问题,仅在Mac上出现
-            try
-            {
-				settingPanel.OnGUI(upFixedRect);
-            }
-			catch (NullReferenceException)
-            { }
-			catch (InvalidOperationException)
-			{ }
-
+            
+			settingPanel.OnGUI(upFixedRect);         
             bundleTree.OnGUI(leftRect);
             packageTree.OnGUI(rightRect);
-
-            if (firstShow) //TODO:临时解决刚打开布局乱的问题
-            {
-                m_editorWindow.Repaint();
-                firstShow = false;
-            }
         }
         private void ComputeRects()
         {

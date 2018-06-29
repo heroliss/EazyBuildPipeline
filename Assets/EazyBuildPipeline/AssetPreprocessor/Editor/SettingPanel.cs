@@ -11,7 +11,6 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
     public class SettingPanel
 	{
 		bool creatingNewConfig;
-		bool firstShow;
 		GUIStyle buttonStyle;
 		GUILayoutOption[] buttonOptions;
 		private GUIStyle popupStyle;
@@ -21,7 +20,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 		public void OnEnable()
 		{
-			firstShow = true;
+			InitStyles();
 			FindSavedConfigs(Configs.configs.LocalConfig.Local_SavedConfigsFolderPath);
 			string extension = Path.GetExtension(Configs.configs.PreprocessorConfig.CurrentSavedConfigName);
             if (Configs.configs.PreprocessorConfig.CurrentSavedConfigName != null)
@@ -34,13 +33,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 		}
 
 		public void OnGUI()
-		{
-			if (firstShow)
-			{
-				InitStyles();
-				firstShow = false;
-			}
-			if (GUI.GetNameOfFocusedControl() != "InputField1")
+		{            
+			if (creatingNewConfig == true && GUI.GetNameOfFocusedControl() != "InputField1")
 			{
 				creatingNewConfig = false;
 			}
@@ -56,6 +50,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				if (!string.IsNullOrEmpty(path) && path != Configs.configs.LocalConfig.RootPath)
 				{
 					ChangeRootPath(path);
+					return;
 				}
 			}
 			GUILayout.FlexibleSpace();
@@ -73,17 +68,24 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				}
 
 				if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), GUILayout.Height(25)))
+				{
 					ClickedShowConfigFile();
+					return;
+				}
 			}
 			GUILayout.FlexibleSpace();
 			using (new EditorGUILayout.HorizontalScope())
 			{
-				if (GUILayout.Button(new GUIContent("Sync Directory", "同步Assets目录结构"), buttonStyle, GUILayout.MaxHeight(25), GUILayout.MaxWidth(120))) ClickedSyncDirectory();
+				if (GUILayout.Button(new GUIContent("Sync Directory", "同步Assets目录结构"), buttonStyle, GUILayout.MaxHeight(25), GUILayout.MaxWidth(120)))
+				{ ClickedSyncDirectory(); return; }
 				GUILayout.FlexibleSpace();
-				if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions)) ClickedRevert();
-				if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions)) ClickedApply();
+				if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions)) 
+				{ ClickedRevert(); return; }
+				if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions))
+				{ ClickedApply(); return; }
 			}
 			GUILayout.FlexibleSpace();
+
 		}
 
 		private void InitStyles()

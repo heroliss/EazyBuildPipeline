@@ -32,7 +32,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
         }
         private void OnGUI()
         {
-            tab.OnGUI(new Rect(6, 6, position.width - 12, position.height - 12));
+			//TODO: 临时处理不明异常
+			try
+			{
+				tab.OnGUI(new Rect(6, 6, position.width - 12, position.height - 12));
+			}
+			catch(System.InvalidOperationException) {}
         }
     }
 }

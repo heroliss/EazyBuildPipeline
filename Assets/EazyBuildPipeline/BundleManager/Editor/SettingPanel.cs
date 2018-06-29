@@ -19,7 +19,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
         string[] compressionEnum;
         int selectedCompressionIndex;
 
-        bool firstShow = true;
         int[] selectedIndexs;
         GUIStyle dropdownStyle;
         GUIStyle buttonStyle;
@@ -45,6 +44,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         public void OnEnable()
         {
+			InitStyles();
             compressionEnum = compressionDic.Keys.ToArray();
             try
             {
@@ -58,11 +58,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         public void OnGUI()
         {
-            if (firstShow)
-            {
-                InitStyles();
-                firstShow = false;
-            }
             GUILayout.FlexibleSpace();
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -72,7 +67,11 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 {
                     path = EditorUtility.OpenFolderPanel("打开根目录", Configs.configs.LocalConfig.RootPath, null);
                 }
-                ChangeRootPathIfChanged(path);
+				if (!string.IsNullOrEmpty(path) && path != Configs.configs.LocalConfig.RootPath)
+				{
+					ChangeRootPath(path);
+					return;
+				}
             }
             GUILayout.FlexibleSpace();
             using (new EditorGUILayout.HorizontalScope())
@@ -91,8 +90,10 @@ namespace EazyBuildPipeline.BundleManager.Editor
                     Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue -= (int)compressionDic[compressionEnum[selectedCompressionIndex]];
                     Configs.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue += (int)compressionDic[compressionEnum[selectedCompressionIndex_new]];
                     selectedCompressionIndex = selectedCompressionIndex_new;
+					return;
                 }
-                if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions)) ClickedApply();
+				if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions))
+				{ ClickedApply(); return; }
             }
             GUILayout.FlexibleSpace();
         }
@@ -207,28 +208,25 @@ namespace EazyBuildPipeline.BundleManager.Editor
             File.Move(oldPath + ".manifest", newPath + ".manifest");
         }
 
-        private void ChangeRootPathIfChanged(string path)
+		private void ChangeRootPath(string path)
         {
-            if (!string.IsNullOrEmpty(path) && path != Configs.configs.LocalConfig.RootPath)
-            {
-                bool ensure = true;
-                //if (Configs.g.bun.Dirty)
-                //{
-                //    ensure = !EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "返回", "放弃保存");
-                //}
-                if (ensure)
-                {
-                    try
-                    {
-                        ChangeAllConfigsExceptRef(path);
-                    }
-                    catch (Exception e)
-                    {
-                        EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
-                    }
-                }
-            }
-        }
+            bool ensure = true;
+			//if (Configs.g.bun.Dirty)
+			//{
+			//    ensure = !EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "返回", "放弃保存");
+			//}
+			if (ensure)
+			{
+				try
+				{
+					ChangeAllConfigsExceptRef(path);
+				}
+				catch (Exception e)
+				{
+					EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
+				}
+			}
+		}
 
         private void ChangeAllConfigsExceptRef(string rootPath)
         {

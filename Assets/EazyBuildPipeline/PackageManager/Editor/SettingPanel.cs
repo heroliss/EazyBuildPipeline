@@ -8,8 +8,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class SettingPanel
     {
-        int[] compressionLevelEnum = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        string[] compressionLevelsEnumStr = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+        int[] compressionLevelEnum = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        string[] compressionLevelsEnumStr = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
         int[] selectedTagIndexs;
         int selectedMapIndex;
         private int selectedPackageModeIndex;
@@ -17,7 +17,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
         List<PackageTreeItem> wrongItems;
         List<PackageTreeItem> emptyItems;
 
-        bool firstShow = true;
         private GUIStyle dropdownStyle;
         private GUIStyle buttonStyle;
         private GUIStyle labelStyle;
@@ -49,6 +48,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         public void OnEnable()
         {
+			InitStyles();
             try
             {
                 LoadAllConfigs();
@@ -58,15 +58,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 EditorUtility.DisplayDialog("错误", "加载配置文件时发生错误：" + e.Message, "确定");
             }
         }
-
+        
         public void OnGUI(Rect rect)
         {
-            if (firstShow)
-            {
-                InitStyles();
-                firstShow = false;
-            }
-            if (GUI.GetNameOfFocusedControl() != "InputField1")
+            if (creatingNewConfig == true && GUI.GetNameOfFocusedControl() != "InputField1")
             {
                 creatingNewConfig = false;
             }
@@ -83,12 +78,16 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         {
                             path = EditorUtility.OpenFolderPanel("打开根目录", Configs.configs.LocalConfig.RootPath, null);
                         }
-                        ChangeRootPathIfChanged(path);
+						if (!string.IsNullOrEmpty(path) && path != Configs.configs.LocalConfig.RootPath)
+						{
+							ChangeRootPath(path);
+							return;
+						}
                     }
                     GUILayout.FlexibleSpace();
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        ShowTagsDropdown();
+						if (ShowTagsDropdown()) return;
                         GUILayout.FlexibleSpace();
                         GUILayout.Space(10);
                         if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions)) ClickedNew();
@@ -104,8 +103,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
                             }
                         }
 
-                        if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), buttonStyle, GUILayout.Height(25)))
-                            ClickedShowConfigFile();
+						if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), buttonStyle, GUILayout.Height(25)))
+						{ ClickedShowConfigFile(); return; }
                     }
                     GUILayout.FlexibleSpace();
                     using (new EditorGUILayout.HorizontalScope())
@@ -119,6 +118,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                             Configs.configs.PackageMapConfig.PackageMode = Configs.PackageModeEnum[selectedPackageModeIndex];
                             Configs.g.packageTree.UpdateAllFileName();
                             Configs.g.packageTree.Dirty = true;
+							return;
                         }
                         GUILayout.Space(10);
                         EditorGUILayout.LabelField("Lua:", labelStyle, shortLabelOptions);
@@ -128,6 +128,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                             selectedLuaSourceIndex = currentLuaSourceIndex_new;
                             Configs.configs.PackageMapConfig.LuaSource = Configs.LuaSourceEnum[selectedLuaSourceIndex];
                             Configs.g.packageTree.Dirty = true;
+							return;
                         }
                         GUILayout.Space(10);
                         EditorGUILayout.LabelField("CompressLevel:", labelStyle, labelOptions);
@@ -137,10 +138,13 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         {
                             Configs.configs.PackageMapConfig.CompressionLevel = compressionLevel_new;
                             Configs.g.packageTree.Dirty = true;
+							return;
                         }
                         GUILayout.Space(20);
-                        if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions)) ClickedRevert();
-                        if (GUILayout.Button(new GUIContent("Build"), buttonStyle, buttonOptions)) ClickedApply();
+						if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions))
+						{ ClickedRevert(); return; }
+						if (GUILayout.Button(new GUIContent("Build"), buttonStyle, buttonOptions))
+						{ ClickedApply(); return; }
                     }
                     GUILayout.FlexibleSpace();
                 }
@@ -159,6 +163,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                                 Configs.configs.PackageMapConfig.PackageVersion = packageVersion_new;
                                 Configs.g.packageTree.UpdateAllFileName();
                                 Configs.g.packageTree.Dirty = true;
+								return;
                             }
                         }
                     }
@@ -166,7 +171,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
         }
 
-        private void ShowTagsDropdown()
+        private bool ShowTagsDropdown() //TODO:此处返回值只用于控制退出当次OnGUI,欲以此方式避免发生GUI相关异常，但是并没有什么卵用，其他所有OnGUI中的return与此处目的相同，当然全都没什么卵用
         {
             int[] selectedIndexs_new = new int[Configs.configs.TagEnumConfig.Tags.Count];
             int i = 0;
@@ -178,9 +183,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     selectedTagIndexs[i] = selectedIndexs_new[i];
                     Configs.configs.PackageConfig.CurrentTags[i] = tagType[selectedTagIndexs[i]];
                     OnChangeTags();
+					return true;
                 }
                 i++;
             }
+			return false;
         }
 
         private void OnChangeTags()
@@ -400,28 +407,25 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
         }
 
-        private void ChangeRootPathIfChanged(string path)
-        {
-            if (!string.IsNullOrEmpty(path) && path != Configs.configs.LocalConfig.RootPath)
-            {
-                bool ensure = true;
-                if (Configs.g.packageTree.Dirty)
-                {
-                    ensure = !EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "返回", "放弃保存");
-                }
-                if (ensure)
-                {
-                    try
-                    {
-                        ChangeAllConfigsExceptRef(path);
-                    }
-                    catch (Exception e)
-                    {
-                        EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
-                    }
-                }
-            }
-        }
+		private void ChangeRootPath(string path)
+		{
+			bool ensure = true;
+			if (Configs.g.packageTree.Dirty)
+			{
+				ensure = !EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "返回", "放弃保存");
+			}
+			if (ensure)
+			{
+				try
+				{
+					ChangeAllConfigsExceptRef(path);
+				}
+				catch (Exception e)
+				{
+					EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
+				}
+			}
+		}
 
         private void ChangeAllConfigsExceptRef(string rootPath)
         {
