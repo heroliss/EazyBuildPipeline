@@ -1,11 +1,8 @@
 ﻿#pragma warning disable 0649
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using EazyBuildPipeline.AssetPreprocessor.Editor.Config;
-using System.Linq;
 using Newtonsoft.Json;
 using UnityEditor;
 

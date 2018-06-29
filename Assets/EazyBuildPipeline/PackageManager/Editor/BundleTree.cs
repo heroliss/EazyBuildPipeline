@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -10,7 +9,7 @@ using UnityEngine.Assertions;
 
 namespace EazyBuildPipeline.PackageManager.Editor
 {
-	public class BundleTree : TreeView
+    public class BundleTree : TreeView
 	{
 		public Texture2D folderIcon, bundleIcon, bundleIcon_Scene;
 		int loadFileProgressCount;
