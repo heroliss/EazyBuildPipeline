@@ -474,18 +474,19 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			{
 				EditorUtility.DisplayDialog("同步目录", "同步失败，找不到目录:" +
 											Path.GetDirectoryName(Configs.configs.LocalConfig.PreStoredAssetsFolderPath), "确定");
+                return;
             }
-            if (!Directory.Exists(Configs.configs.LocalConfig.PreStoredAssetsFolderPath))
-            {
-                Directory.CreateDirectory(Configs.configs.LocalConfig.PreStoredAssetsFolderPath);
-				return;
-			}
+
 			bool ensure = EditorUtility.DisplayDialog("同步目录", "确定要同步Assets的完整目录结构到PreStoredAssets下？（仅添加）", "同步", "取消");
-			if (ensure)
-			{
-				EditorUtility.DisplayProgressBar("同步目录", "正在读取Assets目录信息", 0);
-				var allDirectories = Directory.GetDirectories("Assets/", "*", SearchOption.AllDirectories);
-				int total = allDirectories.Length;
+            if (ensure)
+            {
+                EditorUtility.DisplayProgressBar("同步目录", "正在读取Assets目录信息", 0);
+                if (!Directory.Exists(Configs.configs.LocalConfig.PreStoredAssetsFolderPath))
+                {
+                    Directory.CreateDirectory(Configs.configs.LocalConfig.PreStoredAssetsFolderPath);
+                }
+                var allDirectories = Directory.GetDirectories("Assets/", "*", SearchOption.AllDirectories);
+                int total = allDirectories.Length;
 				int i;
 				string item = "";
 				for (i = 0; i < total; i++)
