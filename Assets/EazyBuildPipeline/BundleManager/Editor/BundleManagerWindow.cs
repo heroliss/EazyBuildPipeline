@@ -18,25 +18,22 @@ namespace EazyBuildPipeline.BundleManager.Editor
         {
             titleContent = new GUIContent("Bundle");
         }
-        private void OnEnable()
+        private void Awake()
         {
-            Configs.Init();
+            G.Init();
 
             settingPanel = new SettingPanel();
-            settingPanel.OnEnable();
+            settingPanel.Awake();
 
             mainTab = new AssetBundleManagement2.AssetBundleMainWindow();
-            Configs.g.mainTab = mainTab;
+            G.g.mainTab = mainTab;
             mainTab.OnEnable_extension();
         }
-        private void OnDisable()
-        {
-            settingPanel.OnDisable();
-            Configs.Clear();
-        }
+            
         private void OnDestroy()
         {
             mainTab.OnDestroy_extension();
+            G.Clear();
         }
         private void OnGUI()
         {

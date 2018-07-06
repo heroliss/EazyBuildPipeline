@@ -1,7 +1,18 @@
 {
-    "Packages": [],
-    "PackageVersion": "",
-    "PackageMode": "",
-    "LuaSource": "",
-    "CompressionLevel": -1
+    "Packages": [
+        {
+            "PackageName": "New Package",
+            "Color": "196AFF",
+            "Bundles": [
+                "newfolder108/newbundle109"
+            ],
+            "EmptyFolders": [],
+            "Necessery": "Immediate",
+            "DeploymentLocation": "Built-in",
+            "CopyToStreaming": false
+        }
+    ],
+    "PackageMode": "Addon",
+    "LuaSource": "Origin",
+    "CompressionLevel": 1
 }

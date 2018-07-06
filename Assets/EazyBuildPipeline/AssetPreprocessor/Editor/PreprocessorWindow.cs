@@ -28,30 +28,32 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 #endif
             titleContent = new GUIContent("Preprocessor");
         }
-        private void OnEnable()
+        private void Awake()
         {
-            Configs.Init();
-            Configs.configs.LoadLocalConfig();
-            Configs.configs.LoadAllConfigsByLocalConfig();
+            G.Init();
+
+            G.configs.LoadLocalConfig();
+            G.configs.LoadAllConfigsByLocalConfig();
+
             settingPanel = new SettingPanel();
             tagsPanel = new TagsPanel();
             tagsPanel.OnToggleChanged += OnToggleChanged;
             CreateOptionGroupPanels();
-            settingPanel.OnEnable();
-            tagsPanel.OnEnable();
+            settingPanel.Awake();
+            tagsPanel.Awake();
 
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
-            settingPanel.OnDisable();
-            Configs.Clear();
+            settingPanel.OnDestory();
+            G.Clear();
         }
 
         private void CreateOptionGroupPanels()
         {
             groupPanels = new Dictionary<string, Dictionary<string, Dictionary<string, GroupPanel>>>();
-            foreach (var group in Configs.configs.OptionsEnumConfig.Groups)
+            foreach (var group in G.configs.OptionsEnumConfig.Groups)
             {
                 if (!string.IsNullOrEmpty(group.Platform) && group.Platform.ToLower() != currentPlatform)
                 {
@@ -137,7 +139,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             if (tagsPanel.Dirty)
             {
-                Configs.configs.Dirty = true;
+                G.configs.Dirty = true;
                 return;
             }
             foreach (var t1 in groupPanels.Values)
@@ -148,13 +150,13 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     {
                         if (t3.Dirty)
                         {
-                            Configs.configs.Dirty = true;
+                            G.configs.Dirty = true;
                             return;
                         }
                     }
                 }
             }
-            Configs.configs.Dirty = false;
+            G.configs.Dirty = false;
         }
     }
 }

@@ -5,12 +5,14 @@ using System.IO;
 using UnityEngine;
 using Newtonsoft.Json;
 using UnityEditor;
+using EazyBuildPipeline.Common.Editor;
+using System.Linq;
 
 namespace EazyBuildPipeline.BundleManager.Editor
 {
-    public static class Configs
+    public static class G
     {
-        public static Config.Configs configs;
+        public static Configs.Configs configs;
         public static GlobalReference g;
         public class GlobalReference
         {
@@ -20,7 +22,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
         }
         public static void Init()
         {
-            configs = new Config.Configs();
+            configs = new Configs.Configs();
             g = new GlobalReference();
         }
         public static void Clear()
@@ -31,10 +33,25 @@ namespace EazyBuildPipeline.BundleManager.Editor
     }
 }
 
-namespace EazyBuildPipeline.BundleManager.Editor.Config
+namespace EazyBuildPipeline.BundleManager.Editor.Configs
 {
     public class Configs
     {
+        public Dictionary<string, BuildAssetBundleOptions> CompressionEnumMap = new Dictionary<string, BuildAssetBundleOptions>
+        {
+            { "Uncompress",BuildAssetBundleOptions.UncompressedAssetBundle },
+            { "LZMA",BuildAssetBundleOptions.None },
+            { "LZ4" ,BuildAssetBundleOptions.ChunkBasedCompression}
+        };
+        public string[] CompressionEnum;
+
+        public Configs()
+        {
+            CompressionEnum = CompressionEnumMap.Keys.ToArray();
+        }
+
+
+        public Runner runner = new Runner();
         private readonly string localConfigSearchText = "LocalConfig BundleManager EazyBuildPipeline";
         public LocalConfig LocalConfig = new LocalConfig();
         public BundleManagerConfig BundleManagerConfig = new BundleManagerConfig();
@@ -114,17 +131,19 @@ namespace EazyBuildPipeline.BundleManager.Editor.Config
             {
                 EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString(), "确定");
                 return false;
             }
             return true;
         }
     }
 
-    public class LocalConfig : Config
+    public class LocalConfig : EBPConfig
     {
         //本地配置路径
         public string Global_TagEnumConfigName;
+        public string Local_BundleMapsFolderPath { get { return "AssetBundles/BuildMaps"; } }//TODO：BundleMaster的特殊处理
+        //public string Local_BundleMapsFolderRelativePath;
         [NonSerialized]
         public string LocalRootPath;
         //Pipeline配置路径
@@ -135,7 +154,7 @@ namespace EazyBuildPipeline.BundleManager.Editor.Config
         public string BundlesFolderRelativePath;
     }
 
-    public class TagEnumConfig : Config
+    public class TagEnumConfig : EBPConfig
     {
         public Dictionary<string, string[]> Tags = new Dictionary<string, string[]>
         {
@@ -154,9 +173,10 @@ namespace EazyBuildPipeline.BundleManager.Editor.Config
         }
     }
 
-    public class BundleManagerConfig : Config
+    public class BundleManagerConfig : EBPConfig
     {
         public string[] CurrentTags;
+        public string CurrentBundleMap;
         public int CurrentBuildAssetBundleOptionsValue;
         public int CurrentResourceVersion;
         public int CurrentBundleVersion;
@@ -172,26 +192,6 @@ namespace EazyBuildPipeline.BundleManager.Editor.Config
                     BuildAssetBundleOptions.UncompressedAssetBundle :
                     BuildAssetBundleOptions.ChunkBasedCompression;
             }
-        }
-    }
-
-    public class Config
-    {
-        [NonSerialized]
-        public string Path;
-
-        public virtual void Load()
-        {
-            string s = File.ReadAllText(Path);
-            JsonUtility.FromJsonOverwrite(s, this);
-        }
-        public virtual void Save()
-        {
-            File.WriteAllText(Path, JsonUtility.ToJson(this, true));
-        }
-        public override string ToString()
-        {
-            return JsonUtility.ToJson(this);
         }
     }
 }

@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using EazyBuildPipeline.Common.Editor;
 
 namespace EazyBuildPipeline.PackageManager.Editor
 {
-    public static class Configs
+    public static class G
     {
-        public static Config.Configs configs;
+        public static Configs.Configs configs;
         public static GlobalReference g;
         public class GlobalReference
         {
@@ -20,7 +21,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         public static void Init()
         {
-            configs = new Config.Configs();
+            configs = new Configs.Configs();
             g = new GlobalReference();
         }
         
@@ -36,10 +37,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
         public static string[] LuaSourceEnum = new string[] { "None", "Origin", "ByteCode", "Encrypted" };
     }
 }
-namespace EazyBuildPipeline.PackageManager.Editor.Config
+namespace EazyBuildPipeline.PackageManager.Editor.Configs
 {
     public class Configs
     {
+        public Runner Runner = new Runner();
         private readonly string localConfigSearchText = "LocalConfig PackageManager EazyBuildPipeline";
         public TagEnumConfig TagEnumConfig = new TagEnumConfig();
         public PackageMapConfig PackageMapConfig = new PackageMapConfig();
@@ -130,7 +132,7 @@ namespace EazyBuildPipeline.PackageManager.Editor.Config
             }
             return success;
         }
-        public void LoadLocalConfig()
+        public bool LoadLocalConfig()
         {
             try
             {
@@ -147,12 +149,14 @@ namespace EazyBuildPipeline.PackageManager.Editor.Config
             {
                 UnityEditor.EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString(), "确定");
+                return false;
             }
+            return true;
         }
     }
 
-    public class PackageMapConfig : Config
+    public class PackageMapConfig : EBPConfig
     {
         [Serializable]
         public struct Package
@@ -168,13 +172,12 @@ namespace EazyBuildPipeline.PackageManager.Editor.Config
             public string FileName; //TODO: 仅用于程序中数据传递
         }
         public List<Package> Packages = new List<Package>(); //该项不随改动而改动
-        public string PackageVersion;
         public string PackageMode;
         public string LuaSource;
         public int CompressionLevel = -1;
     }
 
-    public class LocalConfig : Config
+    public class LocalConfig : EBPConfig
     {
         //本地配置路径
         public string Global_TagEnumConfigName;
@@ -198,7 +201,7 @@ namespace EazyBuildPipeline.PackageManager.Editor.Config
         public bool CheckBundle;
     }
 
-    public class TagEnumConfig : Config
+    public class TagEnumConfig : EBPConfig
     {
         public Dictionary<string, string[]> Tags = new Dictionary<string, string[]>
         {
@@ -217,26 +220,11 @@ namespace EazyBuildPipeline.PackageManager.Editor.Config
         }
     }
 
-    public class PackageConfig : Config
+    public class PackageConfig : EBPConfig
     {
         public string[] CurrentTags = new string[0];
         public string CurrentPackageMap;
+        public string CurrentAddonVersion;
         public bool Applying;
-    }
-
-    public class Config
-    {
-        [NonSerialized]
-        public string Path;
-
-        public virtual void Load()
-        {
-            string s = File.ReadAllText(Path);
-            JsonUtility.FromJsonOverwrite(s, this);
-        }
-        public virtual void Save()
-        {
-            File.WriteAllText(Path, JsonUtility.ToJson(this, true));
-        }
     }
 }

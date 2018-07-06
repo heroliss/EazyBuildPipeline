@@ -6,12 +6,13 @@ using System.IO;
 using UnityEngine;
 using Newtonsoft.Json;
 using UnityEditor;
+using EazyBuildPipeline.Common.Editor;
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
-    public static class Configs
+    public static class G
     {
-        public static Config.Configs configs;
+        public static Configs.Configs configs;
         public static GlobalReference g;
         public class GlobalReference
         {
@@ -19,7 +20,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         }
         public static void Init()
         {
-            configs = new Config.Configs();
+            configs = new Configs.Configs();
             g = new GlobalReference();
         }
         public static void Clear()
@@ -30,10 +31,11 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
     }
 }
 
-namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
+namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
 {
     public class Configs
     {
+        public Runner runner = new Runner();
         private readonly string localConfigSearchText = "LocalConfig AssetPreprocessor EazyBuildPipeline";
         public bool Dirty;
         public LocalConfig LocalConfig = new LocalConfig();
@@ -72,7 +74,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
             {
                 EditorUtility.DisplayDialog("错误", "加载选项配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + OptionsEnumConfig.Path
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(OptionsEnumConfig, true), "确定");
+                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + OptionsEnumConfig.ToString(), "确定");
                 success = false;
             }
             
@@ -138,14 +140,14 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
             {
                 EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonUtility.ToJson(LocalConfig, true), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString(), "确定");
                 return false;
             }
             return true;
         }
     }
 
-    public class OptionsEnumConfig : Config
+    public class OptionsEnumConfig : EBPConfig
     {
         [Serializable]
         public class Group { public string FullGroupName; public List<string> Options; public bool MultiSelect; public string Platform; }
@@ -154,7 +156,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
           new Group(){ FullGroupName = "Title1/Title3/Example Group Name 2", MultiSelect = false, Options =  new List<string>{ "Example Option 1","Example Option 2" ,"Example Option 3"} } };
     }
 
-    public class LocalConfig : Config
+    public class LocalConfig : EBPConfig
     {
         //本地配置路径
         public string Global_TagEnumConfigName;
@@ -176,7 +178,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
         public string LogsFolderRelativePath;
     }
 
-    public class TagEnumConfig : Config
+    public class TagEnumConfig : EBPConfig
     {
         public Dictionary<string, string[]> Tags = new Dictionary<string, string[]>
         {
@@ -195,37 +197,17 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Config
         }
     }
 
-    public class CurrentSavedConfig : Config
+    public class CurrentSavedConfig : EBPConfig
     {
         [Serializable]
         public class Group { public string FullGroupName; public List<string> Options; }
         public List<Group> Groups = new List<Group>();
-        public List<string> Tags =new List<string>();
+        public string[] Tags = new string[0];
     }
 
-    public class PreprocessorConfig : Config
+    public class PreprocessorConfig : EBPConfig
     {
         public string CurrentSavedConfigName;
         public bool Applying;
-    }
-
-    public class Config
-    {
-        [NonSerialized]
-        public string Path;
-
-        public virtual void Load()
-        {
-            string s = File.ReadAllText(Path);
-            JsonUtility.FromJsonOverwrite(s, this);
-        }
-        public virtual void Save()
-        {
-            File.WriteAllText(Path, JsonUtility.ToJson(this, true));
-        }
-        public override string ToString()
-        {
-            return JsonUtility.ToJson(this);
-        }
     }
 }

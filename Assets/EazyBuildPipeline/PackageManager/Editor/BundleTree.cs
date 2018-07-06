@@ -38,9 +38,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
             try
             {
                 folderIcon = EditorGUIUtility.FindTexture("Folder Icon");
-                string[] icons = AssetDatabase.FindAssets(Configs.configs.LocalConfig.Global_BundleIcon);
+                string[] icons = AssetDatabase.FindAssets(G.configs.LocalConfig.Global_BundleIcon);
                 bundleIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(icons[0]));
-                icons = AssetDatabase.FindAssets(Configs.configs.LocalConfig.Global_BundleIcon_Scene);
+                icons = AssetDatabase.FindAssets(G.configs.LocalConfig.Global_BundleIcon_Scene);
                 bundleIcon_Scene = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(icons[0]));
             }
             catch (Exception e)
@@ -122,7 +122,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 			bundleDic.Clear();
 			folderDic.Clear();
 
-			string assetBundlesFolderPath = Configs.configs.LocalConfig.BundleFolderPath;
+			string assetBundlesFolderPath = G.configs.LocalConfig.BundleFolderPath;
 			if (!Directory.Exists(assetBundlesFolderPath))
 			{
 				EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + assetBundlesFolderPath, "确定");
@@ -136,7 +136,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 return root;
 			}
 
-            string rootPath = Configs.configs.BundlePath;
+            string rootPath = G.configs.BundlePath;
 
             BundleTreeItem rootFolderItem = new BundleTreeItem()
             {
@@ -212,7 +212,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 					{
 						float width = rect.height;
 						float x = rect.x;
-                        Rect r = new Rect(x + Configs.g.packageTree.Packages.IndexOf(p.package) * (rect.height + 4), rect.y, width, rect.height);
+                        Rect r = new Rect(x + G.g.packageTree.Packages.IndexOf(p.package) * (rect.height + 4), rect.y, width, rect.height);
                         if (GUI.Button(r, GUIContent.none, p.complete ? p.package.colorBlockStyle : p.package.colorBlockStyle_hollow)) LocatePackage(p);
 					}
 					break;
@@ -224,12 +224,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
 		private void LocatePackage(PackageTreeItem item)
 		{
 			var ids = new int[] { item.id };
-			Configs.g.packageTree.SetSelection(ids);
+			G.g.packageTree.SetSelection(ids);
 			foreach (var id in ids)
 			{
-				Configs.g.packageTree.FrameItem(id);
+				G.g.packageTree.FrameItem(id);
 			}
-			Configs.g.packageTree.SetFocus();
+			G.g.packageTree.SetFocus();
 		}
 
 		#endregion
@@ -280,8 +280,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 BundleVersions = new BundleVersionsStruct() { BundleVersion = -1, ResourceVersion = -1 };
                 BundleBuildMap = null;
-                string versionPath = Path.Combine(Configs.configs.BundleInfoPath, "Versions.json");
-                string buildMapPath = Path.Combine(Configs.configs.BundleInfoPath, "BuildMap.json");
+                string versionPath = Path.Combine(G.configs.BundleInfoPath, "Versions.json");
+                string buildMapPath = Path.Combine(G.configs.BundleInfoPath, "BuildMap.json");
                 BundleVersions = JsonConvert.DeserializeObject<BundleVersionsStruct>(File.ReadAllText(versionPath));
                 BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
             }
@@ -301,7 +301,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 					displayName = Path.GetFileName(path),
 					isFolder = true,
 					path = path,
-					relativePath = path.Remove(0, Configs.configs.PathHandCount).Replace('\\', '/'),
+					relativePath = path.Remove(0, G.configs.PathHandCount).Replace('\\', '/'),
 					icon = folderIcon
 				};
 				parent.AddChild(folderItem);
@@ -319,7 +319,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 				if (Time.realtimeSinceStartup - lastTime > 0.06f)
 				{
 					EditorUtility.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
-					    loadFileProgressCount,Configs.configs.LocalConfig.CheckBundle), filePath,
+					    loadFileProgressCount,G.configs.LocalConfig.CheckBundle), filePath,
 					    (float)loadFileProgressCount % 100000 / 100000);
 					lastTime = Time.realtimeSinceStartup;
 				}
@@ -335,7 +335,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 						isFolder = false,
 						verify = true,
 						path = bundlePath,
-						relativePath = bundlePath.Remove(0, Configs.configs.PathHandCount).Replace('\\', '/'),
+						relativePath = bundlePath.Remove(0, G.configs.PathHandCount).Replace('\\', '/'),
 						bundlePath = bundlePath,
 						displayName = bundleName,
 						icon = bundleIcon,
@@ -346,7 +346,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 					folderItem.AddChild(fileItem);
 					bundleDic.Add(fileItem.relativePath, fileItem);
 					//检查manifest对应文件是否存在
-					if (Configs.configs.LocalConfig.CheckBundle)
+					if (G.configs.LocalConfig.CheckBundle)
 					{
 						fileItem.verify = File.Exists(bundlePath);
 						if (fileItem.verify == false)
@@ -436,12 +436,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
 				ids.Add(packageItem.id);
 			}
 
-			Configs.g.packageTree.SetSelection(ids);
+			G.g.packageTree.SetSelection(ids);
 			foreach (var id in ids)
 			{
-				Configs.g.packageTree.FrameItem(id);
+				G.g.packageTree.FrameItem(id);
 			}
-			Configs.g.packageTree.SetFocus();
+			G.g.packageTree.SetFocus();
 		}
 
 		protected override void ContextClicked()
@@ -464,9 +464,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
 		{
 			var item = (BundleTreeItem)FindItem(id, rootItem);
 			GenericMenu menu = new GenericMenu();
-			if (Configs.g.packageTree.Packages.Count > 0)
+			if (G.g.packageTree.Packages.Count > 0)
 			{
-				foreach (var package in Configs.g.packageTree.Packages)
+				foreach (var package in G.g.packageTree.Packages)
 				{
 					menu.AddItem(new GUIContent("Add To/" + package.displayName), false, () =>
 					  {
@@ -476,7 +476,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                               var bundle = FindItem(i, rootItem);
                               bundles.Add(bundle);
                           }
-                          Configs.g.packageTree.AddBundlesToPackage(package, bundles);
+                          G.g.packageTree.AddBundlesToPackage(package, bundles);
 					  });
 				}
 				menu.AddSeparator(null);

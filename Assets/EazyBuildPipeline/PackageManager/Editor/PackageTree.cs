@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using EazyBuildPipeline.PackageManager.Editor.Config;
+using EazyBuildPipeline.PackageManager.Editor.Configs;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -91,7 +91,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     foreach (PackageTreeItem item in package.children)
                     {
-                        RecursiveConnectWithBundleItem(item, Configs.g.bundleTree.bundleDic, Configs.g.bundleTree.folderDic);
+                        RecursiveConnectWithBundleItem(item, G.g.bundleTree.bundleDic, G.g.bundleTree.folderDic);
                     }
                 }
             }
@@ -100,14 +100,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void UpdateAllComplete()
         {
-            foreach (BundleTreeItem item in Configs.g.bundleTree.bundleDic.Values)
+            foreach (BundleTreeItem item in G.g.bundleTree.bundleDic.Values)
             {
                 foreach (PackageTreeItem p in item.packageItems)
                 {
                     p.complete = true;
                 }
             }
-            foreach (BundleTreeItem item in Configs.g.bundleTree.folderDic.Values)
+            foreach (BundleTreeItem item in G.g.bundleTree.folderDic.Values)
             {
                 if (item.hasChildren)
                 {
@@ -124,14 +124,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                 }
             }
-            foreach (BundleTreeItem item in Configs.g.bundleTree.bundleDic.Values)
+            foreach (BundleTreeItem item in G.g.bundleTree.bundleDic.Values)
             {
                 foreach (PackageTreeItem p in item.packageItems)
                 {
                     RecursiveUpdateParentComplete((PackageTreeItem)p.parent);
                 }
             }
-            foreach (BundleTreeItem item in Configs.g.bundleTree.folderDic.Values)
+            foreach (BundleTreeItem item in G.g.bundleTree.folderDic.Values)
             {
                 if (!item.hasChildren)
                 {
@@ -191,24 +191,24 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             foreach (var package in Packages)
             {
-                switch (Configs.configs.PackageMapConfig.PackageMode)
+                switch (G.configs.PackageMapConfig.PackageMode)
                 {
                     case "Addon":
                         package.fileName = string.Format("{0}_addon_{1}_{2}_{3}{4}",
-                            Configs.configs.PackageConfig.CurrentTags[0].ToLower(),
-                            Configs.configs.PackageMapConfig.PackageVersion,
+                            G.configs.PackageConfig.CurrentTags[0].ToLower(),
+                            G.configs.PackageConfig.CurrentAddonVersion,
                             "default", package.displayName,
-                            Configs.configs.LocalConfig.PackageExtension);
+                            G.configs.LocalConfig.PackageExtension);
                         break;
                     case "Patch":
                         package.fileName = string.Format("{0}_patch_{1}_{2}{3}",
-                          Configs.configs.PackageConfig.CurrentTags[0].ToLower(),
-                          Configs.g.bundleTree.BundleVersions.ResourceVersion,
+                          G.configs.PackageConfig.CurrentTags[0].ToLower(),
+                          G.g.bundleTree.BundleVersions.ResourceVersion,
                           package.displayName,
-                          Configs.configs.LocalConfig.PackageExtension);
+                          G.configs.LocalConfig.PackageExtension);
                         break;
                     default:
-                        package.fileName = package.displayName + Configs.configs.LocalConfig.PackageExtension;
+                        package.fileName = package.displayName + G.configs.LocalConfig.PackageExtension;
                         break;
                 }
             }
@@ -216,7 +216,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void BuildTreeFromMap(TreeViewItem root)
         {
-            foreach (var package in Configs.configs.PackageMapConfig.Packages)
+            foreach (var package in G.configs.PackageMapConfig.Packages)
             {
                 Color color = Color.black;
                 ColorUtility.TryParseHtmlString("#" + package.Color, out color);
@@ -245,16 +245,16 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             foreach (string bundlePath in package.Bundles)
             {
-                if (Configs.g.bundleTree.bundleDic.ContainsKey(bundlePath))
+                if (G.g.bundleTree.bundleDic.ContainsKey(bundlePath))
                 {
-                    RecursiveAddParents(Configs.g.bundleTree.bundleDic[bundlePath], p);
+                    RecursiveAddParents(G.g.bundleTree.bundleDic[bundlePath], p);
                 }
             }
             foreach (string emptyFolderPath in package.EmptyFolders)
             {
-                if (Configs.g.bundleTree.folderDic.ContainsKey(emptyFolderPath))
+                if (G.g.bundleTree.folderDic.ContainsKey(emptyFolderPath))
                 {
-                    RecursiveAddParents(Configs.g.bundleTree.folderDic[emptyFolderPath], p);
+                    RecursiveAddParents(G.g.bundleTree.folderDic[emptyFolderPath], p);
                 }
             }
         }
@@ -313,7 +313,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 package = parent.package,
                 bundleItem = new BundleTreeItem()
                 {
-                    icon = Configs.g.bundleTree.bundleIcon,
+                    icon = G.g.bundleTree.bundleIcon,
                     displayName = bundleName,
                     relativePath = relativePath
                 }
@@ -341,7 +341,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 bundleItem = new BundleTreeItem()
                 {
                     displayName = folderName,
-                    icon = Configs.g.bundleTree.folderIcon,
+                    icon = G.g.bundleTree.folderIcon,
                     isFolder = true,
                     relativePath = relativePath
                 }
@@ -361,7 +361,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             try
             {
-                string[] icons = AssetDatabase.FindAssets(Configs.configs.LocalConfig.Global_PackageIcon);
+                string[] icons = AssetDatabase.FindAssets(G.configs.LocalConfig.Global_PackageIcon);
                 compressionIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(icons[0]));
             }
             catch(Exception e)
@@ -464,31 +464,31 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                     break;
                 case ColumnEnum.Necessery:
-                    if (item.isPackage && Configs.configs.PackageMapConfig.PackageMode == "Addon")
+                    if (item.isPackage && G.configs.PackageMapConfig.PackageMode == "Addon")
                     {
-                        int index = Configs.NecesseryEnum.IndexOf(item.necessery);
-                        int index_new = EditorGUI.Popup(rect, index, Configs.NecesseryEnum, inDropDownStyle);
+                        int index = G.NecesseryEnum.IndexOf(item.necessery);
+                        int index_new = EditorGUI.Popup(rect, index, G.NecesseryEnum, inDropDownStyle);
                         if (index_new != index)
                         {
-                            item.necessery = Configs.NecesseryEnum[index_new];
+                            item.necessery = G.NecesseryEnum[index_new];
                             Dirty = true;
                         }
                     }
                     break;
                 case ColumnEnum.DeploymentLocation:
-                    if (item.isPackage && Configs.configs.PackageMapConfig.PackageMode == "Addon")
+                    if (item.isPackage && G.configs.PackageMapConfig.PackageMode == "Addon")
                     {
-                        int index = Configs.DeploymentLocationEnum.IndexOf(item.deploymentLocation);
-                        int index_new = EditorGUI.Popup(rect, index, Configs.DeploymentLocationEnum, inDropDownStyle);
+                        int index = G.DeploymentLocationEnum.IndexOf(item.deploymentLocation);
+                        int index_new = EditorGUI.Popup(rect, index, G.DeploymentLocationEnum, inDropDownStyle);
                         if (index_new != index)
                         {
-                            item.deploymentLocation = Configs.DeploymentLocationEnum[index_new];
+                            item.deploymentLocation = G.DeploymentLocationEnum[index_new];
                             Dirty = true;
                         }
                     }
                     break;
                 case ColumnEnum.CopyToStreaming:
-                    if (item.isPackage && Configs.configs.PackageMapConfig.PackageMode == "Addon")
+                    if (item.isPackage && G.configs.PackageMapConfig.PackageMode == "Addon")
                     {
                         Rect rect_new = new Rect(rect.x + rect.width / 2 - 8, rect.y, 16, rect.height);
                         bool selected = EditorGUI.Toggle(rect_new, item.copyToStreaming, inToggleStyle);
@@ -607,12 +607,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private void Locate(PackageTreeItem item)
         {
             var ids = new int[] { item.bundleItem.id };
-            Configs.g.bundleTree.SetSelection(ids);
+            G.g.bundleTree.SetSelection(ids);
             foreach (var id in ids)
             {
-                Configs.g.bundleTree.FrameItem(id);
+                G.g.bundleTree.FrameItem(id);
             }
-            Configs.g.bundleTree.SetFocus();
+            G.g.bundleTree.SetFocus();
         }
 
         protected override void ContextClicked()
@@ -713,7 +713,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void CreatePackage()
         {
-            if (string.IsNullOrEmpty(Configs.configs.PackageConfig.CurrentPackageMap))
+            if (string.IsNullOrEmpty(G.configs.PackageConfig.CurrentPackageMap))
             {
                 EditorUtility.DisplayDialog("创建Package", "请先选择配置或创建一个空配置", "确定");
                 return;

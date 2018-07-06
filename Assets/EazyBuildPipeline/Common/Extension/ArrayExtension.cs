@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace EazyBuildPipeline
@@ -20,6 +21,20 @@ namespace EazyBuildPipeline
                 }
             }
             return -1;
+        }
+    }
+
+    public static class StringExtension
+    {
+        /// <summary>
+        /// 返回路径字符串去掉后缀之后的字符串
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string RemoveExtension(this string path)
+        {
+            int len = Path.GetExtension(path).Length;
+            return path.Remove(path.Length - len, len);
         }
     }
 }

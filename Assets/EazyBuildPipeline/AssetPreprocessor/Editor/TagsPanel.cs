@@ -13,45 +13,47 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         public int[] selectedTagIndexs;
         int[] selectedTagIndexs_origin;
         float OptionWidth = 70;
-        public void OnEnable()
+        float headSpace = 20;
+        GUIStyle labelStyle;
+        GUIStyle dropDownStyle;
+        public void Awake()
         {
+            InitStyles();
             Reset();
-            Configs.g.OnChangeCurrentConfig += Reset;
+            G.g.OnChangeCurrentConfig += Reset;
         }
-
+        
         public void Reset()
         {
             Dirty = false;
             PullCurrentTags();
             selectedTagIndexs_origin = selectedTagIndexs.ToArray();
         }
-
+        void InitStyles()
+        {
+            labelStyle = new GUIStyle(EditorStyles.label) { fixedWidth = headSpace - 8 };
+            dropDownStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
+        }
         public void OnGUI(float panelWidth)
         {
-            TagDropdownPanel(panelWidth);
-        }
-
-        private void TagDropdownPanel(float panelWidth)
-        {
-            float headSpace = 20;
             EditorGUILayout.BeginHorizontal();
             float sumWidth = headSpace;
             float width = OptionWidth;
             if (Dirty)
             {
-                GUILayout.Label("*", new GUIStyle(EditorStyles.label) { fixedWidth = headSpace - 8 });
+                GUILayout.Label("*", labelStyle);
             }
             else
             {
                 GUILayout.Space(headSpace);
             }
-            int[] selectedTagIndexs_new = new int[Configs.configs.TagEnumConfig.Tags.Count];
+            int[] selectedTagIndexs_new = new int[G.configs.TagEnumConfig.Tags.Count];
 
             int i = 0;
-            foreach (var tagGroup in Configs.configs.TagEnumConfig.Tags.Values)
+            foreach (var tagGroup in G.configs.TagEnumConfig.Tags.Values)
             {
                 selectedTagIndexs_new[i] = EditorGUILayout.Popup(selectedTagIndexs[i], tagGroup,
-                    new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 }, GUILayout.Height(25), GUILayout.MaxWidth(OptionWidth));
+                    dropDownStyle, GUILayout.Height(25), GUILayout.MaxWidth(OptionWidth));
                 if (selectedTagIndexs_new[i] != selectedTagIndexs[i])
                 {
                     selectedTagIndexs[i] = selectedTagIndexs_new[i];
@@ -79,9 +81,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             for (int i = 0; i < selectedTagIndexs.Length; i++)
             {
                 int j = selectedTagIndexs[i];
-                tags.Add(j == -1 ? "" : Configs.configs.TagEnumConfig.Tags.Values.ToArray()[i][j]);
+                tags.Add(j == -1 ? "" : G.configs.TagEnumConfig.Tags.Values.ToArray()[i][j]);
             }
-            Configs.configs.CurrentSavedConfig.Tags = tags;
+            G.configs.CurrentSavedConfig.Tags = tags.ToArray();
         }
 
         private void UpdateDirty()
@@ -99,20 +101,20 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void PullCurrentTags()
         {
-            selectedTagIndexs = Enumerable.Repeat(-1, Configs.configs.TagEnumConfig.Tags.Count).ToArray();
-            if (Configs.configs.TagEnumConfig.Tags.Count >= Configs.configs.CurrentSavedConfig.Tags.Count)
+            selectedTagIndexs = Enumerable.Repeat(-1, G.configs.TagEnumConfig.Tags.Count).ToArray();
+            if (G.configs.TagEnumConfig.Tags.Count >= G.configs.CurrentSavedConfig.Tags.Length)
             {
-                for (int i = 0; i < Configs.configs.CurrentSavedConfig.Tags.Count; i++)
+                for (int i = 0; i < G.configs.CurrentSavedConfig.Tags.Length; i++)
                 {
-                    selectedTagIndexs[i] = GetIndex(Configs.configs.TagEnumConfig.Tags.Values.ToArray()[i], Configs.configs.CurrentSavedConfig.Tags[i], i);
+                    selectedTagIndexs[i] = GetIndex(G.configs.TagEnumConfig.Tags.Values.ToArray()[i], G.configs.CurrentSavedConfig.Tags[i], i);
                 }
             }
-            else if (Configs.configs.TagEnumConfig.Tags.Count < Configs.configs.CurrentSavedConfig.Tags.Count)
+            else if (G.configs.TagEnumConfig.Tags.Count < G.configs.CurrentSavedConfig.Tags.Length)
             {
                 EditorUtility.DisplayDialog("Preprocessor", "全局标签枚举类型少于欲加载的标签配置类型", "确定");
-                for (int i = 0; i < Configs.configs.TagEnumConfig.Tags.Count; i++)
+                for (int i = 0; i < G.configs.TagEnumConfig.Tags.Count; i++)
                 {
-                    selectedTagIndexs[i] = GetIndex(Configs.configs.TagEnumConfig.Tags.Values.ToArray()[i], Configs.configs.CurrentSavedConfig.Tags[i], i);
+                    selectedTagIndexs[i] = GetIndex(G.configs.TagEnumConfig.Tags.Values.ToArray()[i], G.configs.CurrentSavedConfig.Tags[i], i);
                 }
             }
         }
@@ -129,7 +131,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             EditorUtility.DisplayDialog("错误", string.Format("加载保存的配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, Configs.configs.TagEnumConfig.Path, Configs.configs.CurrentSavedConfig.Path), "确定");
+                  s, count, G.configs.TagEnumConfig.Path, G.configs.CurrentSavedConfig.Path), "确定");
             return -1;
         }
     }

@@ -9,7 +9,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
     public class GroupPanel
     {
         public Action OnToggleChanged = () => { };
-        public Config.OptionsEnumConfig.Group Group;
+        public Configs.OptionsEnumConfig.Group Group;
         public bool Dirty;
         public float OptionWidth;
         public string SelectedOption;
@@ -22,7 +22,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             InitStyle();
             Reset();
-            Configs.g.OnChangeCurrentConfig += Reset;
+            G.g.OnChangeCurrentConfig += Reset;
         }
 
         public void Reset()
@@ -51,11 +51,6 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         }
 
         public void OnGUI(float panelWidth)
-        {
-            TogglePanel(panelWidth);
-        }
-
-        private void TogglePanel(float panelWidth)
         {
             float headSpace = 20;
             EditorGUILayout.BeginHorizontal();
@@ -109,20 +104,20 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void UpdateCurrentConfig()
         {
-            var group = Configs.configs.CurrentSavedConfig.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
+            var group = G.configs.CurrentSavedConfig.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
             if (group == null)
             {
-                group = new Config.CurrentSavedConfig.Group
+                group = new Configs.CurrentSavedConfig.Group
                 {
                     FullGroupName = Group.FullGroupName
                 };
-                Configs.configs.CurrentSavedConfig.Groups.Add(group);
+                G.configs.CurrentSavedConfig.Groups.Add(group);
             }
             if (Group.MultiSelect)
             {
                 if (Options.Count == 0)
                 {
-                    Configs.configs.CurrentSavedConfig.Groups.Remove(group);
+                    G.configs.CurrentSavedConfig.Groups.Remove(group);
                 }
                 else
                 {
@@ -160,7 +155,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 {
                     Options[key] = false;
                 }
-                var group = Configs.configs.CurrentSavedConfig.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
+                var group = G.configs.CurrentSavedConfig.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
                 //if (group.Options != null)
                 {
                     if (Group.MultiSelect)
