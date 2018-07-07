@@ -39,12 +39,13 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
         private readonly string localConfigSearchText = "LocalConfig AssetPreprocessor EazyBuildPipeline";
         public bool Dirty;
         public LocalConfig LocalConfig = new LocalConfig();
-        public PreprocessorConfig PreprocessorConfig = new PreprocessorConfig();
+        public CurrentConfig CurrentConfig = new CurrentConfig();
         public OptionsEnumConfig OptionsEnumConfig = new OptionsEnumConfig();
         public CurrentSavedConfig CurrentSavedConfig = new CurrentSavedConfig();
         public TagEnumConfig TagEnumConfig = new TagEnumConfig();
+        public string Tag { get { return string.Join("_", CurrentSavedConfig.Tags); } }
 
-        public bool LoadAllConfigsByLocalConfig()
+        public bool LoadAllConfigsByLocalConfig(string rootPath = null, CurrentConfig currentConfig = null)
         {
             bool success = true;
             try
@@ -80,21 +81,34 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
             
             try
             {
+                if (rootPath != null) //用于总控
+                {
+                    LocalConfig.RootPath = rootPath;
+                }
+
                 if (Directory.Exists(LocalConfig.RootPath))
                 {
-                    PreprocessorConfig.Path = LocalConfig.PreprocessorConfigPath;
-                    if (Directory.Exists(Path.GetDirectoryName(PreprocessorConfig.Path)))
+                    CurrentConfig.Path = LocalConfig.PreprocessorConfigPath;
+
+                    if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.Path)))
                     {
-                        if (!File.Exists(PreprocessorConfig.Path))
+                        if (!File.Exists(CurrentConfig.Path))
                         {
-                            File.Create(PreprocessorConfig.Path).Close();
-                            PreprocessorConfig.Save();
+                            File.Create(CurrentConfig.Path).Close();
+                            CurrentConfig.Save();
                         }
-                        PreprocessorConfig.Load();
-                        CurrentSavedConfig.Path = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, PreprocessorConfig.CurrentSavedConfigName);
-                        if (PreprocessorConfig.CurrentSavedConfigName == "")
+                        if (currentConfig != null) //用于总控
                         {
-                            CurrentSavedConfig.Path = PreprocessorConfig.CurrentSavedConfigName = "";
+                            CurrentConfig = currentConfig;
+                        }
+                        else
+                        {
+                            CurrentConfig.Load(); //原代码
+                        }
+                        CurrentSavedConfig.Path = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, CurrentConfig.CurrentSavedConfigName);
+                        if (CurrentConfig.CurrentSavedConfigName == "")
+                        {
+                            CurrentSavedConfig.Path = CurrentConfig.CurrentSavedConfigName = "";
                         }
                         else
                         {
@@ -104,7 +118,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
                     else
                     {
                         EditorUtility.DisplayDialog("AssetsPreprocessor", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(PreprocessorConfig.Path), "确定");
+                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path), "确定");
                         success = false;
                     }
                 }
@@ -116,7 +130,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
             }
             catch (Exception e)
             {
-                CurrentSavedConfig.Path = PreprocessorConfig.CurrentSavedConfigName = "";
+                CurrentSavedConfig.Path = CurrentConfig.CurrentSavedConfigName = "";
                 EditorUtility.DisplayDialog("AssetsPreprocessor", "加载当前配置时发生错误：" + e.Message, "确定");
                 success = true;
             }
@@ -205,9 +219,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
         public string[] Tags = new string[0];
     }
 
-    public class PreprocessorConfig : EBPConfig
+    public class CurrentConfig : EBPConfig
     {
         public string CurrentSavedConfigName;
         public bool Applying;
+        public bool IsPartOfPipeline;
     }
 }

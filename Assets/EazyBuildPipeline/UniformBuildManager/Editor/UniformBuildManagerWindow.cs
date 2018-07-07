@@ -40,6 +40,10 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 buildSettingsPanel.OnGUI();
             }
         }
+        private void OnFocus()
+        {
+            settingPanel.OnFocus();
+        }
         private void OnDestroy()
         {
             buildSettingsPanel.OnDestory();

@@ -157,12 +157,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     if (G.configs.PackageMapConfig.PackageMode == "Addon")
                     {
                         EditorGUILayout.LabelField("Addon Version:", labelStyle, GUILayout.MaxWidth(110));
-                        string addonVersion_new = EditorGUILayout.TextField(G.configs.PackageConfig.CurrentAddonVersion);
+                        string addonVersion_new = EditorGUILayout.TextField(G.configs.CurrentConfig.CurrentAddonVersion);
                         {
                             if (!string.IsNullOrEmpty(addonVersion_new)) addonVersion_new = addonVersion_new.Trim();
-                            if (addonVersion_new != G.configs.PackageConfig.CurrentAddonVersion)
+                            if (addonVersion_new != G.configs.CurrentConfig.CurrentAddonVersion)
                             {
-                                G.configs.PackageConfig.CurrentAddonVersion = addonVersion_new;
+                                G.configs.CurrentConfig.CurrentAddonVersion = addonVersion_new;
                                 G.g.packageTree.UpdateAllFileName();
                                 return;
                             }
@@ -182,7 +182,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 if (selectedIndexs_new[i] != selectedTagIndexs[i])
                 {
                     selectedTagIndexs[i] = selectedIndexs_new[i];
-                    G.configs.PackageConfig.CurrentTags[i] = tagType[selectedTagIndexs[i]];
+                    G.configs.CurrentConfig.CurrentTags[i] = tagType[selectedTagIndexs[i]];
                     OnChangeTags();
                     return true;
                 }
@@ -231,13 +231,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
                         float startTime = Time.realtimeSinceStartup;
 
-                        G.configs.PackageConfig.Applying = true;
-                        G.configs.PackageConfig.Save();
                         G.configs.Runner.ApplyAllPackages(G.configs, GetPackageMap(), G.g.bundleTree.BundleVersions.BundleVersion, G.g.bundleTree.BundleVersions.ResourceVersion);
-                        G.configs.PackageConfig.Applying = false;
-                        G.configs.PackageConfig.Save();
 
-                        EditorUtility.ClearProgressBar();
                         TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
                         if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                             "显示文件", "关闭"))
@@ -249,8 +244,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                     catch (Exception e)
                     {
-                        EditorUtility.ClearProgressBar();
                         EditorUtility.DisplayDialog("Build Packages", "打包时发生错误：" + e.Message, "确定");
+                    }
+                    finally
+                    {
+                        EditorUtility.ClearProgressBar();
                     }
                 }
             }
@@ -288,13 +286,13 @@ namespace EazyBuildPipeline.PackageManager.Editor
             switch (G.configs.PackageMapConfig.PackageMode)
             {
                 case "Addon":
-                    if (string.IsNullOrEmpty(G.configs.PackageConfig.CurrentAddonVersion))
+                    if (string.IsNullOrEmpty(G.configs.CurrentConfig.CurrentAddonVersion))
                     {
                         EditorUtility.DisplayDialog("提示", "请设置Addon Version", "确定");
                         return false;
                     }
                     char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
-                    int index = G.configs.PackageConfig.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
+                    int index = G.configs.CurrentConfig.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
                     if (index >= 0)
                     {
                         EditorUtility.DisplayDialog("提示", "Package Version中不能包含非法字符：" + invalidFileNameChars[index], "确定");
@@ -477,23 +475,23 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             try
             {
-                if (!string.IsNullOrEmpty(G.configs.PackageConfig.CurrentPackageMap))
+                if (!string.IsNullOrEmpty(G.configs.CurrentConfig.CurrentPackageMap))
                 {
                     string mapsFolderPath = G.configs.LocalConfig.Local_PackageMapsFolderPath;
-                    string currentMapPath = Path.Combine(mapsFolderPath, G.configs.PackageConfig.CurrentPackageMap);
+                    string currentMapPath = Path.Combine(mapsFolderPath, G.configs.CurrentConfig.CurrentPackageMap);
                     G.configs.PackageMapConfig.Path = currentMapPath;
                     G.configs.PackageMapConfig.Load();
                 }
                 else
                 {
-                    G.configs.PackageConfig.CurrentPackageMap = null;
+                    G.configs.CurrentConfig.CurrentPackageMap = null;
                     G.configs.PackageMapConfig.Path = null;
                 }
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "载入映射文件：" + G.configs.PackageConfig.CurrentPackageMap + " 时发生错误：" + e.Message, "确定");
-                G.configs.PackageConfig.CurrentPackageMap = null;
+                EditorUtility.DisplayDialog("错误", "载入映射文件：" + G.configs.CurrentConfig.CurrentPackageMap + " 时发生错误：" + e.Message, "确定");
+                G.configs.CurrentConfig.CurrentPackageMap = null;
                 G.configs.PackageMapConfig.Path = null;
             }
             savedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PackageMapsFolderPath);
@@ -503,41 +501,40 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void HandleApplyingWarning()
         {
-            if (G.configs.PackageConfig.Applying)
+            if (G.configs.CurrentConfig.Applying)
             {
-                EditorUtility.DisplayDialog("提示", "即将打开的这个配置在上次应用时被异常中断（可能是死机，停电等原因）" +
-                    "，建议重新应用该配置", "确定");
+                EditorUtility.DisplayDialog("提示", "上次执行打包时发生错误或被强制中断，可能导致产生不完整或错误的压缩包、在StreamingAssets下产生不完整或错误的文件，建议重新打包。", "确定");
             }
         }
 
         private void ConfigToIndex()
         {
-            if (G.configs.PackageConfig.CurrentTags == null)
+            if (G.configs.CurrentConfig.CurrentTags == null)
             {
                 return;
             }
-            int length = G.configs.PackageConfig.CurrentTags.Length;
+            int length = G.configs.CurrentConfig.CurrentTags.Length;
             if (length > G.configs.TagEnumConfig.Tags.Count)
             {
                 EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
             }
             else if(length < G.configs.TagEnumConfig.Tags.Count)
             {
-                string[] originCurrentTags = G.configs.PackageConfig.CurrentTags;
-                G.configs.PackageConfig.CurrentTags = new string[G.configs.TagEnumConfig.Tags.Count];
-                originCurrentTags.CopyTo(G.configs.PackageConfig.CurrentTags, 0);
+                string[] originCurrentTags = G.configs.CurrentConfig.CurrentTags;
+                G.configs.CurrentConfig.CurrentTags = new string[G.configs.TagEnumConfig.Tags.Count];
+                originCurrentTags.CopyTo(G.configs.CurrentConfig.CurrentTags, 0);
             }
             int i = 0;
             foreach (var item in G.configs.TagEnumConfig.Tags.Values)
             {
-                selectedTagIndexs[i] = GetIndex(item, G.configs.PackageConfig.CurrentTags[i], i);
+                selectedTagIndexs[i] = GetIndex(item, G.configs.CurrentConfig.CurrentTags[i], i);
                 i++;
             }
-            if (G.configs.PackageConfig.CurrentPackageMap == null)
+            if (G.configs.CurrentConfig.CurrentPackageMap == null)
             {
                 return;
             }
-            selectedMapIndex = savedConfigNames.IndexOf(G.configs.PackageConfig.CurrentPackageMap.RemoveExtension());
+            selectedMapIndex = savedConfigNames.IndexOf(G.configs.CurrentConfig.CurrentPackageMap.RemoveExtension());
             selectedLuaSourceIndex = G.LuaSourceEnum.IndexOf(G.configs.PackageMapConfig.LuaSource);
             selectedPackageModeIndex = G.PackageModeEnum.IndexOf(G.configs.PackageMapConfig.PackageMode);
         }
@@ -555,7 +552,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             EditorUtility.DisplayDialog("错误", string.Format("加载配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, G.configs.PackageConfig.Path, G.configs.TagEnumConfig.Path), "确定");
+                  s, count, G.configs.CurrentConfig.Path, G.configs.TagEnumConfig.Path), "确定");
             return -1;
         }
 
@@ -750,7 +747,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     newPackageMapConfig.Path = Path.Combine(G.configs.LocalConfig.Local_PackageMapsFolderPath, newPackageMap);
                     newPackageMapConfig.Load();
                     //至此加载成功
-                    G.configs.PackageConfig.CurrentPackageMap = newPackageMap;
+                    G.configs.CurrentConfig.CurrentPackageMap = newPackageMap;
                     G.configs.PackageMapConfig = newPackageMapConfig;
                     selectedMapIndex = selectedMapIndex_new;
                     ConfigToIndex();

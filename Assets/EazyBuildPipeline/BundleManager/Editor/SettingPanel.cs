@@ -70,16 +70,16 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 if (ShowTagsDropdown()) return;
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.LabelField("Resource Version:", labelOptions);
-                G.configs.BundleManagerConfig.CurrentResourceVersion = EditorGUILayout.IntField(G.configs.BundleManagerConfig.CurrentResourceVersion, inputOptions);
+                G.configs.CurrentConfig.CurrentResourceVersion = EditorGUILayout.IntField(G.configs.CurrentConfig.CurrentResourceVersion, inputOptions);
                 EditorGUILayout.LabelField("  Bundle Version:", labelOptions);
-                G.configs.BundleManagerConfig.CurrentBundleVersion = EditorGUILayout.IntField(G.configs.BundleManagerConfig.CurrentBundleVersion, inputOptions);
+                G.configs.CurrentConfig.CurrentBundleVersion = EditorGUILayout.IntField(G.configs.CurrentConfig.CurrentBundleVersion, inputOptions);
                 GUILayout.Space(10);
                 //压缩选项
                 int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.configs.CompressionEnum, dropdownStyle, dropdownOptions2);
                 if (selectedCompressionIndex_new != selectedCompressionIndex)
                 {
-                    G.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue -= (int)G.configs.CompressionEnumMap[G.configs.CompressionEnum[selectedCompressionIndex]];
-                    G.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue += (int)G.configs.CompressionEnumMap[G.configs.CompressionEnum[selectedCompressionIndex_new]];
+                    G.configs.CurrentConfig.CurrentBuildAssetBundleOptionsValue -= (int)G.configs.CompressionEnumMap[G.configs.CompressionEnum[selectedCompressionIndex]];
+                    G.configs.CurrentConfig.CurrentBuildAssetBundleOptionsValue += (int)G.configs.CompressionEnumMap[G.configs.CompressionEnum[selectedCompressionIndex_new]];
                     selectedCompressionIndex = selectedCompressionIndex_new;
                     return;
                 }
@@ -99,7 +99,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 if (selectedIndexs_new[i] != selectedIndexs[i])
                 {
                     selectedIndexs[i] = selectedIndexs_new[i];
-                    G.configs.BundleManagerConfig.CurrentTags[i] = tagType[selectedIndexs[i]];
+                    G.configs.CurrentConfig.CurrentTags[i] = tagType[selectedIndexs[i]];
                     G.g.OnChangeTags();
                     return true;
                 }
@@ -112,7 +112,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
         {
             //准备参数和验证
             BuildTarget target = BuildTarget.NoTarget;
-            string targetStr = G.configs.BundleManagerConfig.CurrentTags[0];
+            string targetStr = G.configs.CurrentConfig.CurrentTags[0];
             try
             {
                 target = (BuildTarget)Enum.Parse(typeof(BuildTarget), targetStr, true);
@@ -127,9 +127,9 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 EditorUtility.DisplayDialog("Build Bundles", string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target), "确定");
                 return;
             }
-            int optionsValue = G.configs.BundleManagerConfig.CurrentBuildAssetBundleOptionsValue;
-            int resourceVersion = G.configs.BundleManagerConfig.CurrentResourceVersion;
-            int bundleVersion = G.configs.BundleManagerConfig.CurrentBundleVersion;
+            int optionsValue = G.configs.CurrentConfig.CurrentBuildAssetBundleOptionsValue;
+            int resourceVersion = G.configs.CurrentConfig.CurrentResourceVersion;
+            int bundleVersion = G.configs.CurrentConfig.CurrentBundleVersion;
             string tagPath = Path.Combine(G.configs.LocalConfig.BundlesFolderPath, G.configs.Tag);
 
             //开始应用          
@@ -140,14 +140,11 @@ namespace EazyBuildPipeline.BundleManager.Editor
             {
                 try
                 {
-                    G.configs.BundleManagerConfig.CurrentBundleMap = Path.GetFileName(AssetBundleManagement2.AssetBundleModel.BuildMapPath); //TODO:BundleMaster的特殊处理
-                    G.configs.BundleManagerConfig.Applying = true;
-                    G.configs.BundleManagerConfig.Save();
+                    G.configs.CurrentConfig.CurrentBundleMap = Path.GetFileName(AssetBundleManagement2.AssetBundleModel.BuildMapPath); //TODO:BundleMaster的特殊处理
                     EditorUtility.DisplayProgressBar("Build Bundles", "Getting Bunild Maps...", 0);
                     var buildMap = G.g.mainTab.GetBuildMap_extension();
                     G.configs.runner.Apply(buildMap, target, tagPath, resourceVersion, bundleVersion, optionsValue);
-                    G.configs.BundleManagerConfig.Applying = false;
-                    G.configs.BundleManagerConfig.Save();
+                    EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles成功！", "确定");
                 }
                 catch (Exception e)
                 {
@@ -217,38 +214,37 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         private void HandleApplyingWarning()
         {
-            if (G.configs.BundleManagerConfig.Applying)
+            if (G.configs.CurrentConfig.Applying)
             {
-                EditorUtility.DisplayDialog("提示", "即将打开的这个配置在上次应用时被异常中断（可能是死机，停电等原因）" +
-                    "，建议重新应用该配置", "确定");
+                EditorUtility.DisplayDialog("提示", "上次创建Bundles时发生错误或被强制中断，可能导致产生的文件不完全或错误，建议重新创建", "确定");
             }
         }
 
         private void ConfigToIndex()
         {
-            if (G.configs.BundleManagerConfig.CurrentTags == null)
+            if (G.configs.CurrentConfig.CurrentTags == null)
             {
                 return;
             }
-            int length = G.configs.BundleManagerConfig.CurrentTags.Length;
+            int length = G.configs.CurrentConfig.CurrentTags.Length;
             if (length > G.configs.TagEnumConfig.Tags.Count)
             {
                 EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
             }
             else if (length < G.configs.TagEnumConfig.Tags.Count)
             {
-                string[] originCurrentTags = G.configs.BundleManagerConfig.CurrentTags;
-                G.configs.BundleManagerConfig.CurrentTags = new string[G.configs.TagEnumConfig.Tags.Count];
-                originCurrentTags.CopyTo(G.configs.BundleManagerConfig.CurrentTags, 0);
+                string[] originCurrentTags = G.configs.CurrentConfig.CurrentTags;
+                G.configs.CurrentConfig.CurrentTags = new string[G.configs.TagEnumConfig.Tags.Count];
+                originCurrentTags.CopyTo(G.configs.CurrentConfig.CurrentTags, 0);
             }
             int i = 0;
             foreach (var item in G.configs.TagEnumConfig.Tags.Values)
             {
-                selectedIndexs[i] = GetTagIndex(item, G.configs.BundleManagerConfig.CurrentTags[i], i);
+                selectedIndexs[i] = GetTagIndex(item, G.configs.CurrentConfig.CurrentTags[i], i);
                 i++;
             }
 
-            string compressionName = G.configs.CompressionEnumMap.FirstOrDefault(x=>x.Value == (G.configs.BundleManagerConfig.CompressionOption)).Key;
+            string compressionName = G.configs.CompressionEnumMap.FirstOrDefault(x=>x.Value == (G.configs.CurrentConfig.CompressionOption)).Key;
             selectedCompressionIndex = G.configs.CompressionEnum.IndexOf(compressionName);
         }
 
@@ -265,7 +261,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             EditorUtility.DisplayDialog("错误", string.Format("加载配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, G.configs.BundleManagerConfig.Path, G.configs.TagEnumConfig.Path), "确定");
+                  s, count, G.configs.CurrentConfig.Path, G.configs.TagEnumConfig.Path), "确定");
             return -1;
         }
     }

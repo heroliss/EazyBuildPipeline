@@ -46,8 +46,8 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
         public TagEnumConfig TagEnumConfig = new TagEnumConfig();
         public PackageMapConfig PackageMapConfig = new PackageMapConfig();
         public LocalConfig LocalConfig = new LocalConfig();
-        public PackageConfig PackageConfig = new PackageConfig();
-        public string Tag { get { return string.Join("_", PackageConfig.CurrentTags); } }
+        public CurrentConfig CurrentConfig = new CurrentConfig();
+        public string Tag { get { return string.Join("_", CurrentConfig.CurrentTags); } }
         public string BundlePath { get { return Path.Combine(LocalConfig.BundleFolderPath, Tag + "/Bundles"); } }
         public string BundleInfoPath { get { return Path.Combine(LocalConfig.BundleFolderPath, Tag + "/_Info"); } }
 
@@ -102,20 +102,20 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
             {
                 if (Directory.Exists(LocalConfig.RootPath))
                 {
-                    PackageConfig.Path = LocalConfig.PackageConfigPath;
-                    if (Directory.Exists(Path.GetDirectoryName(PackageConfig.Path)))
+                    CurrentConfig.Path = LocalConfig.PackageConfigPath;
+                    if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.Path)))
                     {
-                        if (!File.Exists(PackageConfig.Path))
+                        if (!File.Exists(CurrentConfig.Path))
                         {
-                            File.Create(PackageConfig.Path).Close();
-                            PackageConfig.Save();
+                            File.Create(CurrentConfig.Path).Close();
+                            CurrentConfig.Save();
                         }
-                        PackageConfig.Load();
+                        CurrentConfig.Load();
                     }
                     else
                     {
                         UnityEditor.EditorUtility.DisplayDialog("PackageManager", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                           "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(PackageConfig.Path), "确定");
+                           "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path), "确定");
                         success = false;
                     }
                 }
@@ -220,11 +220,12 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
         }
     }
 
-    public class PackageConfig : EBPConfig
+    public class CurrentConfig : EBPConfig
     {
         public string[] CurrentTags = new string[0];
         public string CurrentPackageMap;
         public string CurrentAddonVersion;
         public bool Applying;
+        public bool IsPartOfPipeline;
     }
 }

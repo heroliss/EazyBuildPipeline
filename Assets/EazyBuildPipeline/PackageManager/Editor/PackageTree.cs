@@ -195,14 +195,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     case "Addon":
                         package.fileName = string.Format("{0}_addon_{1}_{2}_{3}{4}",
-                            G.configs.PackageConfig.CurrentTags[0].ToLower(),
-                            G.configs.PackageConfig.CurrentAddonVersion,
+                            G.configs.CurrentConfig.CurrentTags[0].ToLower(),
+                            G.configs.CurrentConfig.CurrentAddonVersion,
                             "default", package.displayName,
                             G.configs.LocalConfig.PackageExtension);
                         break;
                     case "Patch":
                         package.fileName = string.Format("{0}_patch_{1}_{2}{3}",
-                          G.configs.PackageConfig.CurrentTags[0].ToLower(),
+                          G.configs.CurrentConfig.CurrentTags[0].ToLower(),
                           G.g.bundleTree.BundleVersions.ResourceVersion,
                           package.displayName,
                           G.configs.LocalConfig.PackageExtension);
@@ -713,7 +713,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void CreatePackage()
         {
-            if (string.IsNullOrEmpty(G.configs.PackageConfig.CurrentPackageMap))
+            if (string.IsNullOrEmpty(G.configs.CurrentConfig.CurrentPackageMap))
             {
                 EditorUtility.DisplayDialog("创建Package", "请先选择配置或创建一个空配置", "确定");
                 return;

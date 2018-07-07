@@ -23,11 +23,11 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			InitStyles();
 
             savedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_SavedConfigsFolderPath);
-			string extension = Path.GetExtension(G.configs.PreprocessorConfig.CurrentSavedConfigName);
-            if (G.configs.PreprocessorConfig.CurrentSavedConfigName != null)
+			string extension = Path.GetExtension(G.configs.CurrentConfig.CurrentSavedConfigName);
+            if (G.configs.CurrentConfig.CurrentSavedConfigName != null)
             {
-                selectedSavedConfigIndex = savedConfigNames.IndexOf(G.configs.PreprocessorConfig.CurrentSavedConfigName.Remove(
-                    G.configs.PreprocessorConfig.CurrentSavedConfigName.Length - extension.Length, extension.Length));
+                selectedSavedConfigIndex = savedConfigNames.IndexOf(G.configs.CurrentConfig.CurrentSavedConfigName.Remove(
+                    G.configs.CurrentConfig.CurrentSavedConfigName.Length - extension.Length, extension.Length));
             }
 			G.g.OnChangeCurrentConfig += () => { G.configs.Dirty = false; };
 			HandleApplyingWarning();
@@ -109,15 +109,15 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             {
                 try
                 {
-                    G.configs.PreprocessorConfig.Applying = true;
-                    G.configs.PreprocessorConfig.Save();
                     G.configs.runner.ApplyOptions(G.configs);
-                    G.configs.PreprocessorConfig.Applying = false;
-                    G.configs.PreprocessorConfig.Save();
                 }
                 catch (Exception e)
                 {
                     EditorUtility.DisplayDialog("Preprocessor", "应用配置时发生错误：" + e.ToString(), "确定");
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
                 }
 
                 AssetDatabase.Refresh();
@@ -190,7 +190,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			bool ensureLoad = true;
 			if (G.configs.Dirty)
 			{
-				ensureLoad = !EditorUtility.DisplayDialog("切换配置", "更改未保存，是否要放弃更改？", "返回", "放弃保存");
+                ensureLoad = EditorUtility.DisplayDialog("切换配置", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
 			}
 			if (ensureLoad)
 			{
@@ -201,7 +201,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 					newCurrentSavedConfig.Path = Path.Combine(G.configs.LocalConfig.Local_SavedConfigsFolderPath, newConfigName);
 					newCurrentSavedConfig.Load();
 					//至此加载成功
-					G.configs.PreprocessorConfig.CurrentSavedConfigName = newConfigName;
+					G.configs.CurrentConfig.CurrentSavedConfigName = newConfigName;
 					G.configs.CurrentSavedConfig = newCurrentSavedConfig;
 					selectedSavedConfigIndex = selectedIndex_new;
 					G.g.OnChangeCurrentConfig();
@@ -299,7 +299,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			bool ensure = true;
 			if (G.configs.Dirty)
 			{
-				ensure = !EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "返回", "放弃保存");
+				ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
 			}
 			if (ensure)
 			{
@@ -310,7 +310,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				G.configs = newConfigs;
 				G.g.OnChangeCurrentConfig();
 				G.configs.LocalConfig.Save();
-				selectedSavedConfigIndex = savedConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.configs.PreprocessorConfig.CurrentSavedConfigName));
+				selectedSavedConfigIndex = savedConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.configs.CurrentConfig.CurrentSavedConfigName));
 				HandleApplyingWarning();
 			}
 		}
@@ -366,10 +366,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 		private void HandleApplyingWarning()
 		{
-			if (G.configs.PreprocessorConfig.Applying)
+			if (G.configs.CurrentConfig.Applying)
 			{
-				EditorUtility.DisplayDialog("提示", "上次应用该配置时被异常中断（可能是操作异常，死机，停电等原因）" +
-					"，建议重新应用该配置", "确定");
+                EditorUtility.DisplayDialog("提示", "上次应用配置时发生错误或被强制中断，可能导致对Unity内的文件替换不完全或错误、对meta文件的修改不完全或错误，建议还原meta文件、重新应用配置。", "确定");
 			}
 		}
 	}

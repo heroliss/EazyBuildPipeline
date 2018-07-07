@@ -111,8 +111,12 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             }
         }
 
-        public void ApplyOptions(Configs.Configs configs)
+        public void ApplyOptions(Configs.Configs configs, bool isPartOfPipeline = false)
         {
+            G.configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
+            G.configs.CurrentConfig.Applying = true;
+            G.configs.CurrentConfig.Save();
+
             this.configs = configs;
             string platform = "";//TODO：这里能否使用EditorUserBuildSettings.activeBuildTarget？
 #if UNITY_ANDROID
@@ -167,6 +171,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             }
             currentShellIndex++;
             RunShell_ShowProgress_WaitForExit(changeMetaArgs, "正在查找.meta文件...", "第2步(共2步) 修改meta文件");
+
+            G.configs.CurrentConfig.Applying = false;
+            G.configs.CurrentConfig.Save();
         }
     }
 }

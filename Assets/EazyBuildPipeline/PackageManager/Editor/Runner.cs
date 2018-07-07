@@ -16,8 +16,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         Configs.Configs configs;
 
-        public void ApplyAllPackages(Configs.Configs configs, List<Configs.PackageMapConfig.Package> packageMap, int bundleVersion, int resourceVersion)
+        public void ApplyAllPackages(Configs.Configs configs, List<Configs.PackageMapConfig.Package> packageMap, int bundleVersion, int resourceVersion, bool isPartOfPipeline = false)
         {
+            G.configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
+            G.configs.CurrentConfig.Applying = true;
+            G.configs.CurrentConfig.Save();
+
             this.configs = configs;
             float lastTime = Time.realtimeSinceStartup;
             string bundlesFolderPath = configs.BundlePath;
@@ -45,11 +49,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
             Directory.CreateDirectory(packagesFolderPath);
 
-            string bundlesRootPathInPackage = "AssetBundles/" + configs.PackageConfig.CurrentTags[0].ToLower() + "/AssetBundles/";
-            string extraInfoFilePathInPackage = "AssetBundles/" + configs.PackageConfig.CurrentTags[0].ToLower() + "/extra_info";
-            string bundleVersionFilePathInPackage = "AssetBundles/" + configs.PackageConfig.CurrentTags[0].ToLower() + "/bundle_version";
-            string mapFilePathInPackage = "AssetBundles/" + configs.PackageConfig.CurrentTags[0].ToLower() + "/maps/map";
-            string streamingPath = Path.Combine("Assets/StreamingAssets/AssetBundles", configs.PackageConfig.CurrentTags[0]);
+            string bundlesRootPathInPackage = "AssetBundles/" + configs.CurrentConfig.CurrentTags[0].ToLower() + "/AssetBundles/";
+            string extraInfoFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.CurrentTags[0].ToLower() + "/extra_info";
+            string bundleVersionFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.CurrentTags[0].ToLower() + "/bundle_version";
+            string mapFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.CurrentTags[0].ToLower() + "/maps/map";
+            string streamingPath = Path.Combine("Assets/StreamingAssets/AssetBundles", configs.CurrentConfig.CurrentTags[0]);
             byte[] buffer = new byte[20971520]; //20M缓存,不够会自动扩大
 
             //以下为整体上Addon和Patch的不同
@@ -96,9 +100,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
                     //构建小包
                     string miniPackagePath = Path.Combine(streamingPath, string.Join("_", new string[]{
-                        configs.PackageConfig.CurrentTags[0].ToLower(),
+                        configs.CurrentConfig.CurrentTags[0].ToLower(),
                         configs.PackageMapConfig.PackageMode.ToLower(),
-                        configs.PackageConfig.CurrentAddonVersion,
+                        configs.CurrentConfig.CurrentAddonVersion,
                         "default"})) + configs.LocalConfig.PackageExtension;
                     EditorUtility.DisplayProgressBar("正在向StreamingAssets中构建miniPackage", Path.GetFileName(miniPackagePath), progress); progress += 0.01f;
                     using (FileStream zipFileStream = new FileStream(miniPackagePath, FileMode.Create))
@@ -211,6 +215,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                 }
             }
+
+            G.configs.CurrentConfig.Applying = false;
+            G.configs.CurrentConfig.Save();
         }
 
         private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)

@@ -54,9 +54,9 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         public Runner runner = new Runner();
         private readonly string localConfigSearchText = "LocalConfig BundleManager EazyBuildPipeline";
         public LocalConfig LocalConfig = new LocalConfig();
-        public BundleManagerConfig BundleManagerConfig = new BundleManagerConfig();
+        public CurrentConfig CurrentConfig = new CurrentConfig();
         public TagEnumConfig TagEnumConfig = new TagEnumConfig();
-        public string Tag { get { return string.Join("_", BundleManagerConfig.CurrentTags); } }
+        public string Tag { get { return string.Join("_", CurrentConfig.CurrentTags); } }
 
         public bool LoadAllConfigsByLocalConfig()
         {
@@ -83,20 +83,20 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
             {
                 if (Directory.Exists(LocalConfig.RootPath))
                 {
-                    BundleManagerConfig.Path = LocalConfig.BundleManagerConfigPath;
-                    if (Directory.Exists(Path.GetDirectoryName(BundleManagerConfig.Path)))
+                    CurrentConfig.Path = LocalConfig.BundleManagerConfigPath;
+                    if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.Path)))
                     {
-                        if (!File.Exists(BundleManagerConfig.Path))
+                        if (!File.Exists(CurrentConfig.Path))
                         {
-                            File.Create(BundleManagerConfig.Path).Close();
-                            BundleManagerConfig.Save();
+                            File.Create(CurrentConfig.Path).Close();
+                            CurrentConfig.Save();
                         }
-                        BundleManagerConfig.Load();
+                        CurrentConfig.Load();
                     }
                     else
                     {
                         UnityEditor.EditorUtility.DisplayDialog("BundleManager", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(BundleManagerConfig.Path), "确定");
+                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path), "确定");
                         success = false;
                     }
                 }
@@ -173,7 +173,7 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         }
     }
 
-    public class BundleManagerConfig : EBPConfig
+    public class CurrentConfig : EBPConfig
     {
         public string[] CurrentTags;
         public string CurrentBundleMap;
@@ -181,6 +181,8 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         public int CurrentResourceVersion;
         public int CurrentBundleVersion;
         public bool Applying;
+        public bool IsPartOfPipeline;
+
         public BuildAssetBundleOptions CompressionOption
         {
             get
