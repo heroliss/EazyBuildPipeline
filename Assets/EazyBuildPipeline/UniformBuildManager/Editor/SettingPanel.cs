@@ -102,27 +102,27 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         private void ConfigToIndex()
         {
-            if (G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags == null)
-            {
-                return;
-            }
-            int length = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags.Length;
-            if (length > G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Count)
-            {
-                EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
-            }
-            else if (length < G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Count)
-            {
-                string[] originCurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags;
-                G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags = new string[G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Count];
-                originCurrentTags.CopyTo(G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags, 0);
-            }
-            int i = 0;
-            foreach (var item in G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Values)
-            {
-                selectedTagIndexs[i] = GetTagIndex(item, G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags[i], i);
-                i++;
-            }
+            //if (G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags == null)
+            //{
+            //    return;
+            //}
+            //int length = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags.Length;
+            //if (length > G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Count)
+            //{
+            //    EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
+            //}
+            //else if (length < G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Count)
+            //{
+            //    string[] originCurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags;
+            //    G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags = new string[G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Count];
+            //    originCurrentTags.CopyTo(G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags, 0);
+            //}
+            //int i = 0;
+            //foreach (var item in G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Values)
+            //{
+            //    selectedTagIndexs[i] = GetTagIndex(item, G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags[i], i);
+            //    i++;
+            //}
 
             assetPreprocessorSavedConfigSelectedIndex = assetPreprocessorSavedConfigNames.IndexOf(G.configs.AssetPreprocessorConfigs.CurrentConfig.CurrentSavedConfigName.RemoveExtension());
             bundleManagerSavedConfigSelectedIndex = bundleManagerSavedConfigNames.IndexOf(G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap);
@@ -209,18 +209,12 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 if (assetPreprocessorSavedConfigSelectedIndex != index_new)
                 {
                     assetPreprocessorSavedConfigSelectedIndex = index_new;
-
+                    G.configs.AssetPreprocessorConfigs.CurrentConfig.CurrentSavedConfigName = assetPreprocessorSavedConfigNames[index_new] + ".json";
                 }
-                GUILayout.Button(settingGUIContent, miniButtonOptions);
-                GUILayout.Space(10);
-                EditorGUILayout.LabelField("Tags:", labelStyle, shortLabelOptions);
-                if (G.configs.AssetPreprocessorConfigs.CurrentConfig.IsPartOfPipeline)
+                if (GUILayout.Button(settingGUIContent, miniButtonOptions))
                 {
-                    GUILayout.Label(G.configs.AssetPreprocessorConfigs.Tag);
-                }
-                else
-                {
-                    if (ShowTagsDropdown()) return;
+                    AssetPreprocessor.Editor.G.OverrideCurrentSavedConfigName = G.configs.AssetPreprocessorConfigs.CurrentConfig.CurrentSavedConfigName;
+                    EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
                 }
                 GUILayout.FlexibleSpace();
             }
@@ -238,9 +232,12 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 if (bundleManagerSavedConfigSelectedIndex != index_new)
                 {
                     bundleManagerSavedConfigSelectedIndex = index_new;
-
+                    G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap = bundleManagerSavedConfigNames[index_new];
                 }
-                GUILayout.Button(settingGUIContent, miniButtonOptions);
+                if (GUILayout.Button(settingGUIContent, miniButtonOptions))
+                {
+                    EditorWindow.GetWindow<BundleManager.Editor.BundleManagerWindow>();
+                }
                 GUILayout.Space(10);
 
                 int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.configs.BundleManagerConfigs.CompressionEnum, dropdownStyle, dropdownOptions2);
@@ -282,9 +279,13 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 if (packageManagerSavedConfigSelectedIndex != index_new)
                 {
                     packageManagerSavedConfigSelectedIndex = index_new;
-
+                    G.configs.PackageManagerConfigs.CurrentConfig.CurrentPackageMap = packageManagerSavedConfigNames[index_new] + ".json";
                 }
-                GUILayout.Button(settingGUIContent, miniButtonOptions);
+                if (GUILayout.Button(settingGUIContent, miniButtonOptions))
+                {
+                    PackageManager.Editor.G.OverrideCurrentSavedConfigName = G.configs.PackageManagerConfigs.CurrentConfig.CurrentPackageMap;
+                    EditorWindow.GetWindow<PackageManager.Editor.PackageManagerWindow>();
+                }
                 GUILayout.Space(10);
 
                 EditorGUILayout.LabelField("Addon Version:", labelStyle, labelOptions);
@@ -313,29 +314,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         {
         }
 
-        private bool ShowTagsDropdown()
-        {
-            int[] selectedIndexs_new = new int[G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Count];
-            int i = 0;
-            foreach (var tagType in G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Values)
-            {
-                selectedIndexs_new[i] = EditorGUILayout.Popup(selectedTagIndexs[i], tagType, dropdownStyle, tagDropdownOptions);
-                if (selectedIndexs_new[i] != selectedTagIndexs[i])
-                {
-                    selectedTagIndexs[i] = selectedIndexs_new[i];
-                    G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags[i] = tagType[selectedTagIndexs[i]];
-                    OnChangeTags();
-                    return true;
-                }
-                i++;
-            }
-            return false;
-        }
-
-        private void OnChangeTags()
-        {
-        }
-
         private void ChangeRootPath(string path)
         {
             //bool ensure = true;
@@ -359,8 +337,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         private void ChangeAllConfigsExceptRef(string rootPath)
         {
             Configs.Configs newConfigs = new Configs.Configs();
-            if (!newConfigs.LoadLocalConfig()) return;
-            newConfigs.LocalConfig.RootPath = rootPath;
+            if (!newConfigs.LoadLocalConfig(rootPath)) return;
             if (!newConfigs.LoadAllConfigsByLocalConfig()) return;
             G.configs = newConfigs;
             InitSelectedIndex();

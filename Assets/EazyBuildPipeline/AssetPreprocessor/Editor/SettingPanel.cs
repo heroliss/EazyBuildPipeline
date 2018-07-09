@@ -304,8 +304,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			if (ensure)
 			{
 				Configs.Configs newConfigs = new Configs.Configs();
-				if (!newConfigs.LoadLocalConfig()) return;
-				newConfigs.LocalConfig.RootPath = path;
+				if (!newConfigs.LoadLocalConfig(path)) return;
 				if (!newConfigs.LoadAllConfigsByLocalConfig()) return;
 				G.configs = newConfigs;
 				G.g.OnChangeCurrentConfig();

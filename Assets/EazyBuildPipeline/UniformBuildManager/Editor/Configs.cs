@@ -25,11 +25,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             configs = null;
             g = null;
         }
-
-        //public static string[] NecesseryEnum = new string[] { "Immediate", "Delayed" };
-        //public static string[] DeploymentLocationEnum = new string[] { "Built-in", "Server" };
-        //public static string[] PackageModeEnum = new string[] { "Addon", "Patch" };
-        //public static string[] LuaSourceEnum = new string[] { "None", "Origin", "ByteCode", "Encrypted" };
     }
 }
 namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
@@ -45,30 +40,47 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
         public bool LoadAllConfigsByLocalConfig()
         {
             bool success = true;
-            AssetPreprocessorConfigs = new AssetPreprocessor.Editor.Configs.Configs();
-            if (AssetPreprocessorConfigs.LoadLocalConfig())
-            {
-                AssetPreprocessorConfigs.LocalConfig.RootPath = LocalConfig.RootPath;
-                success = success && AssetPreprocessorConfigs.LoadAllConfigsByLocalConfig();
-            }
+            success = success && LoadAssetPreprocessorConfig();
+            success = success && LoadBundleManagerConfig();
+            success = success && LoadPackageManagerConfig();
 
-            BundleManagerConfigs = new BundleManager.Editor.Configs.Configs();
-            if (BundleManagerConfigs.LoadLocalConfig())
-            {
-                BundleManagerConfigs.LocalConfig.RootPath = LocalConfig.RootPath;
-                success = success && BundleManagerConfigs.LoadAllConfigsByLocalConfig();
-            }
+            return success;
+        }
 
+        public bool LoadPackageManagerConfig()
+        {
             PackageManagerConfigs = new PackageManager.Editor.Configs.Configs();
             if (PackageManagerConfigs.LoadLocalConfig())
             {
                 PackageManagerConfigs.LocalConfig.RootPath = LocalConfig.RootPath;
-                success = success && PackageManagerConfigs.LoadAllConfigsByLocalConfig();
+                return PackageManagerConfigs.LoadAllConfigsByLocalConfig();
             }
-            
-            return success;
+            return false;
         }
-        public bool LoadLocalConfig()
+
+        public bool LoadBundleManagerConfig()
+        {
+            BundleManagerConfigs = new BundleManager.Editor.Configs.Configs();
+            if (BundleManagerConfigs.LoadLocalConfig())
+            {
+                BundleManagerConfigs.LocalConfig.RootPath = LocalConfig.RootPath;
+                return BundleManagerConfigs.LoadAllConfigsByLocalConfig();
+            }
+            return false;
+        }
+
+        public bool LoadAssetPreprocessorConfig()
+        {
+            AssetPreprocessorConfigs = new AssetPreprocessor.Editor.Configs.Configs();
+            if (AssetPreprocessorConfigs.LoadLocalConfig())
+            {
+                AssetPreprocessorConfigs.LocalConfig.RootPath = LocalConfig.RootPath;
+                return AssetPreprocessorConfigs.LoadAllConfigsByLocalConfig();
+            }
+            return false;
+        }
+
+        public bool LoadLocalConfig(string rootPath = null)
         {
             try
             {
@@ -80,10 +92,14 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
                 LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
                 LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.Path);
                 LocalConfig.Load();
+                if (rootPath != null)
+                {
+                    LocalConfig.RootPath = rootPath;
+                }
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
+                EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
                     + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString(), "确定");
                 return false;

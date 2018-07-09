@@ -12,6 +12,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     public static class G
     {
+        public static string OverrideCurrentSavedConfigName = null;
+
         public static Configs.Configs configs;
         public static GlobalReference g;
         public class GlobalReference
@@ -27,6 +29,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             configs = null;
             g = null;
+            OverrideCurrentSavedConfigName = null;
         }
     }
 }
@@ -45,7 +48,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
         public TagEnumConfig TagEnumConfig = new TagEnumConfig();
         public string Tag { get { return string.Join("_", CurrentSavedConfig.Tags); } }
 
-        public bool LoadAllConfigsByLocalConfig(string rootPath = null, CurrentConfig currentConfig = null)
+        public bool LoadAllConfigsByLocalConfig()
         {
             bool success = true;
             try
@@ -78,42 +81,21 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
                     + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + OptionsEnumConfig.ToString(), "确定");
                 success = false;
             }
-            
+
             try
             {
-                if (rootPath != null) //用于总控
-                {
-                    LocalConfig.RootPath = rootPath;
-                }
-
                 if (Directory.Exists(LocalConfig.RootPath))
                 {
-                    CurrentConfig.Path = LocalConfig.PreprocessorConfigPath;
-
+                    CurrentConfig.Path = LocalConfig.CurrentConfigPath;
                     if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.Path)))
                     {
-                        if (!File.Exists(CurrentConfig.Path))
+                        LoadCurrentConfig();
+                        if (G.OverrideCurrentSavedConfigName != null) //用于总控
                         {
-                            File.Create(CurrentConfig.Path).Close();
-                            CurrentConfig.Save();
+                            CurrentConfig.CurrentSavedConfigName = G.OverrideCurrentSavedConfigName;
+                            G.OverrideCurrentSavedConfigName = null;
                         }
-                        if (currentConfig != null) //用于总控
-                        {
-                            CurrentConfig = currentConfig;
-                        }
-                        else
-                        {
-                            CurrentConfig.Load(); //原代码
-                        }
-                        CurrentSavedConfig.Path = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, CurrentConfig.CurrentSavedConfigName);
-                        if (CurrentConfig.CurrentSavedConfigName == "")
-                        {
-                            CurrentSavedConfig.Path = CurrentConfig.CurrentSavedConfigName = "";
-                        }
-                        else
-                        {
-                            CurrentSavedConfig.Load();
-                        }
+                        LoadCurrentSavedConfig();
                     }
                     else
                     {
@@ -136,8 +118,36 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
             }
             return success;
         }
-        
-        public bool LoadLocalConfig()
+
+        private void LoadCurrentConfig()
+        {
+            if (!File.Exists(CurrentConfig.Path))
+            {
+                File.Create(CurrentConfig.Path).Close();
+                CurrentConfig.Save();
+            }
+            CurrentConfig.Load();
+        }
+
+        private void LoadCurrentSavedConfig()
+        {
+            CurrentSavedConfig.Path = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, CurrentConfig.CurrentSavedConfigName);
+            if (CurrentConfig.CurrentSavedConfigName == "")
+            {
+                CurrentSavedConfig.Path = CurrentConfig.CurrentSavedConfigName = "";
+            }
+            else
+            {
+                CurrentSavedConfig.Load();
+            }
+        }
+
+        /// <summary>
+        /// 加载本地配置
+        /// </summary>
+        /// <param name="rootPath">设置Pipeline根路径，若为空则不设置（保留从json中加载的内容）</param>
+        /// <returns></returns>
+        public bool LoadLocalConfig(string rootPath = null)
         {
             try
             {
@@ -149,6 +159,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
                 LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
                 LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.Path);
                 LocalConfig.Load();
+                if (rootPath != null)
+                {
+                    LocalConfig.RootPath = rootPath;
+                }
             }
             catch (Exception e)
             {
@@ -178,17 +192,17 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
         public string Local_OptionsEnumConfigRelativePath;
         public string Local_SavedConfigsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_SavedConfigsFolderRelativePath); } }
         public string Local_SavedConfigsFolderRelativePath;
-		public string Local_ShellsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_ShellsFolderRelativePath); } }
+        public string Local_ShellsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_ShellsFolderRelativePath); } }
         public string Local_ShellsFolderRelativePath;
         [NonSerialized]
         public string LocalRootPath;
         //Pipeline配置路径
         public string RootPath;
-        public string PreprocessorConfigPath { get { return System.IO.Path.Combine(RootPath, PreProcessorConfigRelativePath); } }
-        public string PreProcessorConfigRelativePath;
+        public string CurrentConfigPath { get { return System.IO.Path.Combine(RootPath, CurrentConfigRelativePath); } }
+        public string CurrentConfigRelativePath;
         public string PreStoredAssetsFolderPath { get { return System.IO.Path.Combine(RootPath, PreStoredAssetsFolderRelativePath); } }
         public string PreStoredAssetsFolderRelativePath;
-		public string LogsFolderPath { get { return System.IO.Path.Combine(RootPath, LogsFolderRelativePath); } }
+        public string LogsFolderPath { get { return System.IO.Path.Combine(RootPath, LogsFolderRelativePath); } }
         public string LogsFolderRelativePath;
     }
 

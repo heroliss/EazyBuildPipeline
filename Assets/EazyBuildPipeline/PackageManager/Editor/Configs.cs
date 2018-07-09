@@ -11,6 +11,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
 {
     public static class G
     {
+        public static string OverrideCurrentSavedConfigName = null;
+
         public static Configs.Configs configs;
         public static GlobalReference g;
         public class GlobalReference
@@ -29,6 +31,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             configs = null;
             g = null;
+            OverrideCurrentSavedConfigName = null;
         }
 
         public static string[] NecesseryEnum = new string[] { "Immediate", "Delayed" };
@@ -111,6 +114,11 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
                             CurrentConfig.Save();
                         }
                         CurrentConfig.Load();
+                        if (G.OverrideCurrentSavedConfigName != null) //用于总控
+                        {
+                            CurrentConfig.CurrentPackageMap = G.OverrideCurrentSavedConfigName;
+                            G.OverrideCurrentSavedConfigName = null;
+                        }
                     }
                     else
                     {
