@@ -109,7 +109,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             {
                 try
                 {
-                    G.configs.runner.ApplyOptions(G.configs);
+                    G.configs.Runner.ApplyOptions(G.configs);
                 }
                 catch (Exception e)
                 {
@@ -122,16 +122,16 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
                 AssetDatabase.Refresh();
 				string s = "转换完成！\n";
-                if (G.configs.runner.process.ExitCode != 0)
+                if (G.configs.Runner.process.ExitCode != 0)
                 {
-					s = string.Format("操作中断！执行第{0}步时出错：{1}\n", G.configs.runner.currentShellIndex + 1, G.configs.runner.errorMessage);
+					s = string.Format("操作中断！执行第{0}步时出错：{1}\n", G.configs.Runner.currentShellIndex + 1, G.configs.Runner.errorMessage);
                 }
 				s += string.Format("\n第一步(拷贝文件):\nPreStoredAssets中符合标签的文件共有{0}个，跳过{1}个，成功拷贝{2}个。\n",
-                    G.configs.runner.totalCountList[0], G.configs.runner.skipCountList[0], G.configs.runner.successCountList[0]);
-                if (G.configs.runner.currentShellIndex >= 1)
+                    G.configs.Runner.totalCountList[0], G.configs.Runner.skipCountList[0], G.configs.Runner.successCountList[0]);
+                if (G.configs.Runner.currentShellIndex >= 1)
 				{
 					s += string.Format("\n第二步(修改meta):\n共有{0}个meta文件，跳过{1}个，成功修改{2}个。\n",
-                        G.configs.runner.totalCountList[1], G.configs.runner.skipCountList[1], G.configs.runner.successCountList[1]);
+                        G.configs.Runner.totalCountList[1], G.configs.Runner.skipCountList[1], G.configs.Runner.successCountList[1]);
 				}
 				else
 				{
@@ -140,7 +140,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 				if (EditorUtility.DisplayDialog("Preprocessor", s, "查看日志文件", "关闭"))
 				{
-					foreach (string logFilePath in G.configs.runner.LogFilePathList)
+					foreach (string logFilePath in G.configs.Runner.LogFilePathList)
 					{
 						if (!string.IsNullOrEmpty(logFilePath))
 						{
@@ -304,8 +304,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			if (ensure)
 			{
 				Configs.Configs newConfigs = new Configs.Configs();
-				if (!newConfigs.LoadLocalConfig(path)) return;
-				if (!newConfigs.LoadAllConfigsByLocalConfig()) return;
+				if (!newConfigs.LoadAllConfigs(path)) return;
 				G.configs = newConfigs;
 				G.g.OnChangeCurrentConfig();
 				G.configs.LocalConfig.Save();

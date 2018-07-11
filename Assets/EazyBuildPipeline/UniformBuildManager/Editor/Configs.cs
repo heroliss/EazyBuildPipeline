@@ -1,5 +1,6 @@
 ﻿#pragma warning disable 0649
 using EazyBuildPipeline.Common.Editor;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using UnityEditor;
@@ -29,55 +30,46 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 }
 namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
 {
-    public class Configs
+    public class Configs : EBPConfigs
     {
+        public override string ModuleName { get { return "UniformBuildManager"; } }
         private readonly string localConfigSearchText = "EazyBuildPipeline UniformBuildManager LocalConfig";
         public LocalConfig LocalConfig = new LocalConfig();
         public AssetPreprocessor.Editor.Configs.Configs AssetPreprocessorConfigs;
         public BundleManager.Editor.Configs.Configs BundleManagerConfigs;
         public PackageManager.Editor.Configs.Configs PackageManagerConfigs;
         
-        public bool LoadAllConfigsByLocalConfig()
+        public bool LoadAllConfigs(string rootPath = null)
         {
-            bool success = true;
-            success = success && LoadAssetPreprocessorConfig();
-            success = success && LoadBundleManagerConfig();
-            success = success && LoadPackageManagerConfig();
+            if (!LoadCommonLocalConfig()) return false;
+            if (!LoadCommonTagEnumConfig()) return false;
+            if (!LoadCommonAssetsTagsConfig()) return false;
 
+            if (!LoadLocalConfig(rootPath)) return false;
+ 
+            bool success = true;
+            success &= LoadAssetPreprocessorConfig();
+            success &= LoadBundleManagerConfig();
+            success &= LoadPackageManagerConfig();
             return success;
         }
 
         public bool LoadPackageManagerConfig()
         {
             PackageManagerConfigs = new PackageManager.Editor.Configs.Configs();
-            if (PackageManagerConfigs.LoadLocalConfig())
-            {
-                PackageManagerConfigs.LocalConfig.RootPath = LocalConfig.RootPath;
-                return PackageManagerConfigs.LoadAllConfigsByLocalConfig();
-            }
-            return false;
+            return PackageManagerConfigs.LoadAllConfigs(LocalConfig.RootPath);
         }
 
         public bool LoadBundleManagerConfig()
         {
             BundleManagerConfigs = new BundleManager.Editor.Configs.Configs();
-            if (BundleManagerConfigs.LoadLocalConfig())
-            {
-                BundleManagerConfigs.LocalConfig.RootPath = LocalConfig.RootPath;
-                return BundleManagerConfigs.LoadAllConfigsByLocalConfig();
-            }
-            return false;
+            return BundleManagerConfigs.LoadAllConfigs(LocalConfig.RootPath);
         }
 
         public bool LoadAssetPreprocessorConfig()
         {
             AssetPreprocessorConfigs = new AssetPreprocessor.Editor.Configs.Configs();
-            if (AssetPreprocessorConfigs.LoadLocalConfig())
-            {
-                AssetPreprocessorConfigs.LocalConfig.RootPath = LocalConfig.RootPath;
-                return AssetPreprocessorConfigs.LoadAllConfigsByLocalConfig();
-            }
-            return false;
+            return AssetPreprocessorConfigs.LoadAllConfigs(LocalConfig.RootPath);
         }
 
         public bool LoadLocalConfig(string rootPath = null)
@@ -99,20 +91,18 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
+                DisplayDialog("加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString(), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
                 return false;
             }
             return true;
         }
     }
 
-
     public class LocalConfig : EBPConfig
     {
         //本地配置路径
-        public string Global_SettingIcon;
         [NonSerialized]
         public string LocalRootPath;
         //Pipeline配置路径

@@ -361,8 +361,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             try
             {
-                string[] icons = AssetDatabase.FindAssets(G.configs.LocalConfig.Global_PackageIcon);
-                compressionIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(icons[0]));
+                compressionIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(G.configs.Common_LocalConfig.PackageIconPath);
             }
             catch(Exception e)
             {

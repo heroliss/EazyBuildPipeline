@@ -174,9 +174,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private bool ShowTagsDropdown()
         {
-            int[] selectedIndexs_new = new int[G.configs.TagEnumConfig.Tags.Count];
+            int[] selectedIndexs_new = new int[G.configs.Common_TagEnumConfig.Tags.Count];
             int i = 0;
-            foreach (var tagType in G.configs.TagEnumConfig.Tags.Values)
+            foreach (var tagType in G.configs.Common_TagEnumConfig.Tags.Values)
             {
                 selectedIndexs_new[i] = EditorGUILayout.Popup(selectedTagIndexs[i], tagType, dropdownStyle, dropdownOptions);
                 if (selectedIndexs_new[i] != selectedTagIndexs[i])
@@ -230,14 +230,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     {
                         EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
                         float startTime = Time.realtimeSinceStartup;
-
-                        G.configs.Runner.ApplyAllPackages(G.configs, GetPackageMap(), G.g.bundleTree.BundleVersions.BundleVersion, G.g.bundleTree.BundleVersions.ResourceVersion);
+                        G.configs.PackageMapConfig.Packages = GetPackageMap();
+                        G.configs.Runner.ApplyAllPackages(G.configs, G.g.bundleTree.BundleVersions.BundleVersion, G.g.bundleTree.BundleVersions.ResourceVersion);
 
                         TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
                         if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                             "显示文件", "关闭"))
                         {
-                            string firstPackagePath = Path.Combine(G.configs.LocalConfig.PackageFolderPath, G.configs.Tag +
+                            string firstPackagePath = Path.Combine(G.configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(G.configs.CurrentConfig.CurrentTags) +
                                 "/" + G.g.packageTree.Packages[0].fileName);
                             EditorUtility.RevealInFinder(firstPackagePath);
                         }
@@ -430,9 +430,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             //使用newConfigs加载确保发生异常后不修改原configs
             Configs.Configs newConfigs = new Configs.Configs();
-            if (!newConfigs.LoadLocalConfig()) return;
-            newConfigs.LocalConfig.RootPath = rootPath;
-            if (!newConfigs.LoadAllConfigsByLocalConfig()) return;
+            if (!newConfigs.LoadAllConfigs(rootPath)) return;
             G.configs = newConfigs;
             InitSelectedIndex();
             LoadMaps();
@@ -454,7 +452,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             selectedMapIndex = -1;
             selectedLuaSourceIndex = -1;
             selectedPackageModeIndex = -1;
-            selectedTagIndexs = new int[G.configs.TagEnumConfig.Tags.Count];
+            selectedTagIndexs = new int[G.configs.Common_TagEnumConfig.Tags.Count];
             for (int i = 0; i < selectedTagIndexs.Length; i++)
             {
                 selectedTagIndexs[i] = -1;
@@ -463,42 +461,18 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void LoadAllConfigs()
         {
-            G.configs.LoadLocalConfig();
-            G.configs.LoadAllConfigsByLocalConfig();
+            G.configs.LoadAllConfigs();
             InitSelectedIndex();
             LoadMaps();
+
             ConfigToIndex();
             HandleApplyingWarning();
         }
-
         private void LoadMaps()
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(G.configs.CurrentConfig.CurrentPackageMap))
-                {
-                    string mapsFolderPath = G.configs.LocalConfig.Local_PackageMapsFolderPath;
-                    string currentMapPath = Path.Combine(mapsFolderPath, G.configs.CurrentConfig.CurrentPackageMap);
-                    G.configs.PackageMapConfig.Path = currentMapPath;
-                    G.configs.PackageMapConfig.Load();
-                }
-                else
-                {
-                    G.configs.CurrentConfig.CurrentPackageMap = null;
-                    G.configs.PackageMapConfig.Path = null;
-                }
-            }
-            catch (Exception e)
-            {
-                EditorUtility.DisplayDialog("错误", "载入映射文件：" + G.configs.CurrentConfig.CurrentPackageMap + " 时发生错误：" + e.Message, "确定");
-                G.configs.CurrentConfig.CurrentPackageMap = null;
-                G.configs.PackageMapConfig.Path = null;
-            }
+            Configs.Configs.LoadMap(G.configs);
             savedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PackageMapsFolderPath);
         }
-
-        
-
         private void HandleApplyingWarning()
         {
             if (G.configs.CurrentConfig.Applying)
@@ -514,18 +488,18 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 return;
             }
             int length = G.configs.CurrentConfig.CurrentTags.Length;
-            if (length > G.configs.TagEnumConfig.Tags.Count)
+            if (length > G.configs.Common_TagEnumConfig.Tags.Count)
             {
                 EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
             }
-            else if(length < G.configs.TagEnumConfig.Tags.Count)
+            else if(length < G.configs.Common_TagEnumConfig.Tags.Count)
             {
                 string[] originCurrentTags = G.configs.CurrentConfig.CurrentTags;
-                G.configs.CurrentConfig.CurrentTags = new string[G.configs.TagEnumConfig.Tags.Count];
+                G.configs.CurrentConfig.CurrentTags = new string[G.configs.Common_TagEnumConfig.Tags.Count];
                 originCurrentTags.CopyTo(G.configs.CurrentConfig.CurrentTags, 0);
             }
             int i = 0;
-            foreach (var item in G.configs.TagEnumConfig.Tags.Values)
+            foreach (var item in G.configs.Common_TagEnumConfig.Tags.Values)
             {
                 selectedTagIndexs[i] = GetIndex(item, G.configs.CurrentConfig.CurrentTags[i], i);
                 i++;
@@ -552,7 +526,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             EditorUtility.DisplayDialog("错误", string.Format("加载配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, G.configs.CurrentConfig.Path, G.configs.TagEnumConfig.Path), "确定");
+                  s, count, G.configs.CurrentConfig.Path, G.configs.Common_TagEnumConfig.Path), "确定");
             return -1;
         }
 

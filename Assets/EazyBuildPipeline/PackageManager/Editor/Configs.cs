@@ -42,38 +42,17 @@ namespace EazyBuildPipeline.PackageManager.Editor
 }
 namespace EazyBuildPipeline.PackageManager.Editor.Configs
 {
-    public class Configs
+    public class Configs : EBPConfigs
     {
+        public override string ModuleName { get { return "PackageManager"; } }
+        private readonly string localConfigSearchText = "EazyBuildPipeline PackageManager LocalConfig";
         public Runner Runner = new Runner();
-        private readonly string localConfigSearchText = "LocalConfig PackageManager EazyBuildPipeline";
-        public TagEnumConfig TagEnumConfig = new TagEnumConfig();
         public PackageMapConfig PackageMapConfig = new PackageMapConfig();
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();
-        public string Tag { get { return string.Join("_", CurrentConfig.CurrentTags); } }
-        public string BundlePath { get { return Path.Combine(LocalConfig.BundleFolderPath, Tag + "/Bundles"); } }
-        public string BundleInfoPath { get { return Path.Combine(LocalConfig.BundleFolderPath, Tag + "/_Info"); } }
+        public string BundlePath { get { return Path.Combine(LocalConfig.BundleFolderPath, EBPUtility.GetTagStr(CurrentConfig.CurrentTags) + "/Bundles"); } }
+        public string BundleInfoPath { get { return Path.Combine(LocalConfig.BundleFolderPath, EBPUtility.GetTagStr(CurrentConfig.CurrentTags) + "/_Info"); } }
 
-        //    public string TagName
-        //    {
-        //        get
-        //        {
-        //            int i;
-        //            string tagName = "";
-        //            for (i = 0; i < PackageConfig.CurrentTags.Length; i++)
-        //            {
-        //	if (!string.IsNullOrEmpty(PackageConfig.CurrentTags[i]))
-        //	{
-        //		tagName += PackageConfig.CurrentTags[i] + "_";
-        //	}
-        //            }
-        //if (!string.IsNullOrEmpty(tagName))
-        //{
-        //	tagName = tagName.Remove(tagName.Length - 1);
-        //}
-        //return tagName;
-        //        }
-        //    }
         public int PathHandCount
         {
             get
@@ -81,26 +60,20 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
                 return BundlePath.Length + 1;
             }
         }
-        public bool LoadAllConfigsByLocalConfig()
+
+        public bool LoadAllConfigs(string rootPath = null)
         {
-            bool success = true;
-            try
-            {
-                string[] guids = AssetDatabase.FindAssets(LocalConfig.Global_TagEnumConfigName);
-                if (guids.Length == 0)
-                {
-                    throw new ApplicationException("未能找到全局Tag枚举配置文件，搜索文本：" + LocalConfig.Global_TagEnumConfigName);
-                }
-                TagEnumConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                TagEnumConfig.Load();
-            }
-            catch (Exception e)
-            {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载枚举配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + TagEnumConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
-                success = false;
-            }
+            if (!LoadCommonLocalConfig()) return false;
+            if (!LoadCommonTagEnumConfig()) return false;
+            if (!LoadCommonAssetsTagsConfig()) return false;
+
+            if (!LoadLocalConfig(rootPath)) return false;
+            if (!LoadCurrentConfig()) return false;
+            return true;
+        }
+
+        public bool LoadCurrentConfig()
+        {
             try
             {
                 if (Directory.Exists(LocalConfig.RootPath))
@@ -119,28 +92,29 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
                             CurrentConfig.CurrentPackageMap = G.OverrideCurrentSavedConfigName;
                             G.OverrideCurrentSavedConfigName = null;
                         }
+                        return true;
                     }
                     else
                     {
-                        UnityEditor.EditorUtility.DisplayDialog("PackageManager", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                           "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path), "确定");
-                        success = false;
+                        DisplayDialog("不是有效的Pipeline根目录:" + LocalConfig.RootPath +
+                           "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path));
+                        return false;
                     }
                 }
                 else
                 {
-                    UnityEditor.EditorUtility.DisplayDialog("PackageManager", "根目录不存在:" + LocalConfig.RootPath, "确定");
-                    success = false;
+                    DisplayDialog("根目录不存在:" + LocalConfig.RootPath);
+                    return false;
                 }
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("PackageManager", "加载当前配置时发生错误：" + e.Message, "确定");
-                success = false;
+                DisplayDialog("加载当前配置时发生错误：" + e.Message);
+                return false;
             }
-            return success;
         }
-        public bool LoadLocalConfig()
+
+        public bool LoadLocalConfig(string rootPath = null)
         {
             try
             {
@@ -152,15 +126,44 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
                 LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
                 LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.Path);
                 LocalConfig.Load();
+                if (rootPath != null)
+                {
+                    LocalConfig.RootPath = rootPath;
+                }
+                return true;
             }
             catch (Exception e)
             {
-                UnityEditor.EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
+                DisplayDialog("加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString(), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
                 return false;
             }
-            return true;
+        }
+
+        public static void LoadMap(Configs configs)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(configs.CurrentConfig.CurrentPackageMap))
+                {
+                    string mapsFolderPath = configs.LocalConfig.Local_PackageMapsFolderPath;
+                    string currentMapPath = Path.Combine(mapsFolderPath, configs.CurrentConfig.CurrentPackageMap);
+                    configs.PackageMapConfig.Path = currentMapPath;
+                    configs.PackageMapConfig.Load();
+                }
+                else
+                {
+                    configs.CurrentConfig.CurrentPackageMap = null;
+                    configs.PackageMapConfig.Path = null;
+                }
+            }
+            catch (Exception e)
+            {
+                EditorUtility.DisplayDialog("错误", "载入映射文件：" + configs.CurrentConfig.CurrentPackageMap + " 时发生错误：" + e.Message, "确定");
+                configs.CurrentConfig.CurrentPackageMap = null;
+                configs.PackageMapConfig.Path = null;
+            }
         }
     }
 
@@ -176,8 +179,7 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
             public string Necessery;
             public string DeploymentLocation;
             public bool CopyToStreaming;
-            [NonSerialized]
-            public string FileName; //TODO: 仅用于程序中数据传递
+            public string FileName;
         }
         public List<Package> Packages = new List<Package>(); //该项不随改动而改动
         public string PackageMode;
@@ -188,10 +190,6 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
     public class LocalConfig : EBPConfig
     {
         //本地配置路径
-        public string Global_TagEnumConfigName;
-        public string Global_BundleIcon;
-        public string Global_BundleIcon_Scene;
-        public string Global_PackageIcon;
         public string Local_PackageMapsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_PackageMapsFolderRelativePath); } }
         public string Local_PackageMapsFolderRelativePath;
         [NonSerialized]
@@ -207,25 +205,6 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
         //其他配置
         public string PackageExtension;
         public bool CheckBundle;
-    }
-
-    public class TagEnumConfig : EBPConfig
-    {
-        public Dictionary<string, string[]> Tags = new Dictionary<string, string[]>
-        {
-            { "Example Group 1:",new string[]{"example tag1","example tag2","example tag3"} },
-            { "Example Group 2:",new string[]{"example tag a","example tag b"} },
-        };
-
-        public override void Load()
-        {
-            string s = File.ReadAllText(Path);
-            Tags = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(s);
-        }
-        public override void Save()
-        {
-            File.WriteAllText(Path, JsonConvert.SerializeObject(Tags, Formatting.Indented));
-        }
     }
 
     public class CurrentConfig : EBPConfig

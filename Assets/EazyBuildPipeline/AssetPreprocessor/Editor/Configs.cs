@@ -36,52 +36,33 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
 {
-    public class Configs
+    public class Configs : EBPConfigs
     {
-        public Runner runner = new Runner();
-        private readonly string localConfigSearchText = "LocalConfig AssetPreprocessor EazyBuildPipeline";
+        public override string ModuleName{  get { return "AssetPreprocessor"; } }
+        private readonly string localConfigSearchText = "EazyBuildPipeline AssetPreprocessor LocalConfig";
         public bool Dirty;
+        public Runner Runner = new Runner();
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();
         public OptionsEnumConfig OptionsEnumConfig = new OptionsEnumConfig();
         public CurrentSavedConfig CurrentSavedConfig = new CurrentSavedConfig();
-        public TagEnumConfig TagEnumConfig = new TagEnumConfig();
-        public string Tag { get { return string.Join("_", CurrentSavedConfig.Tags); } }
 
-        public bool LoadAllConfigsByLocalConfig()
+        public bool LoadAllConfigs(string rootPath = null)
         {
-            bool success = true;
-            try
-            {
-                string[] guids = AssetDatabase.FindAssets(LocalConfig.Global_TagEnumConfigName);
-                if (guids.Length == 0)
-                {
-                    throw new ApplicationException("未能找到全局Tag枚举配置文件，搜索文本：" + LocalConfig.Global_TagEnumConfigName);
-                }
-                TagEnumConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                TagEnumConfig.Load();
-            }
-            catch (Exception e)
-            {
-                EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + TagEnumConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
-                success = false;
-            }
+            if (!LoadCommonLocalConfig()) return false;
+            if (!LoadCommonTagEnumConfig()) return false;
+            if (!LoadCommonAssetsTagsConfig()) return false;
 
-            try
-            {
-                OptionsEnumConfig.Path = LocalConfig.Local_OptionsEnumConfigPath;
-                OptionsEnumConfig.Load();
-            }
-            catch (Exception e)
-            {
-                EditorUtility.DisplayDialog("错误", "加载选项配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + OptionsEnumConfig.Path
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + OptionsEnumConfig.ToString(), "确定");
-                success = false;
-            }
+            if (!LoadLocalConfig(rootPath)) return false;
+            if (!LoadOptionsEnumConfig()) return false;
 
+            if (!LoadCurrentConfig()) return false;
+            if (!LoadCurrentSavedConfig()) return false;
+            return true;
+        }
+
+        public bool LoadCurrentConfig()
+        {
             try
             {
                 if (Directory.Exists(LocalConfig.RootPath))
@@ -89,56 +70,77 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
                     CurrentConfig.Path = LocalConfig.CurrentConfigPath;
                     if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.Path)))
                     {
-                        LoadCurrentConfig();
+                        if (!File.Exists(CurrentConfig.Path))
+                        {
+                            File.Create(CurrentConfig.Path).Close();
+                            CurrentConfig.Save();
+                        }
+                        CurrentConfig.Load();
+
                         if (G.OverrideCurrentSavedConfigName != null) //用于总控
                         {
                             CurrentConfig.CurrentSavedConfigName = G.OverrideCurrentSavedConfigName;
                             G.OverrideCurrentSavedConfigName = null;
                         }
-                        LoadCurrentSavedConfig();
+                        return true;
                     }
                     else
                     {
-                        EditorUtility.DisplayDialog("AssetsPreprocessor", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path), "确定");
-                        success = false;
+                        DisplayDialog("不是有效的Pipeline根目录:" + LocalConfig.RootPath +
+                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path));
+                        return false;
                     }
                 }
                 else
                 {
-                    EditorUtility.DisplayDialog("AssetsPreprocessor", "根目录不存在:" + LocalConfig.RootPath, "确定");
-                    success = false;
+                    DisplayDialog("根目录不存在:" + LocalConfig.RootPath);
+                    return false;
                 }
             }
             catch (Exception e)
             {
-                CurrentSavedConfig.Path = CurrentConfig.CurrentSavedConfigName = "";
-                EditorUtility.DisplayDialog("AssetsPreprocessor", "加载当前配置时发生错误：" + e.Message, "确定");
-                success = true;
+                CurrentConfig.CurrentSavedConfigName = "";
+                DisplayDialog("加载当前配置时发生错误：" + e.Message);
+                return false;
             }
-            return success;
         }
 
-        private void LoadCurrentConfig()
+        public bool LoadOptionsEnumConfig()
         {
-            if (!File.Exists(CurrentConfig.Path))
+            try
             {
-                File.Create(CurrentConfig.Path).Close();
-                CurrentConfig.Save();
+                OptionsEnumConfig.Path = LocalConfig.Local_OptionsEnumConfigPath;
+                OptionsEnumConfig.Load();
+                return true;
             }
-            CurrentConfig.Load();
+            catch (Exception e)
+            {
+                DisplayDialog("加载选项配置文件时发生错误：" + e.Message
+                    + "\n加载路径：" + OptionsEnumConfig.Path
+                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + OptionsEnumConfig.ToString());
+                return false;
+            }
         }
 
-        private void LoadCurrentSavedConfig()
+        public bool LoadCurrentSavedConfig()
         {
-            CurrentSavedConfig.Path = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, CurrentConfig.CurrentSavedConfigName);
-            if (CurrentConfig.CurrentSavedConfigName == "")
+            try
             {
-                CurrentSavedConfig.Path = CurrentConfig.CurrentSavedConfigName = "";
+                CurrentSavedConfig.Path = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, CurrentConfig.CurrentSavedConfigName);
+                if (CurrentConfig.CurrentSavedConfigName == "")
+                {
+                    CurrentSavedConfig.Path = "";
+                }
+                else
+                {
+                    CurrentSavedConfig.Load();
+                }
+                return true;
             }
-            else
+            catch(Exception e)
             {
-                CurrentSavedConfig.Load();
+                DisplayDialog("加载保存的配置文件时发生错误：" + e.Message);
+                return false;
             }
         }
 
@@ -163,15 +165,15 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
                 {
                     LocalConfig.RootPath = rootPath;
                 }
+                return true;
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
+                DisplayDialog("加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString(), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
                 return false;
             }
-            return true;
         }
     }
 
@@ -187,7 +189,6 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
     public class LocalConfig : EBPConfig
     {
         //本地配置路径
-        public string Global_TagEnumConfigName;
         public string Local_OptionsEnumConfigPath { get { return System.IO.Path.Combine(LocalRootPath, Local_OptionsEnumConfigRelativePath); } }
         public string Local_OptionsEnumConfigRelativePath;
         public string Local_SavedConfigsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_SavedConfigsFolderRelativePath); } }
@@ -204,25 +205,6 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
         public string PreStoredAssetsFolderRelativePath;
         public string LogsFolderPath { get { return System.IO.Path.Combine(RootPath, LogsFolderRelativePath); } }
         public string LogsFolderRelativePath;
-    }
-
-    public class TagEnumConfig : EBPConfig
-    {
-        public Dictionary<string, string[]> Tags = new Dictionary<string, string[]>
-        {
-            { "Example Group 1:",new string[]{"example tag1","example tag2","example tag3"} },
-            { "Example Group 2:",new string[]{"example tag a","example tag b"} },
-        };
-
-        public override void Load()
-        {
-            string s = File.ReadAllText(Path);
-            Tags = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(s);
-        }
-        public override void Save()
-        {
-            File.WriteAllText(Path, JsonConvert.SerializeObject(Tags, Formatting.Indented));
-        }
     }
 
     public class CurrentSavedConfig : EBPConfig

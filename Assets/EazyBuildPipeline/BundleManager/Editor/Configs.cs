@@ -35,7 +35,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
 namespace EazyBuildPipeline.BundleManager.Editor.Configs
 {
-    public class Configs
+    public class Configs : EBPConfigs
     {
         public Dictionary<string, BuildAssetBundleOptions> CompressionEnumMap = new Dictionary<string, BuildAssetBundleOptions>
         {
@@ -51,34 +51,25 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         }
 
 
-        public Runner runner = new Runner();
-        private readonly string localConfigSearchText = "LocalConfig BundleManager EazyBuildPipeline";
+        public override string ModuleName { get { return "BundleManager"; } }
+        private readonly string localConfigSearchText = "EazyBuildPipeline BundleManager LocalConfig";
+        public Runner Runner = new Runner();
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();
-        public TagEnumConfig TagEnumConfig = new TagEnumConfig();
-        public string Tag { get { return string.Join("_", CurrentConfig.CurrentTags); } }
 
-        public bool LoadAllConfigsByLocalConfig()
+        public bool LoadAllConfigs(string rootPath = null)
         {
-            bool success = true;
-            try
-            {
-                string[] guids = AssetDatabase.FindAssets(LocalConfig.Global_TagEnumConfigName);
-                if (guids.Length == 0)
-                {
-                    throw new ApplicationException("未能找到全局Tag枚举配置文件，搜索文本：" + LocalConfig.Global_TagEnumConfigName);
-                }
-                TagEnumConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                TagEnumConfig.Load();
-            }
-            catch (Exception e)
-            {
-                EditorUtility.DisplayDialog("错误", "加载公共标签配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + TagEnumConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + JsonConvert.SerializeObject(TagEnumConfig.Tags, Formatting.Indented), "确定");
-                success = false;
-            }
+            if (!LoadCommonLocalConfig()) return false;
+            if (!LoadCommonTagEnumConfig()) return false;
+            if (!LoadCommonAssetsTagsConfig()) return false;
 
+            if (!LoadLocalConfig(rootPath)) return false;
+            if (!LoadCurrentConfig()) return false;
+            return true;
+        }
+
+        public bool LoadCurrentConfig()
+        {
             try
             {
                 if (Directory.Exists(LocalConfig.RootPath))
@@ -92,29 +83,29 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
                             CurrentConfig.Save();
                         }
                         CurrentConfig.Load();
+                        return true;
                     }
                     else
                     {
-                        UnityEditor.EditorUtility.DisplayDialog("BundleManager", "不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path), "确定");
-                        success = false;
+                        DisplayDialog("不是有效的Pipeline根目录:" + LocalConfig.RootPath +
+                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path));
+                        return false;
                     }
                 }
                 else
                 {
-                    EditorUtility.DisplayDialog("BundleManager", "根目录不存在:" + LocalConfig.RootPath, "确定");
-                    success = false;
+                    DisplayDialog("根目录不存在:" + LocalConfig.RootPath);
+                    return false;
                 }
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("BundleManager", "加载当前配置时发生错误：" + e.Message, "确定");
-                success = false;
+                DisplayDialog("加载当前配置时发生错误：" + e.Message);
+                return false;
             }
-            return success;
         }
-        
-        public bool LoadLocalConfig()
+
+        public bool LoadLocalConfig(string rootPath = null)
         {
             try
             {
@@ -126,24 +117,27 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
                 LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
                 LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.Path);
                 LocalConfig.Load();
+                if (rootPath != null)
+                {
+                    LocalConfig.RootPath = rootPath;
+                }
+                return true;
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "加载本地配置文件时发生错误：" + e.Message
+                DisplayDialog("加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.Path
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString(), "确定");
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
                 return false;
             }
-            return true;
         }
     }
 
     public class LocalConfig : EBPConfig
     {
         //本地配置路径
-        public string Global_TagEnumConfigName;
-        public string Local_BundleMapsFolderPath { get { return "AssetBundles/BuildMaps"; } }//TODO：BundleMaster的特殊处理
-        //public string Local_BundleMapsFolderRelativePath;
+        public string Local_BundleMapsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_BundleMapsFolderRelativePath); } }
+        public string Local_BundleMapsFolderRelativePath;
         [NonSerialized]
         public string LocalRootPath;
         //Pipeline配置路径
@@ -152,25 +146,6 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         public string BundleManagerConfigRelativePath;
         public string BundlesFolderPath { get { return System.IO.Path.Combine(RootPath, BundlesFolderRelativePath); } }
         public string BundlesFolderRelativePath;
-    }
-
-    public class TagEnumConfig : EBPConfig
-    {
-        public Dictionary<string, string[]> Tags = new Dictionary<string, string[]>
-        {
-            { "Example Group 1:",new string[]{"example tag1","example tag2","example tag3"} },
-            { "Example Group 2:",new string[]{"example tag a","example tag b"} },
-        };
-
-        public override void Load()
-        {
-            string s = File.ReadAllText(Path);
-            Tags = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(s);
-        }
-        public override void Save()
-        {
-            File.WriteAllText(Path, JsonConvert.SerializeObject(Tags, Formatting.Indented));
-        }
     }
 
     public class CurrentConfig : EBPConfig

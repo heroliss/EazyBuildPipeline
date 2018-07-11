@@ -32,8 +32,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             G.Init();
 
-            G.configs.LoadLocalConfig();
-            G.configs.LoadAllConfigsByLocalConfig();
+            G.configs.LoadAllConfigs();
 
             settingPanel = new SettingPanel();
             tagsPanel = new TagsPanel();

@@ -3,6 +3,8 @@ using UnityEditor;
 using System;
 using System.Linq;
 using System.IO;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace EazyBuildPipeline.UniformBuildManager.Editor
 {
@@ -74,8 +76,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         private void LoadAllConfigs()
         {
-            G.configs.LoadLocalConfig();
-            G.configs.LoadAllConfigsByLocalConfig();
+            G.configs.LoadAllConfigs();
             InitSelectedIndex();
             LoadSavedConfigs();
             ConfigToIndex();
@@ -87,8 +88,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             try
             {
                 warnIcon = EditorGUIUtility.FindTexture("console.warnicon.sml");
-                string[] icons = AssetDatabase.FindAssets(G.configs.LocalConfig.Global_SettingIcon);
-                settingIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(icons[0]));
+                settingIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(G.configs.Common_LocalConfig.SettingIconPath);
             }
             catch (Exception e)
             {
@@ -125,7 +125,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             //}
 
             assetPreprocessorSavedConfigSelectedIndex = assetPreprocessorSavedConfigNames.IndexOf(G.configs.AssetPreprocessorConfigs.CurrentConfig.CurrentSavedConfigName.RemoveExtension());
-            bundleManagerSavedConfigSelectedIndex = bundleManagerSavedConfigNames.IndexOf(G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap);
+            bundleManagerSavedConfigSelectedIndex = bundleManagerSavedConfigNames.IndexOf(G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap.RemoveExtension());
             packageManagerSavedConfigSelectedIndex = packageManagerSavedConfigNames.IndexOf(G.configs.PackageManagerConfigs.CurrentConfig.CurrentPackageMap.RemoveExtension());
 
             string compressionName = G.configs.BundleManagerConfigs.CompressionEnumMap.FirstOrDefault(x => x.Value == (G.configs.BundleManagerConfigs.CurrentConfig.CompressionOption)).Key;
@@ -150,14 +150,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         private void LoadSavedConfigs()
         {
             assetPreprocessorSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.AssetPreprocessorConfigs.LocalConfig.Local_SavedConfigsFolderPath);
-            //TODO：BundleMaster的特殊处理
-            string[] files = Directory.GetFiles(G.configs.BundleManagerConfigs.LocalConfig.Local_BundleMapsFolderPath, "*");
-            for (int i = 0; i < files.Length; i++)
-            {
-                files[i] = Path.GetFileName(files[i]);
-            }
-            //----------------------------
-            bundleManagerSavedConfigNames = files;
+            bundleManagerSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.BundleManagerConfigs.LocalConfig.Local_BundleMapsFolderPath);
             packageManagerSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.PackageManagerConfigs.LocalConfig.Local_PackageMapsFolderPath);
         }
 
@@ -170,7 +163,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             assetPreprocessorSavedConfigNames = new string[0];
             bundleManagerSavedConfigNames = new string[0];
             packageManagerSavedConfigNames = new string[0];
-            selectedTagIndexs = new int[G.configs.AssetPreprocessorConfigs.TagEnumConfig.Tags.Count];
+            selectedTagIndexs = new int[G.configs.AssetPreprocessorConfigs.Common_TagEnumConfig.Tags.Count];
             for (int i = 0; i < selectedTagIndexs.Length; i++)
             {
                 selectedTagIndexs[i] = -1;
@@ -216,6 +209,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     AssetPreprocessor.Editor.G.OverrideCurrentSavedConfigName = G.configs.AssetPreprocessorConfigs.CurrentConfig.CurrentSavedConfigName;
                     EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
                 }
+                GUILayout.Space(10);
+                GUILayout.Label(G.configs.AssetPreprocessorConfigs.CurrentConfig.IsPartOfPipeline ?
+                    "→ " + EBPUtility.GetTagStr(G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags) : EBPUtility.GetTagStr(G.configs.Common_AssetsTagsConfig.CurrentTags));
                 GUILayout.FlexibleSpace();
             }
             GUILayout.FlexibleSpace();
@@ -232,7 +228,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 if (bundleManagerSavedConfigSelectedIndex != index_new)
                 {
                     bundleManagerSavedConfigSelectedIndex = index_new;
-                    G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap = bundleManagerSavedConfigNames[index_new];
+                    G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap = bundleManagerSavedConfigNames[index_new] + ".json";
                 }
                 if (GUILayout.Button(settingGUIContent, miniButtonOptions))
                 {
@@ -312,6 +308,59 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         private void ClickedApply()
         {
+            BuildTarget target = BuildTarget.NoTarget;
+            int resourceVersion = -1;
+            int bundleVersion = -1;
+            int optionsValue = 0;
+            string tagPath = null;
+            AssetBundleBuild[] bundleBuildMap = null;
+
+            if (G.configs.BundleManagerConfigs.CurrentConfig.IsPartOfPipeline)
+            {
+                //准备参数和验证
+                target = BuildTarget.NoTarget;
+                string targetStr = G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags[0];
+                try
+                {
+                    target = (BuildTarget)Enum.Parse(typeof(BuildTarget), targetStr, true);
+                }
+                catch
+                {
+                    EditorUtility.DisplayDialog("Build Bundles", "没有此平台：" + targetStr, "确定");
+                    return;
+                }
+                if (EditorUserBuildSettings.activeBuildTarget != target)
+                {
+                    EditorUtility.DisplayDialog("Build Bundles", string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target), "确定");
+                    return;
+                }
+                optionsValue = G.configs.BundleManagerConfigs.CurrentConfig.CurrentBuildAssetBundleOptionsValue;
+                resourceVersion = G.configs.BundleManagerConfigs.CurrentConfig.CurrentResourceVersion;
+                bundleVersion = G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleVersion;
+                tagPath = Path.Combine(G.configs.BundleManagerConfigs.LocalConfig.BundlesFolderPath, EBPUtility.GetTagStr(G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags));
+
+                string bundleMapPath = Path.Combine(G.configs.BundleManagerConfigs.LocalConfig.Local_BundleMapsFolderPath, G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap);
+                string content = File.ReadAllText(bundleMapPath);
+                bundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(content);
+            }
+
+            if (G.configs.AssetPreprocessorConfigs.CurrentConfig.IsPartOfPipeline)
+            {
+                G.configs.AssetPreprocessorConfigs.Runner.ApplyOptions(G.configs.AssetPreprocessorConfigs, true);
+            }
+
+            if (G.configs.BundleManagerConfigs.CurrentConfig.IsPartOfPipeline)
+            {
+                G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags.ToArray();
+                G.configs.BundleManagerConfigs.Runner.Apply(G.configs.BundleManagerConfigs, bundleBuildMap, target, tagPath, resourceVersion, bundleVersion, optionsValue, true);
+            }
+
+            if (G.configs.PackageManagerConfigs.CurrentConfig.IsPartOfPipeline)
+            {
+                G.configs.PackageManagerConfigs.CurrentConfig.CurrentTags = G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags.ToArray();
+                PackageManager.Editor.Configs.Configs.LoadMap(G.configs.PackageManagerConfigs);
+                G.configs.PackageManagerConfigs.Runner.ApplyAllPackages(G.configs.PackageManagerConfigs, G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleVersion, G.configs.BundleManagerConfigs.CurrentConfig.CurrentResourceVersion);
+            }
         }
 
         private void ChangeRootPath(string path)
@@ -337,8 +386,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         private void ChangeAllConfigsExceptRef(string rootPath)
         {
             Configs.Configs newConfigs = new Configs.Configs();
-            if (!newConfigs.LoadLocalConfig(rootPath)) return;
-            if (!newConfigs.LoadAllConfigsByLocalConfig()) return;
+            if (!newConfigs.LoadAllConfigs(rootPath)) return;
             G.configs = newConfigs;
             InitSelectedIndex();
             LoadSavedConfigs();

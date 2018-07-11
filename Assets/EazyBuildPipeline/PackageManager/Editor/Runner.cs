@@ -16,19 +16,19 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         Configs.Configs configs;
 
-        public void ApplyAllPackages(Configs.Configs configs, List<Configs.PackageMapConfig.Package> packageMap, int bundleVersion, int resourceVersion, bool isPartOfPipeline = false)
+        public void ApplyAllPackages(Configs.Configs configs, int bundleVersion, int resourceVersion)
         {
-            G.configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
-            G.configs.CurrentConfig.Applying = true;
-            G.configs.CurrentConfig.Save();
+            configs.CurrentConfig.Applying = true;
+            configs.CurrentConfig.Save();
 
             this.configs = configs;
             float lastTime = Time.realtimeSinceStartup;
             string bundlesFolderPath = configs.BundlePath;
-            string packagesFolderPath = Path.Combine(configs.LocalConfig.PackageFolderPath, configs.Tag);
+            string packagesFolderPath = Path.Combine(configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(configs.CurrentConfig.CurrentTags));
             int count = 0;
             int total = 0;
             float progress = 0;
+            var packageMap = configs.PackageMapConfig.Packages;
             foreach (var package in packageMap)
             {
                 total += package.Bundles.Count;
@@ -216,8 +216,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 }
             }
 
-            G.configs.CurrentConfig.Applying = false;
-            G.configs.CurrentConfig.Save();
+            configs.CurrentConfig.Applying = false;
+            configs.CurrentConfig.Save();
         }
 
         private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)

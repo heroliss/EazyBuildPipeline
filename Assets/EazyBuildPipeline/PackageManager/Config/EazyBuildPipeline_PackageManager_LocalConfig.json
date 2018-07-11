@@ -1,8 +1,4 @@
 {
-    "Global_TagEnumConfigName": "TagEnumConfig EazyBuildPipeline",
-    "Global_BundleIcon": "BundleIcon Default EazyBuildPipeline",
-    "Global_BundleIcon_Scene": "BundleIcon Scene EazyBuildPipeline",
-    "Global_PackageIcon": "PackageIcon EazyBuildPipeline",
     "Local_PackageMapsFolderRelativePath": "PackageMaps",
     "RootPath": "C:/Users/herol/Desktop/dukto传送/ExamplePiplineRoot",
     "PackageConfigRelativePath": "BundlePackages/_Config/PackageConfig.json",

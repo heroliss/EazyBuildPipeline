@@ -10,11 +10,11 @@ namespace EazyBuildPipeline.BundleManager.Editor
     public class Runner
     {
         //Configs.Configs configs; //暂时用不到
-        public void Apply(AssetBundleBuild[] buildMap, BuildTarget target, string tagPath, int resourceVersion, int bundleVersion, int optionsValue, bool isPartOfPipeline = false)
+        public void Apply(Configs.Configs configs, AssetBundleBuild[] buildMap, BuildTarget target, string tagPath, int resourceVersion, int bundleVersion, int optionsValue, bool isPartOfPipeline = false)
         {
-            G.configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
-            G.configs.CurrentConfig.Applying = true;
-            G.configs.CurrentConfig.Save();
+            configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
+            configs.CurrentConfig.Applying = true;
+            configs.CurrentConfig.Save();
 
             EditorUtility.DisplayProgressBar("Build Bundles", "正在重建目录:" + tagPath, 0.02f);
             if (Directory.Exists(tagPath))
@@ -42,8 +42,8 @@ namespace EazyBuildPipeline.BundleManager.Editor
             //此处保留旧map文件的生成
             AssetBundleManagement.ABExtractItemBuilder.BuildMapperFile(AssetBundleManagement.ABExtractItemBuilder.BuildAssetMapper(buildMap), Path.Combine(infoPath, "map"));
 
-            G.configs.CurrentConfig.Applying = false;
-            G.configs.CurrentConfig.Save();
+            configs.CurrentConfig.Applying = false;
+            configs.CurrentConfig.Save();
         }
 
         private void RenameMainBundleManifest(string folderPath)

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
@@ -113,11 +114,16 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         public void ApplyOptions(Configs.Configs configs, bool isPartOfPipeline = false)
         {
+            this.configs = configs;
+
+            string assetsTagsFilePath = AssetDatabase.GUIDToAssetPath(G.configs.Common_AssetsTagsConfig.Path);
+            string tags = JsonConvert.SerializeObject(new string[] { "Applying" }.Concat(configs.CurrentSavedConfig.Tags));
+            File.WriteAllText(assetsTagsFilePath, tags);
+
             G.configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
             G.configs.CurrentConfig.Applying = true;
             G.configs.CurrentConfig.Save();
 
-            this.configs = configs;
             string platform = "";//TODO：这里能否使用EditorUserBuildSettings.activeBuildTarget？
 #if UNITY_ANDROID
 			platform = "Android";
@@ -165,12 +171,18 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             LogFilePathList = new List<string> { null, null };
 
             RunShell_ShowProgress_WaitForExit(copyFileArgs, "正在从PreStoredAssets里查找文件...", "第1步(共2步) 从PreStoredAssets拷贝文件至Assets目录");
-            if (process.ExitCode != 0 || changeMetaArgs.Length == changeMetaArgsLength) //第一步出错或第二步没有勾选任何选项则不再向下执行
+            if (process.ExitCode != 0) //第一步出错
             {
                 return;
             }
-            currentShellIndex++;
-            RunShell_ShowProgress_WaitForExit(changeMetaArgs, "正在查找.meta文件...", "第2步(共2步) 修改meta文件");
+            if (changeMetaArgs.Length != changeMetaArgsLength) //第二步勾选
+            {
+                currentShellIndex++;
+                RunShell_ShowProgress_WaitForExit(changeMetaArgs, "正在查找.meta文件...", "第2步(共2步) 修改meta文件");
+            }
+
+            tags = JsonConvert.SerializeObject(configs.CurrentSavedConfig.Tags);
+            File.WriteAllText(assetsTagsFilePath, tags);
 
             G.configs.CurrentConfig.Applying = false;
             G.configs.CurrentConfig.Save();
