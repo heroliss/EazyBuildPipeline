@@ -38,14 +38,19 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
 {
     public class Configs : EBPConfigs
     {
-        public override string ModuleName{  get { return "AssetPreprocessor"; } }
+        public override string ModuleName{ get { return "AssetPreprocessor"; } }
         private readonly string localConfigSearchText = "EazyBuildPipeline AssetPreprocessor LocalConfig";
         public bool Dirty;
-        public Runner Runner = new Runner();
+        public Runner Runner;
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();
         public OptionsEnumConfig OptionsEnumConfig = new OptionsEnumConfig();
         public CurrentSavedConfig CurrentSavedConfig = new CurrentSavedConfig();
+
+        public Configs()
+        {
+            Runner = new Runner(this);
+        }
 
         public bool LoadAllConfigs(string rootPath = null)
         {

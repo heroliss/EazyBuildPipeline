@@ -91,7 +91,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         GUILayout.FlexibleSpace();
                         GUILayout.Space(10);
                         if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions))
-                        { ClickedNew(); return; }
+                        { ClickedNew(); }
                         if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonStyle, buttonOptions))
                         { ClickedSave(); return; }
 
@@ -220,36 +220,37 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void ClickedApply()
         {
-            if (CheckAllPackageItem())
-            {
-                bool ensure = EditorUtility.DisplayDialog("Build Packages", string.Format("确定应用当前配置？"),
-                    "确定", "取消");
-                if (ensure)
-                {
-                    try
-                    {
-                        EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
-                        float startTime = Time.realtimeSinceStartup;
-                        G.configs.PackageMapConfig.Packages = GetPackageMap();
-                        G.configs.Runner.ApplyAllPackages(G.configs, G.g.bundleTree.BundleVersions.BundleVersion, G.g.bundleTree.BundleVersions.ResourceVersion);
+            G.configs.PackageMapConfig.Packages = GetPackageMap();
+            if (!G.configs.Runner.Check()) return;
+            if (!CheckAllPackageItem()) return;
 
-                        TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
-                        if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
-                            "显示文件", "关闭"))
-                        {
-                            string firstPackagePath = Path.Combine(G.configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(G.configs.CurrentConfig.CurrentTags) +
-                                "/" + G.g.packageTree.Packages[0].fileName);
-                            EditorUtility.RevealInFinder(firstPackagePath);
-                        }
-                    }
-                    catch (Exception e)
+            bool ensure = EditorUtility.DisplayDialog("Build Packages", string.Format("确定应用当前配置？"),
+                "确定", "取消");
+            if (ensure)
+            {
+                try
+                {
+                    EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
+                    float startTime = Time.realtimeSinceStartup;
+                    
+                    G.configs.Runner.ApplyAllPackages(G.g.bundleTree.BundleVersions.BundleVersion, G.g.bundleTree.BundleVersions.ResourceVersion);
+
+                    TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
+                    if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
+                        "显示文件", "关闭"))
                     {
-                        EditorUtility.DisplayDialog("Build Packages", "打包时发生错误：" + e.Message, "确定");
+                        string firstPackagePath = Path.Combine(G.configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(G.configs.CurrentConfig.CurrentTags) +
+                            "/" + G.g.packageTree.Packages[0].fileName);
+                        EditorUtility.RevealInFinder(firstPackagePath);
                     }
-                    finally
-                    {
-                        EditorUtility.ClearProgressBar();
-                    }
+                }
+                catch (Exception e)
+                {
+                    EditorUtility.DisplayDialog("Build Packages", "打包时发生错误：" + e.Message, "确定");
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
                 }
             }
         }
@@ -257,68 +258,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private bool CheckAllPackageItem()
         {
-            if (G.g.packageTree.Packages.Count == 0)
-            {
-                return false;
-            }
-            //检查配置
-            if (string.IsNullOrEmpty(G.configs.PackageMapConfig.PackageMode))
-            {
-                EditorUtility.DisplayDialog("提示", "请设置打包模式", "确定");
-                return false;
-            }
-            if (string.IsNullOrEmpty(G.configs.PackageMapConfig.LuaSource))
-            {
-                EditorUtility.DisplayDialog("提示", "请设置Lua源", "确定");
-                return false;
-            }
-            if (G.configs.PackageMapConfig.CompressionLevel == -1)
-            {
-                EditorUtility.DisplayDialog("提示", "请设置压缩等级", "确定");
-                return false;
-            }
-            if (G.LuaSourceEnum.IndexOf(G.configs.PackageMapConfig.LuaSource) == -1)
-            {
-                EditorUtility.DisplayDialog("错误", "不能识别Lua源：" + G.configs.PackageMapConfig.LuaSource, "确定");
-                return false;
-            }
-
-            switch (G.configs.PackageMapConfig.PackageMode)
-            {
-                case "Addon":
-                    if (string.IsNullOrEmpty(G.configs.CurrentConfig.CurrentAddonVersion))
-                    {
-                        EditorUtility.DisplayDialog("提示", "请设置Addon Version", "确定");
-                        return false;
-                    }
-                    char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
-                    int index = G.configs.CurrentConfig.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
-                    if (index >= 0)
-                    {
-                        EditorUtility.DisplayDialog("提示", "Package Version中不能包含非法字符：" + invalidFileNameChars[index], "确定");
-                        return false;
-                    }
-                    foreach (var package in G.g.packageTree.Packages)
-                    {
-                        if (string.IsNullOrEmpty(package.necessery))
-                        {
-                            EditorUtility.DisplayDialog("提示", "请设置Necessery", "确定");
-                            return false;
-                        }
-                        if (string.IsNullOrEmpty(package.deploymentLocation))
-                        {
-                            EditorUtility.DisplayDialog("提示", "请设置Location", "确定");
-                            return false;
-                        }
-                        //不能识别Location和Necessery的情况不可能发生，因为该值由枚举中获得
-                    }
-                    break;
-                case "Patch":
-                    break;
-                default:
-                    EditorUtility.DisplayDialog("错误", "不能识别模式：" + G.configs.PackageMapConfig.PackageMode, "确定");
-                    return false;
-            }
             //检查缺失项和空项
             wrongItems = new List<PackageTreeItem>();
             emptyItems = new List<PackageTreeItem>();
@@ -470,7 +409,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         }
         private void LoadMaps()
         {
-            Configs.Configs.LoadMap(G.configs);
+            G.configs.LoadMap();
             savedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PackageMapsFolderPath);
         }
         private void HandleApplyingWarning()
@@ -546,8 +485,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             try
             {
-                List<Configs.PackageMapConfig.Package> packages = GetPackageMap();
-                G.configs.PackageMapConfig.Packages = packages;
+                G.configs.PackageMapConfig.Packages = GetPackageMap();
                 G.configs.PackageMapConfig.Save();
 
                 EditorUtility.DisplayDialog("保存", "保存配置成功！", "确定");

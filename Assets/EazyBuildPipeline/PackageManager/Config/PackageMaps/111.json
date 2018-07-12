@@ -9,7 +9,8 @@
             "EmptyFolders": [],
             "Necessery": "Immediate",
             "DeploymentLocation": "Built-in",
-            "CopyToStreaming": false
+            "CopyToStreaming": true,
+            "FileName": "ios_addon_9.9_default_New Package.jpg"
         }
     ],
     "PackageMode": "Addon",

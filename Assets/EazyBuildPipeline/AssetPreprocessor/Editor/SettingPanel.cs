@@ -60,7 +60,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				GUILayout.FlexibleSpace();
 				GUILayout.Space(10);
                 if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions))
-                { ClickedNew(); return; }
+                { ClickedNew(); }
                 if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonStyle, buttonOptions))
                 { ClickedSave(); return; }
 
@@ -99,17 +99,12 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 		private void ClickedApply()
 		{
-			if (!Directory.Exists(G.configs.LocalConfig.PreStoredAssetsFolderPath))
-			{
-				EditorUtility.DisplayDialog("应用配置", "不能应用配置，找不到目录:" + G.configs.LocalConfig.PreStoredAssetsFolderPath, "确定");
-				return;
-			}
 			bool ensure = EditorUtility.DisplayDialog("Preprocessor", "确定应用当前配置？应用过程不可中断。", "确定", "取消");
 			if (ensure)
             {
                 try
                 {
-                    G.configs.Runner.ApplyOptions(G.configs);
+                    G.configs.Runner.ApplyOptions();
                 }
                 catch (Exception e)
                 {
@@ -178,7 +173,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			int selectedIndex_new = EditorGUILayout.Popup(selectedSavedConfigIndex, savedConfigNames.ToArray(), popupStyle, popupOptions);
 			if (G.configs.Dirty && selectedSavedConfigIndex != -1)
 				savedConfigNames[selectedSavedConfigIndex] = savedConfigNames[selectedSavedConfigIndex].Remove(savedConfigNames[selectedSavedConfigIndex].Length - 1);
-
+            
 			if (selectedIndex_new != selectedSavedConfigIndex)
 			{
 				ChangeSavedConfig(selectedIndex_new);

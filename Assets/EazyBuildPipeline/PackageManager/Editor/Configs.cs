@@ -46,20 +46,19 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
     {
         public override string ModuleName { get { return "PackageManager"; } }
         private readonly string localConfigSearchText = "EazyBuildPipeline PackageManager LocalConfig";
-        public Runner Runner = new Runner();
+        public Runner Runner;
         public PackageMapConfig PackageMapConfig = new PackageMapConfig();
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();
-        public string BundlePath { get { return Path.Combine(LocalConfig.BundleFolderPath, EBPUtility.GetTagStr(CurrentConfig.CurrentTags) + "/Bundles"); } }
-        public string BundleInfoPath { get { return Path.Combine(LocalConfig.BundleFolderPath, EBPUtility.GetTagStr(CurrentConfig.CurrentTags) + "/_Info"); } }
+        public string GetBundleFolderPath() { return Path.Combine(LocalConfig.BundleFolderPath, EBPUtility.GetTagStr(CurrentConfig.CurrentTags) + "/Bundles"); }
+        public string GetBundleInfoFolderPath() { return Path.Combine(LocalConfig.BundleFolderPath, EBPUtility.GetTagStr(CurrentConfig.CurrentTags) + "/_Info"); }
+        public int GetBundleFolderPathStrCount() { return GetBundleFolderPath().Length + 1; }
 
-        public int PathHandCount
+        public Configs()
         {
-            get
-            {
-                return BundlePath.Length + 1;
-            }
+            Runner = new Runner(this);
         }
+
 
         public bool LoadAllConfigs(string rootPath = null)
         {
@@ -141,28 +140,28 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
             }
         }
 
-        public static void LoadMap(Configs configs)
+        public void LoadMap()
         {
             try
             {
-                if (!string.IsNullOrEmpty(configs.CurrentConfig.CurrentPackageMap))
+                if (!string.IsNullOrEmpty(CurrentConfig.CurrentPackageMap))
                 {
-                    string mapsFolderPath = configs.LocalConfig.Local_PackageMapsFolderPath;
-                    string currentMapPath = Path.Combine(mapsFolderPath, configs.CurrentConfig.CurrentPackageMap);
-                    configs.PackageMapConfig.Path = currentMapPath;
-                    configs.PackageMapConfig.Load();
+                    string mapsFolderPath = LocalConfig.Local_PackageMapsFolderPath;
+                    string currentMapPath = Path.Combine(mapsFolderPath, CurrentConfig.CurrentPackageMap);
+                    PackageMapConfig.Path = currentMapPath;
+                    PackageMapConfig.Load();
                 }
                 else
                 {
-                    configs.CurrentConfig.CurrentPackageMap = null;
-                    configs.PackageMapConfig.Path = null;
+                    CurrentConfig.CurrentPackageMap = null;
+                    PackageMapConfig.Path = null;
                 }
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "载入映射文件：" + configs.CurrentConfig.CurrentPackageMap + " 时发生错误：" + e.Message, "确定");
-                configs.CurrentConfig.CurrentPackageMap = null;
-                configs.PackageMapConfig.Path = null;
+                EditorUtility.DisplayDialog("错误", "载入映射文件：" + CurrentConfig.CurrentPackageMap + " 时发生错误：" + e.Message, "确定");
+                CurrentConfig.CurrentPackageMap = null;
+                PackageMapConfig.Path = null;
             }
         }
     }

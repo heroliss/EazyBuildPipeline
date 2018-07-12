@@ -48,12 +48,13 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         public Configs()
         {
             CompressionEnum = CompressionEnumMap.Keys.ToArray();
+            Runner = new Runner(this);
         }
 
 
         public override string ModuleName { get { return "BundleManager"; } }
         private readonly string localConfigSearchText = "EazyBuildPipeline BundleManager LocalConfig";
-        public Runner Runner = new Runner();
+        public Runner Runner;
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();
 

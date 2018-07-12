@@ -110,32 +110,19 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         private void ClickedApply()
         {
-            //准备参数和验证
-            BuildTarget target = BuildTarget.NoTarget;
-            string targetStr = G.configs.CurrentConfig.CurrentTags[0];
-            try
-            {
-                target = (BuildTarget)Enum.Parse(typeof(BuildTarget), targetStr, true);
-            }
-            catch
-            {
-                EditorUtility.DisplayDialog("Build Bundles", "没有此平台：" + targetStr, "确定");
-                return;
-            }
-            if (EditorUserBuildSettings.activeBuildTarget != target)
-            {
-                EditorUtility.DisplayDialog("Build Bundles", string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target), "确定");
-                return;
-            }
+            //验证
+            if (!G.configs.Runner.Check()) return;
+            //确认信息
+            BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), G.configs.CurrentConfig.CurrentTags[0], true);
             int optionsValue = G.configs.CurrentConfig.CurrentBuildAssetBundleOptionsValue;
             int resourceVersion = G.configs.CurrentConfig.CurrentResourceVersion;
             int bundleVersion = G.configs.CurrentConfig.CurrentBundleVersion;
             string tagPath = Path.Combine(G.configs.LocalConfig.BundlesFolderPath, EBPUtility.GetTagStr(G.configs.CurrentConfig.CurrentTags));
 
-            //开始应用          
             bool ensure = EditorUtility.DisplayDialog("Build Bundles", string.Format("确定应用当前配置？\n\n" +
                 "目标平台: {0}\n 输出路径: {1} \n Resources Version: {2} \n Bundle Version: {3}\n 参数: {4}",
                 target, tagPath, resourceVersion, bundleVersion, optionsValue), "确定", "取消");
+            //开始应用          
             if (ensure)
             {
                 try
@@ -143,7 +130,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
                     G.configs.CurrentConfig.CurrentBundleMap = Path.GetFileName(AssetBundleManagement2.AssetBundleModel.BuildMapPath) + ".json"; //TODO:BundleMaster的特殊处理
                     EditorUtility.DisplayProgressBar("Build Bundles", "Getting Bunild Maps...", 0);
                     var buildMap = G.g.mainTab.GetBuildMap_extension();
-                    G.configs.Runner.Apply(G.configs, buildMap, target, tagPath, resourceVersion, bundleVersion, optionsValue);
+                    G.configs.Runner.Apply(buildMap);
                     EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles成功！", "确定");
                 }
                 catch (Exception e)

@@ -203,6 +203,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 {
                     assetPreprocessorSavedConfigSelectedIndex = index_new;
                     G.configs.AssetPreprocessorConfigs.CurrentConfig.CurrentSavedConfigName = assetPreprocessorSavedConfigNames[index_new] + ".json";
+                    G.configs.AssetPreprocessorConfigs.LoadCurrentSavedConfig();
                 }
                 if (GUILayout.Button(settingGUIContent, miniButtonOptions))
                 {
@@ -308,79 +309,61 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         private void ClickedApply()
         {
-            BuildTarget target = BuildTarget.NoTarget;
-            int resourceVersion = -1;
-            int bundleVersion = -1;
-            int optionsValue = 0;
-            string tagPath = null;
-            AssetBundleBuild[] bundleBuildMap = null;
+            //更换其Tags为AssetsTags
+            G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags = G.configs.Common_AssetsTagsConfig.CurrentTags.ToArray();
+            G.configs.PackageManagerConfigs.CurrentConfig.CurrentTags = G.configs.Common_AssetsTagsConfig.CurrentTags.ToArray();
 
-            if (G.configs.BundleManagerConfigs.CurrentConfig.IsPartOfPipeline)
-            {
-                //准备参数和验证
-                target = BuildTarget.NoTarget;
-                string targetStr = G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags[0];
-                try
-                {
-                    target = (BuildTarget)Enum.Parse(typeof(BuildTarget), targetStr, true);
-                }
-                catch
-                {
-                    EditorUtility.DisplayDialog("Build Bundles", "没有此平台：" + targetStr, "确定");
-                    return;
-                }
-                if (EditorUserBuildSettings.activeBuildTarget != target)
-                {
-                    EditorUtility.DisplayDialog("Build Bundles", string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target), "确定");
-                    return;
-                }
-                optionsValue = G.configs.BundleManagerConfigs.CurrentConfig.CurrentBuildAssetBundleOptionsValue;
-                resourceVersion = G.configs.BundleManagerConfigs.CurrentConfig.CurrentResourceVersion;
-                bundleVersion = G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleVersion;
-                tagPath = Path.Combine(G.configs.BundleManagerConfigs.LocalConfig.BundlesFolderPath, EBPUtility.GetTagStr(G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags));
-
-                string bundleMapPath = Path.Combine(G.configs.BundleManagerConfigs.LocalConfig.Local_BundleMapsFolderPath, G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap);
-                string content = File.ReadAllText(bundleMapPath);
-                bundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(content);
-            }
-
-            if (G.configs.AssetPreprocessorConfigs.CurrentConfig.IsPartOfPipeline)
-            {
-                G.configs.AssetPreprocessorConfigs.Runner.ApplyOptions(G.configs.AssetPreprocessorConfigs, true);
-            }
-
-            if (G.configs.BundleManagerConfigs.CurrentConfig.IsPartOfPipeline)
-            {
-                G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags.ToArray();
-                G.configs.BundleManagerConfigs.Runner.Apply(G.configs.BundleManagerConfigs, bundleBuildMap, target, tagPath, resourceVersion, bundleVersion, optionsValue, true);
-            }
-
+            //检查
+            if (G.configs.AssetPreprocessorConfigs.CurrentConfig.IsPartOfPipeline &&
+                !G.configs.AssetPreprocessorConfigs.Runner.Check()) { return; }
+            if (G.configs.BundleManagerConfigs.CurrentConfig.IsPartOfPipeline &&
+                !G.configs.BundleManagerConfigs.Runner.Check()) { return; }
             if (G.configs.PackageManagerConfigs.CurrentConfig.IsPartOfPipeline)
             {
-                G.configs.PackageManagerConfigs.CurrentConfig.CurrentTags = G.configs.BundleManagerConfigs.CurrentConfig.CurrentTags.ToArray();
-                PackageManager.Editor.Configs.Configs.LoadMap(G.configs.PackageManagerConfigs);
-                G.configs.PackageManagerConfigs.Runner.ApplyAllPackages(G.configs.PackageManagerConfigs, G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleVersion, G.configs.BundleManagerConfigs.CurrentConfig.CurrentResourceVersion);
+                G.configs.PackageManagerConfigs.LoadMap();
+                if (!G.configs.PackageManagerConfigs.Runner.Check()) { return; }
             }
+            bool ensure = EditorUtility.DisplayDialog("运行Pipeline", "确定开始运行管线？", "确定", "取消");
+            if (!ensure) return;
+
+            float startTime = Time.realtimeSinceStartup;
+
+            //AssetPreprocessor
+            if (G.configs.AssetPreprocessorConfigs.CurrentConfig.IsPartOfPipeline)
+            {
+                G.configs.AssetPreprocessorConfigs.Runner.ApplyOptions(true);
+            }
+            //BundleManager
+            if (G.configs.BundleManagerConfigs.CurrentConfig.IsPartOfPipeline)
+            {
+                //获取BuildMap
+                string bundleMapPath = Path.Combine(G.configs.BundleManagerConfigs.LocalConfig.Local_BundleMapsFolderPath, G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleMap);
+                string content = File.ReadAllText(bundleMapPath);
+                AssetBundleBuild[] bundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(content);
+                
+                G.configs.BundleManagerConfigs.Runner.Apply(bundleBuildMap, true);
+            }
+            //PackageManager
+            if (G.configs.PackageManagerConfigs.CurrentConfig.IsPartOfPipeline)
+            {
+                G.configs.PackageManagerConfigs.Runner.ApplyAllPackages(G.configs.BundleManagerConfigs.CurrentConfig.CurrentBundleVersion, G.configs.BundleManagerConfigs.CurrentConfig.CurrentResourceVersion);
+            }
+
+            TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
+            EditorUtility.ClearProgressBar();
+            G.configs.DisplayDialog("全部完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds));
         }
 
         private void ChangeRootPath(string path)
         {
-            //bool ensure = true;
-            //if (G.g.packageTree.Dirty)
-            //{
-            //    ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
-            //}
-            //if (ensure)
-            //{
-            //    try
-            //    {
-            ChangeAllConfigsExceptRef(path);
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
-            //    }
-            //}
+            try
+            {
+                ChangeAllConfigsExceptRef(path);
+            }
+            catch (Exception e)
+            {
+                EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
+            }
         }
 
         private void ChangeAllConfigsExceptRef(string rootPath)

@@ -11,7 +11,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     public class Runner
     {
-        Configs.Configs configs;
+        public Configs.Configs configs;
         public Process process;
         public int RuningShellCount;
         public int applyingID;
@@ -23,6 +23,11 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         public int currentShellIndex;
         public string applyingFile;
         public string errorMessage;
+
+        public Runner(Configs.Configs configs)
+        {
+            this.configs = configs;
+        }
 
         private void RunShell_ShowProgress_WaitForExit(string arguments, string startMessage, string titleMessage)
         {
@@ -46,7 +51,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         void RunShell(string arguments)
         {
             //实例一个process类
-            process = new System.Diagnostics.Process();
+            process = new Process();
             //设定程序名
             process.StartInfo.FileName = "/bin/bash";
             process.StartInfo.Arguments = arguments;
@@ -112,17 +117,25 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             }
         }
 
-        public void ApplyOptions(Configs.Configs configs, bool isPartOfPipeline = false)
+        public bool Check()
         {
-            this.configs = configs;
+            if (!Directory.Exists(configs.LocalConfig.PreStoredAssetsFolderPath))
+            {
+                configs.DisplayDialog("不能应用配置，找不到目录:" + configs.LocalConfig.PreStoredAssetsFolderPath);
+                return false;
+            }
+            return true;
+        }
 
-            string assetsTagsFilePath = AssetDatabase.GUIDToAssetPath(G.configs.Common_AssetsTagsConfig.Path);
+        public void ApplyOptions(bool isPartOfPipeline = false)
+        {
+            string assetsTagsFilePath = AssetDatabase.GUIDToAssetPath(configs.Common_AssetsTagsConfig.Path);
             string tags = JsonConvert.SerializeObject(new string[] { "Applying" }.Concat(configs.CurrentSavedConfig.Tags));
             File.WriteAllText(assetsTagsFilePath, tags);
 
-            G.configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
-            G.configs.CurrentConfig.Applying = true;
-            G.configs.CurrentConfig.Save();
+            configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
+            configs.CurrentConfig.Applying = true;
+            configs.CurrentConfig.Save();
 
             string platform = "";//TODO：这里能否使用EditorUserBuildSettings.activeBuildTarget？
 #if UNITY_ANDROID
@@ -184,8 +197,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             tags = JsonConvert.SerializeObject(configs.CurrentSavedConfig.Tags);
             File.WriteAllText(assetsTagsFilePath, tags);
 
-            G.configs.CurrentConfig.Applying = false;
-            G.configs.CurrentConfig.Save();
+            configs.CurrentConfig.Applying = false;
+            configs.CurrentConfig.Save();
         }
     }
 }

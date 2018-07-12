@@ -15,15 +15,83 @@ namespace EazyBuildPipeline.PackageManager.Editor
         struct DownloadFlagStruct { public int flag_; public string name_; public int location_; public bool hasDownloaded_; };
 
         Configs.Configs configs;
-
-        public void ApplyAllPackages(Configs.Configs configs, int bundleVersion, int resourceVersion)
+        public Runner(Configs.Configs configs)
         {
-            configs.CurrentConfig.Applying = true;
-            configs.CurrentConfig.Save();
-
             this.configs = configs;
-            float lastTime = Time.realtimeSinceStartup;
-            string bundlesFolderPath = configs.BundlePath;
+        }
+
+        public bool Check()
+        {
+            if (configs.PackageMapConfig.Packages.Count == 0)
+            {
+                configs.DisplayDialog("该配置内没有Package");
+                return false;
+            }
+            //检查配置
+            if (string.IsNullOrEmpty(configs.PackageMapConfig.PackageMode))
+            {
+                configs.DisplayDialog("请设置打包模式");
+                return false;
+            }
+            if (string.IsNullOrEmpty(configs.PackageMapConfig.LuaSource))
+            {
+                configs.DisplayDialog("请设置Lua源");
+                return false;
+            }
+            if (configs.PackageMapConfig.CompressionLevel == -1)
+            {
+                configs.DisplayDialog("请设置压缩等级");
+                return false;
+            }
+            if (G.LuaSourceEnum.IndexOf(configs.PackageMapConfig.LuaSource) == -1)
+            {
+                configs.DisplayDialog("不能识别Lua源：" + configs.PackageMapConfig.LuaSource);
+                return false;
+            }
+
+            switch (configs.PackageMapConfig.PackageMode)
+            {
+                case "Addon":
+                    if (string.IsNullOrEmpty(configs.CurrentConfig.CurrentAddonVersion))
+                    {
+                        configs.DisplayDialog("请设置Addon Version");
+                        return false;
+                    }
+                    char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
+                    int index = configs.CurrentConfig.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
+                    if (index >= 0)
+                    {
+                        configs.DisplayDialog("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
+                        return false;
+                    }
+                    foreach (var package in configs.PackageMapConfig.Packages)
+                    {
+                        if (string.IsNullOrEmpty(package.Necessery))
+                        {
+                            configs.DisplayDialog("请设置Necessery");
+                            return false;
+                        }
+                        if (string.IsNullOrEmpty(package.DeploymentLocation))
+                        {
+                            configs.DisplayDialog("请设置Location");
+                            return false;
+                        }
+                        //不能识别Location和Necessery的情况不可能发生，因为该值由枚举中获得
+                    }
+                    break;
+                case "Patch":
+                    break;
+                default:
+                    configs.DisplayDialog("不能识别模式：" + configs.PackageMapConfig.PackageMode);
+                    return false;
+            }
+            return true;
+        }
+
+        public void ApplyAllPackages(int bundleVersion, int resourceVersion)
+        {
+            //准备参数
+            string bundlesFolderPath = configs.GetBundleFolderPath();
             string packagesFolderPath = Path.Combine(configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(configs.CurrentConfig.CurrentTags));
             int count = 0;
             int total = 0;
@@ -34,6 +102,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 total += package.Bundles.Count;
             }
             int packagesCount = packageMap.Count;
+            //开始
+            configs.CurrentConfig.Applying = true;
+            configs.CurrentConfig.Save();
+            float lastTime = Time.realtimeSinceStartup;
 
             //TODO:构建map改进方法
             //if (Configs.g.bundleTree.BundleBuildMap == null)
@@ -42,13 +114,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //}
             //string mapContent = JsonConvert.SerializeObject(BuildAsset2BundleMap(Configs.g.bundleTree.BundleBuildMap), Formatting.Indented);
 
+            //重建目录
             EditorUtility.DisplayProgressBar("正在重建Package目录", packagesFolderPath, progress); progress += 0.01f;
             if (Directory.Exists(packagesFolderPath))
             {
                 Directory.Delete(packagesFolderPath, true);
             }
             Directory.CreateDirectory(packagesFolderPath);
-
+            //设置路径
             string bundlesRootPathInPackage = "AssetBundles/" + configs.CurrentConfig.CurrentTags[0].ToLower() + "/AssetBundles/";
             string extraInfoFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.CurrentTags[0].ToLower() + "/extra_info";
             string bundleVersionFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.CurrentTags[0].ToLower() + "/bundle_version";
@@ -215,7 +288,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                 }
             }
-
+            //结束
             configs.CurrentConfig.Applying = false;
             configs.CurrentConfig.Save();
         }
@@ -246,7 +319,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private void BuildMapInZipStream(string mapFilePath, byte[] buffer, ZipOutputStream zipStream)
         {
             //AddBytesToZipStream(zipStream, mapFilePath, System.Text.Encoding.Default.GetBytes(mapContent));
-            AddFileToZipStream(zipStream, Path.Combine(configs.BundleInfoPath, "map"), mapFilePath, buffer);
+            AddFileToZipStream(zipStream, Path.Combine(configs.GetBundleInfoFolderPath(), "map"), mapFilePath, buffer);
         }
 
         private void BuildBundleVersionInfoInZipStream(string bundleVersionFilePath, int bundleVersion, List<string> bundles, ZipOutputStream zipStream)

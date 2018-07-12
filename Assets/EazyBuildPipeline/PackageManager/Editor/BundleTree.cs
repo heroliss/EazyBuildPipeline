@@ -134,7 +134,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 return root;
 			}
 
-            string rootPath = G.configs.BundlePath;
+            string rootPath = G.configs.GetBundleFolderPath();
 
             BundleTreeItem rootFolderItem = new BundleTreeItem()
             {
@@ -278,8 +278,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 BundleVersions = new BundleVersionsStruct() { BundleVersion = -1, ResourceVersion = -1 };
                 BundleBuildMap = null;
-                string versionPath = Path.Combine(G.configs.BundleInfoPath, "Versions.json");
-                string buildMapPath = Path.Combine(G.configs.BundleInfoPath, "BuildMap.json");
+                string versionPath = Path.Combine(G.configs.GetBundleInfoFolderPath(), "Versions.json");
+                string buildMapPath = Path.Combine(G.configs.GetBundleInfoFolderPath(), "BuildMap.json");
                 BundleVersions = JsonConvert.DeserializeObject<BundleVersionsStruct>(File.ReadAllText(versionPath));
                 BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
             }
@@ -299,7 +299,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 					displayName = Path.GetFileName(path),
 					isFolder = true,
 					path = path,
-					relativePath = path.Remove(0, G.configs.PathHandCount).Replace('\\', '/'),
+					relativePath = path.Remove(0, G.configs.GetBundleFolderPathStrCount()).Replace('\\', '/'),
 					icon = folderIcon
 				};
 				parent.AddChild(folderItem);
@@ -333,7 +333,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 						isFolder = false,
 						verify = true,
 						path = bundlePath,
-						relativePath = bundlePath.Remove(0, G.configs.PathHandCount).Replace('\\', '/'),
+						relativePath = bundlePath.Remove(0, G.configs.GetBundleFolderPathStrCount()).Replace('\\', '/'),
 						bundlePath = bundlePath,
 						displayName = bundleName,
 						icon = bundleIcon,
