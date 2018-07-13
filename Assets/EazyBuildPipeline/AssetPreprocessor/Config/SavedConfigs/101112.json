@@ -3,24 +3,24 @@
         {
             "FullGroupName": "Language",
             "Options": [
-                "EN"
+                "ZH_CN"
             ]
         },
         {
             "FullGroupName": "Texture Import Settings Override/Max Size",
             "Options": [
-                "2048 -> 1024"
+                "1024 -> 512"
             ]
         },
         {
             "FullGroupName": "Texture Import Settings Override/Format",
             "Options": [
-                "RGB24 -> ASTC RGB 4x4"
+                "RGBA32 -> ASTC RGBA 4x4"
             ]
         }
     ],
     "Tags": [
-        "Android",
+        "iOS",
         "HD",
         "ZH_HK"
     ]

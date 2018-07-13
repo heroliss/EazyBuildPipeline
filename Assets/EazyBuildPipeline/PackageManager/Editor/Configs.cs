@@ -17,6 +17,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
         public static GlobalReference g;
         public class GlobalReference
         {
+            public Action OnChangeCurrentConfig = () => { };
+            public Action OnChangeConfigList = () => { };
             public PackageTree packageTree;
             public BundleTree bundleTree;
         }
@@ -140,7 +142,7 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
             }
         }
 
-        public void LoadMap()
+        public bool LoadPackageMap()
         {
             try
             {
@@ -150,11 +152,13 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
                     string currentMapPath = Path.Combine(mapsFolderPath, CurrentConfig.CurrentPackageMap);
                     PackageMapConfig.Path = currentMapPath;
                     PackageMapConfig.Load();
+                    return true;
                 }
                 else
                 {
                     CurrentConfig.CurrentPackageMap = null;
                     PackageMapConfig.Path = null;
+                    return false;
                 }
             }
             catch (Exception e)
@@ -162,6 +166,7 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
                 EditorUtility.DisplayDialog("错误", "载入映射文件：" + CurrentConfig.CurrentPackageMap + " 时发生错误：" + e.Message, "确定");
                 CurrentConfig.CurrentPackageMap = null;
                 PackageMapConfig.Path = null;
+                return false;
             }
         }
     }

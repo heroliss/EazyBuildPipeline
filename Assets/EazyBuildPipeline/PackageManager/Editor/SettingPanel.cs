@@ -220,7 +220,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void ClickedApply()
         {
-            G.configs.PackageMapConfig.Packages = GetPackageMap();
+            G.configs.PackageMapConfig.Packages = GetPackageMap(); //从配置现场覆盖当前map
             if (!G.configs.Runner.Check()) return;
             if (!CheckAllPackageItem()) return;
 
@@ -409,7 +409,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         }
         private void LoadMaps()
         {
-            G.configs.LoadMap();
+            G.configs.LoadPackageMap();
             savedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PackageMapsFolderPath);
         }
         private void HandleApplyingWarning()
@@ -496,6 +496,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 EditorUtility.DisplayDialog("保存", "保存配置时发生错误：\n" + e.Message, "确定");
             }
+            //总控暂时用不上
+            G.g.OnChangeCurrentConfig();
         }
 
         //由于PackageMapConfig不会随Package的修改而更新，所以必须由此函数获取package信息
@@ -593,6 +595,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //切换
             G.g.packageTree.Dirty = false;
             ChangeMap(savedConfigNames.IndexOf(name));
+            //用于总控
+            G.g.OnChangeConfigList();
         }
 
         private void ClickedNew()

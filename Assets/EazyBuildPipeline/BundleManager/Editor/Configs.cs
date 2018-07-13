@@ -16,8 +16,8 @@ namespace EazyBuildPipeline.BundleManager.Editor
         public static GlobalReference g;
         public class GlobalReference
         {
-            public Action OnChangeRootPath = () => { };
-            public Action OnChangeTags = () => { };
+            public Action OnChangeCurrentConfig = () => { };
+            public Action OnChangeConfigList = () => { };
             public AssetBundleManagement2.AssetBundleMainWindow mainTab;
         }
         public static void Init()
@@ -57,6 +57,7 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         public Runner Runner;
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();
+        public BundleBuildMapConfig BundleBuildMapConfig = new BundleBuildMapConfig();
 
         public bool LoadAllConfigs(string rootPath = null)
         {
@@ -132,7 +133,32 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
                 return false;
             }
         }
+        public bool LoadBundleBuildMap()
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(CurrentConfig.CurrentBundleMap))
+                {
+                    BundleBuildMapConfig.Path = Path.Combine(LocalConfig.Local_BundleMapsFolderPath, CurrentConfig.CurrentBundleMap);
+                    BundleBuildMapConfig.Load();
+                    return true;
+                }
+                else
+                {
+                    CurrentConfig.CurrentBundleMap = null;
+                    BundleBuildMapConfig.Path = null;
+                    return false;
+                }
+            }
+            catch(Exception e)
+            {
+                DisplayDialog("加载BundleBuildMap时发生错误：" + e.Message + "\n加载路径：" + BundleBuildMapConfig.Path);
+                return false;
+            }
+        }
+
     }
+
 
     public class LocalConfig : EBPConfig
     {
@@ -147,6 +173,21 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         public string BundleManagerConfigRelativePath;
         public string BundlesFolderPath { get { return System.IO.Path.Combine(RootPath, BundlesFolderRelativePath); } }
         public string BundlesFolderRelativePath;
+    }
+
+    public class BundleBuildMapConfig : EBPConfig
+    {
+        public AssetBundleBuild[] BundleBuildMap;
+        public override void Load()
+        {
+            string content = File.ReadAllText(Path);
+            BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(content);
+        }
+        public override void Save()
+        {
+            string content = JsonConvert.SerializeObject(BundleBuildMap);
+            File.WriteAllText(Path, content);
+        }
     }
 
     public class CurrentConfig : EBPConfig

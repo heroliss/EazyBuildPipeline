@@ -100,7 +100,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 {
                     selectedIndexs[i] = selectedIndexs_new[i];
                     G.configs.CurrentConfig.CurrentTags[i] = tagType[selectedIndexs[i]];
-                    G.g.OnChangeTags();
                     return true;
                 }
                 i++;
@@ -110,7 +109,8 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         private void ClickedApply()
         {
-            //验证
+            G.configs.CurrentConfig.CurrentBundleMap = Path.GetFileName(AssetBundleManagement2.AssetBundleModel.BuildMapPath) + ".json"; //TODO: 覆盖当前map文件名，BundleMaster的特殊处理
+            G.configs.BundleBuildMapConfig.BundleBuildMap = G.g.mainTab.GetBuildMap_extension(); //从配置现场覆盖当前map
             if (!G.configs.Runner.Check()) return;
             //确认信息
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), G.configs.CurrentConfig.CurrentTags[0], true);
@@ -127,10 +127,8 @@ namespace EazyBuildPipeline.BundleManager.Editor
             {
                 try
                 {
-                    G.configs.CurrentConfig.CurrentBundleMap = Path.GetFileName(AssetBundleManagement2.AssetBundleModel.BuildMapPath) + ".json"; //TODO:BundleMaster的特殊处理
                     EditorUtility.DisplayProgressBar("Build Bundles", "Getting Bunild Maps...", 0);
-                    var buildMap = G.g.mainTab.GetBuildMap_extension();
-                    G.configs.Runner.Apply(buildMap);
+                    G.configs.Runner.Apply();
                     EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles成功！", "确定");
                 }
                 catch (Exception e)
@@ -174,7 +172,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
             ConfigToIndex();
             G.configs.LocalConfig.Save();
             HandleApplyingWarning();
-            G.g.OnChangeRootPath();
         }
 
         private void InitSelectedIndex()
@@ -193,7 +190,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
             InitSelectedIndex();
             ConfigToIndex();
             HandleApplyingWarning();
-            G.g.OnChangeRootPath();
         }
 
         private void HandleApplyingWarning()

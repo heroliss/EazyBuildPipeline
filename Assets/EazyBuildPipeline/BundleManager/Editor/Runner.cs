@@ -36,18 +36,20 @@ namespace EazyBuildPipeline.BundleManager.Editor
             return true;
         }
 
-        public void Apply(AssetBundleBuild[] buildMap, bool isPartOfPipeline = false)
+        public void Apply(bool isPartOfPipeline = false)
         {
+            //开始
+            configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
+            configs.CurrentConfig.Applying = true;
+            configs.CurrentConfig.Save();
+
             //准备参数
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), configs.CurrentConfig.CurrentTags[0], true);
             int optionsValue = configs.CurrentConfig.CurrentBuildAssetBundleOptionsValue;
             int resourceVersion = configs.CurrentConfig.CurrentResourceVersion;
             int bundleVersion = configs.CurrentConfig.CurrentBundleVersion;
             string tagPath = Path.Combine(configs.LocalConfig.BundlesFolderPath, EBPUtility.GetTagStr(configs.CurrentConfig.CurrentTags));
-            //开始
-            configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
-            configs.CurrentConfig.Applying = true;
-            configs.CurrentConfig.Save();
+
             //创建目录
             EditorUtility.DisplayProgressBar("Build Bundles", "正在重建目录:" + tagPath, 0.02f);
             if (Directory.Exists(tagPath))
@@ -60,7 +62,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             Directory.CreateDirectory(bundlesPath);
             //创建Bundles
             EditorUtility.DisplayProgressBar("Build Bundles", "开始创建AssetBundles...", 0.1f);
-            var manifest = BuildPipeline.BuildAssetBundles(bundlesPath, buildMap, (BuildAssetBundleOptions)optionsValue, target);
+            var manifest = BuildPipeline.BuildAssetBundles(bundlesPath, configs.BundleBuildMapConfig.BundleBuildMap, (BuildAssetBundleOptions)optionsValue, target);
             if (manifest == null)
             {
                 throw new ApplicationException("BuildAssetBundles失败！详情请查看Console面板。");
@@ -69,13 +71,13 @@ namespace EazyBuildPipeline.BundleManager.Editor
             RenameMainBundleManifest(bundlesPath);
             //创建json文件
             EditorUtility.DisplayProgressBar("Build Bundles", "Creating Info Files...", 0.95f);
-            File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(buildMap, Formatting.Indented));
+            File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(configs.BundleBuildMapConfig.BundleBuildMap, Formatting.Indented));
             File.WriteAllText(Path.Combine(infoPath, "Versions.json"), JsonConvert.SerializeObject(new Dictionary<string, int> {
                     { "ResourceVersion", resourceVersion },
                     { "BundleVersion", bundleVersion } }, Formatting.Indented));
             //创建Map文件
             //此处保留旧map文件的生成方式
-            AssetBundleManagement.ABExtractItemBuilder.BuildMapperFile(AssetBundleManagement.ABExtractItemBuilder.BuildAssetMapper(buildMap), Path.Combine(infoPath, "map"));
+            AssetBundleManagement.ABExtractItemBuilder.BuildMapperFile(AssetBundleManagement.ABExtractItemBuilder.BuildAssetMapper(configs.BundleBuildMapConfig.BundleBuildMap), Path.Combine(infoPath, "map"));
             //结束
             configs.CurrentConfig.Applying = false;
             configs.CurrentConfig.Save();

@@ -88,8 +88,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
             return true;
         }
 
-        public void ApplyAllPackages(int bundleVersion, int resourceVersion)
+        public void ApplyAllPackages(int bundleVersion, int resourceVersion, bool isPartOfPipeline = false)
         {
+            //开始
+            configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
+            configs.CurrentConfig.Applying = true;
+            configs.CurrentConfig.Save();
+            float lastTime = Time.realtimeSinceStartup;
+
             //准备参数
             string bundlesFolderPath = configs.GetBundleFolderPath();
             string packagesFolderPath = Path.Combine(configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(configs.CurrentConfig.CurrentTags));
@@ -102,10 +108,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 total += package.Bundles.Count;
             }
             int packagesCount = packageMap.Count;
-            //开始
-            configs.CurrentConfig.Applying = true;
-            configs.CurrentConfig.Save();
-            float lastTime = Time.realtimeSinceStartup;
 
             //TODO:构建map改进方法
             //if (Configs.g.bundleTree.BundleBuildMap == null)

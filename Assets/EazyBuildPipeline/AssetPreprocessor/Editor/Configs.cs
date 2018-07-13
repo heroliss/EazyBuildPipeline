@@ -18,7 +18,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         public static GlobalReference g;
         public class GlobalReference
         {
-            public Action OnChangeCurrentConfig;
+            public Action OnChangeCurrentConfig = ()=> { };
+            public Action OnChangeConfigList = ()=> { };
         }
         public static void Init()
         {

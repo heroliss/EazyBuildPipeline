@@ -129,13 +129,12 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         public void ApplyOptions(bool isPartOfPipeline = false)
         {
-            string assetsTagsFilePath = AssetDatabase.GUIDToAssetPath(configs.Common_AssetsTagsConfig.Path);
-            string tags = JsonConvert.SerializeObject(new string[] { "Applying" }.Concat(configs.CurrentSavedConfig.Tags));
-            File.WriteAllText(assetsTagsFilePath, tags);
-
             configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
             configs.CurrentConfig.Applying = true;
             configs.CurrentConfig.Save();
+
+            string tags = JsonConvert.SerializeObject(new string[] { "Applying" }.Concat(configs.CurrentSavedConfig.Tags));
+            File.WriteAllText(configs.Common_AssetsTagsConfig.Path, tags);
 
             string platform = "";//TODO：这里能否使用EditorUserBuildSettings.activeBuildTarget？
 #if UNITY_ANDROID
@@ -195,7 +194,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             }
 
             tags = JsonConvert.SerializeObject(configs.CurrentSavedConfig.Tags);
-            File.WriteAllText(assetsTagsFilePath, tags);
+            File.WriteAllText(configs.Common_AssetsTagsConfig.Path, tags);
 
             configs.CurrentConfig.Applying = false;
             configs.CurrentConfig.Save();

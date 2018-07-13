@@ -252,7 +252,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			//切换
 			G.configs.Dirty = false;
 			ChangeSavedConfig(savedConfigNames.IndexOf(name));
-		}
+            //用于总控
+            G.g.OnChangeConfigList();
+        }
 
 		private void ClickedSave()
 		{
@@ -268,7 +270,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			if (!ensure) return;
 
 			SaveCurrentConfig();
-		}
+            
+        }
 
 		private void SaveCurrentConfig()
 		{
@@ -282,6 +285,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			{
 				EditorUtility.DisplayDialog("保存配置", "保存配置时发生错误：" + e.Message, "确定");
 			}
+            //用于总控
+            G.g.OnChangeCurrentConfig();
 		}
 
 		private void ClickedNew()
