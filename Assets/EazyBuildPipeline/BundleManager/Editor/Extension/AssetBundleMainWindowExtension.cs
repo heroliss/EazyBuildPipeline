@@ -45,6 +45,7 @@ namespace AssetBundleManagement2
                     EazyBuildPipeline.BundleManager.Editor.G.configs.LocalConfig.Local_BundleMapsFolderPath,
                     System.IO.Path.GetFileName(path) + ".json"),
                     Newtonsoft.Json.JsonConvert.SerializeObject(buildMap, Newtonsoft.Json.Formatting.Indented));
+                EazyBuildPipeline.BundleManager.Editor.G.g.OnChangeConfigList();
             }
             //            buildTab_.UpdateBuildMap(path);
             if (AssetBundleModel.IsBundleMapDirty)

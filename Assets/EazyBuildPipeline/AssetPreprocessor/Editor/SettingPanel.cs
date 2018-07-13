@@ -115,7 +115,6 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     EditorUtility.ClearProgressBar();
                 }
 
-                AssetDatabase.Refresh();
 				string s = "转换完成！\n";
                 if (G.configs.Runner.process.ExitCode != 0)
                 {

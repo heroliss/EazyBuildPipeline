@@ -198,6 +198,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
             configs.CurrentConfig.Applying = false;
             configs.CurrentConfig.Save();
+
+            AssetDatabase.Refresh();
         }
     }
 }

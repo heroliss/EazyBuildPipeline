@@ -81,6 +81,8 @@ namespace EazyBuildPipeline.BundleManager.Editor
             //结束
             configs.CurrentConfig.Applying = false;
             configs.CurrentConfig.Save();
+
+            AssetDatabase.Refresh();
         }
 
         private void RenameMainBundleManifest(string folderPath)

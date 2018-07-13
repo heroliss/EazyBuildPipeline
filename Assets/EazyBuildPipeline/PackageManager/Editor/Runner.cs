@@ -293,6 +293,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //结束
             configs.CurrentConfig.Applying = false;
             configs.CurrentConfig.Save();
+
+            AssetDatabase.Refresh();
         }
 
         private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)
