@@ -515,7 +515,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     CopyToStreaming = package.copyToStreaming,
                     DeploymentLocation = package.deploymentLocation,
                     Necessery = package.necessery,
-                    FileName = package.fileName
                 };
                 if (package.hasChildren)
                 {

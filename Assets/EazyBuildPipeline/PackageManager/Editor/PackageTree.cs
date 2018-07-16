@@ -191,26 +191,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             foreach (var package in Packages)
             {
-                switch (G.configs.PackageMapConfig.PackageMode)
-                {
-                    case "Addon":
-                        package.fileName = string.Format("{0}_addon_{1}_{2}_{3}{4}",
-                            G.configs.CurrentConfig.CurrentTags[0].ToLower(),
-                            G.configs.CurrentConfig.CurrentAddonVersion,
-                            "default", package.displayName,
-                            G.configs.LocalConfig.PackageExtension);
-                        break;
-                    case "Patch":
-                        package.fileName = string.Format("{0}_patch_{1}_{2}{3}",
-                          G.configs.CurrentConfig.CurrentTags[0].ToLower(),
-                          G.g.bundleTree.BundleVersions.ResourceVersion,
-                          package.displayName,
-                          G.configs.LocalConfig.PackageExtension);
-                        break;
-                    default:
-                        package.fileName = package.displayName + G.configs.LocalConfig.PackageExtension;
-                        break;
-                }
+                 package.fileName = G.configs.Runner.GetPackageFileName(package.displayName, G.g.bundleTree.BundleVersions.ResourceVersion);
             }
         }
 

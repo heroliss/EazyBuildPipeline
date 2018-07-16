@@ -164,7 +164,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     {
                         flagList.Add(new DownloadFlagStruct()
                         {
-                            name_ = package.FileName,
+                            name_ = GetPackageFileName(package.PackageName, resourceVersion),
                             flag_ = G.NecesseryEnum.IndexOf(package.Necessery),
                             location_ = G.DeploymentLocationEnum.IndexOf(package.DeploymentLocation),
                             hasDownloaded_ = package.CopyToStreaming
@@ -227,7 +227,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             for (int pi = 0; pi < packagesCount; pi++)
             {
                 var package = packageMap[pi];
-                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, package.FileName), FileMode.Create))
+                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, GetPackageFileName(package.PackageName, resourceVersion)), FileMode.Create))
                 {
                     using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                     {
@@ -261,7 +261,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         }
 
                         //构建extra_info
-                        BuildExtraInfoInZipStream(extraInfoFilePathInPackage, resourceVersion, Path.GetFileNameWithoutExtension(package.FileName), zipStream);
+                        BuildExtraInfoInZipStream(extraInfoFilePathInPackage, resourceVersion, Path.GetFileNameWithoutExtension(GetPackageFileName(package.PackageName, resourceVersion)), zipStream);
 
                         //构建bundle_version
                         BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, bundleVersion, package.Bundles, zipStream);
@@ -398,6 +398,32 @@ namespace EazyBuildPipeline.PackageManager.Editor
             ZipEntry zipEntry = new ZipEntry(targetPathInZip);
             zipStream.PutNextEntry(zipEntry);
             zipStream.Write(bytes, 0, bytes.Length);
+        }
+
+        public string GetPackageFileName(string displayName,int resourceVersion)
+        {
+            string fileName;
+            switch (configs.PackageMapConfig.PackageMode)
+            {
+                case "Addon":
+                    fileName = string.Format("{0}_addon_{1}_{2}_{3}{4}",
+                        configs.CurrentConfig.CurrentTags[0].ToLower(),
+                        configs.CurrentConfig.CurrentAddonVersion,
+                        "default", displayName,
+                        configs.LocalConfig.PackageExtension);
+                    break;
+                case "Patch":
+                    fileName = string.Format("{0}_patch_{1}_{2}{3}",
+                      configs.CurrentConfig.CurrentTags[0].ToLower(),
+                      resourceVersion,
+                      displayName,
+                      configs.LocalConfig.PackageExtension);
+                    break;
+                default:
+                    fileName = displayName + configs.LocalConfig.PackageExtension;
+                    break;
+            }
+            return fileName;
         }
     }
 }

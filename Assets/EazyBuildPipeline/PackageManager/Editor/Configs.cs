@@ -183,7 +183,6 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
             public string Necessery;
             public string DeploymentLocation;
             public bool CopyToStreaming;
-            public string FileName;
         }
         public List<Package> Packages = new List<Package>(); //该项不随改动而改动
         public string PackageMode;

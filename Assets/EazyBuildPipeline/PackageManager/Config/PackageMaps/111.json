@@ -5,8 +5,8 @@
             "Color": "6376FF",
             "Bundles": [],
             "EmptyFolders": [],
-            "Necessery": "",
-            "DeploymentLocation": "",
+            "Necessery": "Immediate",
+            "DeploymentLocation": "Built-in",
             "CopyToStreaming": false,
             "FileName": "ios_addon_7.8.9_default_New Package.jpg"
         }
