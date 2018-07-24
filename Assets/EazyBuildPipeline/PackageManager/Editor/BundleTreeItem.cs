@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class BundleTreeItem : TreeViewItem
     {
-        public GUIStyle style = UnityEditor.EditorStyles.label;
+        public GUIStyle style = G.g.styles.LabelStyle;
         public List<PackageTreeItem> packageItems = new List<PackageTreeItem>(); //在package tree中对应的项
         public bool isFolder;
         public bool verify; //该manifest文件同级目录下是否包含同名文件

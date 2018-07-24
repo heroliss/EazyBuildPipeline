@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
+    [Serializable]
     public class GroupPanel
     {
         public Action OnToggleChanged = () => { };
@@ -13,15 +14,20 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         public bool Dirty;
         public float OptionWidth;
         public string SelectedOption;
-        string SelectedOption_origin;
-        public Dictionary<string, bool> Options;
-        Dictionary<string, bool> Options_origin;
-        GUILayoutOption[] toggleOptions;
+        [SerializeField] string SelectedOption_origin;
 
+        [Serializable] public class OptionsDictionary : SerializableDictionary<string, bool> { }
+        public OptionsDictionary Options;
+        [SerializeField] OptionsDictionary Options_origin;
+        [SerializeField] GUILayoutOption[] toggleOptions;
+
+        public void Awake()
+        {
+            Reset();
+        }
         public void OnEnable()
         {
-            InitStyle();
-            Reset();
+            InitOptions();
             G.g.OnChangeCurrentConfig += Reset;
         }
 
@@ -29,11 +35,11 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             Dirty = false;
             PullCurrentOptions();
-            Options_origin = new Dictionary<string, bool>(Options);
+            Options_origin = (OptionsDictionary)new OptionsDictionary().CopyFrom(Options);
             SelectedOption_origin = SelectedOption;
         }
 
-        private void InitStyle()
+        private void InitOptions()
         {
             foreach (var optionName in Options.Keys)
             {
@@ -104,20 +110,20 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void UpdateCurrentConfig()
         {
-            var group = G.configs.CurrentSavedConfig.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
+            var group = G.configs.CurrentSavedConfig.Json.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
             if (group == null)
             {
                 group = new Configs.CurrentSavedConfig.Group
                 {
                     FullGroupName = Group.FullGroupName
                 };
-                G.configs.CurrentSavedConfig.Groups.Add(group);
+                G.configs.CurrentSavedConfig.Json.Groups.Add(group);
             }
             if (Group.MultiSelect)
             {
                 if (Options.Count == 0)
                 {
-                    G.configs.CurrentSavedConfig.Groups.Remove(group);
+                    G.configs.CurrentSavedConfig.Json.Groups.Remove(group);
                 }
                 else
                 {
@@ -155,7 +161,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 {
                     Options[key] = false;
                 }
-                var group = G.configs.CurrentSavedConfig.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
+                var group = G.configs.CurrentSavedConfig.Json.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
                 //if (group.Options != null)
                 {
                     if (Group.MultiSelect)

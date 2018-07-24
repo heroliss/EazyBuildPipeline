@@ -1,3 +1,6 @@
 {
-    "RootPath": "C:/Users/herol/Desktop/dukto传送/EPROOT"
+  "Local_BuildSettingsFolderRelativePath": "BuildSettings",
+  "RootPath": "C:/Users/herol/Desktop/dukto传送/EPROOT",
+  "PlayersFolderRelativePath": "UnityPlayers",
+  "PlayersConfigRelativePath": "UnityPlayers/_Config/PlayersConfig.json"
 }

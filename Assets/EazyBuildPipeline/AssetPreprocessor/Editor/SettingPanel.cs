@@ -8,31 +8,44 @@ using UnityEngine;
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
+    [Serializable]
     public class SettingPanel
-	{
-		bool creatingNewConfig;
-		GUIStyle buttonStyle;
-		GUILayoutOption[] buttonOptions;
-		private GUIStyle popupStyle;
-		private GUILayoutOption[] popupOptions;
-		string[] savedConfigNames;
-		int selectedSavedConfigIndex = -1;
-
-		public void Awake()
-		{
-			InitStyles();
+    {
+        [SerializeField] bool creatingNewConfig;
+        [SerializeField] string[] savedConfigNames;
+        [SerializeField] int selectedSavedConfigIndex = -1;
+        [SerializeField] GUIStyle buttonStyle;
+        [SerializeField] GUIStyle popupStyle;
+        GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
+        GUILayoutOption[] popupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
+        public void Awake()
+        {
+            InitStyles();
 
             savedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_SavedConfigsFolderPath);
-			string extension = Path.GetExtension(G.configs.CurrentConfig.CurrentSavedConfigName);
-            if (G.configs.CurrentConfig.CurrentSavedConfigName != null)
+            string extension = Path.GetExtension(G.configs.CurrentConfig.Json.CurrentSavedConfigName);
+            if (G.configs.CurrentConfig.Json.CurrentSavedConfigName != null)
             {
-                selectedSavedConfigIndex = savedConfigNames.IndexOf(G.configs.CurrentConfig.CurrentSavedConfigName.Remove(
-                    G.configs.CurrentConfig.CurrentSavedConfigName.Length - extension.Length, extension.Length));
+                selectedSavedConfigIndex = savedConfigNames.IndexOf(G.configs.CurrentConfig.Json.CurrentSavedConfigName.Remove(
+                    G.configs.CurrentConfig.Json.CurrentSavedConfigName.Length - extension.Length, extension.Length));
             }
-			G.g.OnChangeCurrentConfig += () => { G.configs.Dirty = false; };
-			HandleApplyingWarning();
-		}
+            HandleApplyingWarning();
+        }
 
+        private void InitStyles()
+        {
+            buttonStyle = new GUIStyle("Button") { fixedHeight = 0, fixedWidth = 0 };
+            popupStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
+        }
+
+        public void OnEnable()
+        {
+            G.g.OnChangeCurrentConfig += () => { G.configs.Dirty = false; };
+        }
+        public void OnDisable()
+        {
+
+        }
 		public void OnGUI()
 		{            
 			if (creatingNewConfig == true && GUI.GetNameOfFocusedControl() != "InputField1")
@@ -43,12 +56,12 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			using (new EditorGUILayout.HorizontalScope())
 			{
 				EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-				string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.RootPath);
+				string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
 				if (GUILayout.Button("...", GUILayout.MaxWidth(24)))
 				{
-					path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.RootPath, null);
+					path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
 				}
-				if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.RootPath)
+				if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
 				{
 					ChangeRootPath(path);
                     return;
@@ -87,17 +100,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				{ ClickedApply(); return; }
 			}
 			GUILayout.FlexibleSpace();
-		}
+        }
 
-		private void InitStyles()
-		{
-			buttonStyle = new GUIStyle("Button") { fixedHeight = 0, fixedWidth = 0 };
-			buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
-			popupStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
-			popupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
-		}
-
-		private void ClickedApply()
+        private void ClickedApply()
 		{
 			bool ensure = EditorUtility.DisplayDialog("Preprocessor", "确定应用当前配置？应用过程不可中断。", "确定", "取消");
 			if (ensure)
@@ -192,10 +197,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				{
 					var newCurrentSavedConfig = new Configs.CurrentSavedConfig();
 					string newConfigName = savedConfigNames[selectedIndex_new] + ".json";
-					newCurrentSavedConfig.Path = Path.Combine(G.configs.LocalConfig.Local_SavedConfigsFolderPath, newConfigName);
+					newCurrentSavedConfig.JsonPath = Path.Combine(G.configs.LocalConfig.Local_SavedConfigsFolderPath, newConfigName);
 					newCurrentSavedConfig.Load();
 					//至此加载成功
-					G.configs.CurrentConfig.CurrentSavedConfigName = newConfigName;
+					G.configs.CurrentConfig.Json.CurrentSavedConfigName = newConfigName;
 					G.configs.CurrentSavedConfig = newCurrentSavedConfig;
 					selectedSavedConfigIndex = selectedIndex_new;
 					G.g.OnChangeCurrentConfig();
@@ -246,7 +251,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			//更新列表
 			savedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_SavedConfigsFolderPath);
 			//保存
-			G.configs.CurrentSavedConfig.Path = path;
+			G.configs.CurrentSavedConfig.JsonPath = path;
 			G.configs.CurrentSavedConfig.Save();
 			//切换
 			G.configs.Dirty = false;
@@ -307,7 +312,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				G.configs = newConfigs;
 				G.g.OnChangeCurrentConfig();
 				G.configs.LocalConfig.Save();
-				selectedSavedConfigIndex = savedConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.configs.CurrentConfig.CurrentSavedConfigName));
+				selectedSavedConfigIndex = savedConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.configs.CurrentConfig.Json.CurrentSavedConfigName));
 				HandleApplyingWarning();
 			}
 		}
@@ -363,7 +368,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 		private void HandleApplyingWarning()
 		{
-			if (G.configs.CurrentConfig.Applying)
+			if (G.configs.CurrentConfig.Json.Applying)
 			{
                 EditorUtility.DisplayDialog("提示", "上次应用配置时发生错误或被强制中断，可能导致对Unity内的文件替换不完全或错误、对meta文件的修改不完全或错误，建议还原meta文件、重新应用配置。", "确定");
 			}

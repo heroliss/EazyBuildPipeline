@@ -1,17 +1,25 @@
 {
-    "Packages": [
-        {
-            "PackageName": "New Package",
-            "Color": "6376FF",
-            "Bundles": [],
-            "EmptyFolders": [],
-            "Necessery": "",
-            "DeploymentLocation": "",
-            "CopyToStreaming": false,
-            "FileName": "ios_addon_7.8.9_default_New Package.jpg"
-        }
-    ],
-    "PackageMode": "Addon",
-    "LuaSource": "Origin",
-    "CompressionLevel": 1
+  "Packages": [
+    {
+      "PackageName": "New Package",
+      "Color": "6376FF",
+      "Bundles": [],
+      "EmptyFolders": [],
+      "Necessery": "",
+      "DeploymentLocation": "",
+      "CopyToStreaming": false
+    },
+    {
+      "PackageName": "New Package 1",
+      "Color": "6E79FF",
+      "Bundles": [],
+      "EmptyFolders": [],
+      "Necessery": null,
+      "DeploymentLocation": null,
+      "CopyToStreaming": false
+    }
+  ],
+  "PackageMode": "Addon",
+  "LuaSource": "Origin",
+  "CompressionLevel": 1
 }

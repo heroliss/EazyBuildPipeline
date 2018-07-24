@@ -3,9 +3,21 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace EazyBuildPipeline.Common.Editor
 {
+    /// <summary>
+    /// 公共EazyBuildPipeline配置集
+    /// 其中各种Config类继承自EBPConfig类，这种继承本可以省略，直接产生一个 EBPConfig<JsonClass> 即可，
+    /// 但考虑两点：
+    /// 1.最终产生的EBPConfig对象中的Json对象需要一个初始化值，封装到一个子Config类中容易初始化
+    /// 2.Unity序列化不支持对泛型类的序列化，Config子类可以消除EBPConfig的泛型特性
+    /// 另外：
+    /// EBPConfig的Load和Save函数不使用Unity内置序列化工具是为了对字典等类型的序列化保存到文件时有更好看的字符串结果
+    /// (由于Unity内置序列化工具不支持字典，所以使用Unity的JsonUtility序列化字典只能变为序列化两个List)
+    /// </summary>
+    [Serializable]
     public class EBPConfigs
     {
         public virtual string ModuleName { get { return "EazyBuildPipeline"; } }
@@ -18,14 +30,14 @@ namespace EazyBuildPipeline.Common.Editor
         {
             try
             {
-                Common_AssetsTagsConfig.Path = Common_LocalConfig.AssetsTagsConfigPath;
+                Common_AssetsTagsConfig.JsonPath = Common_LocalConfig.AssetsTagsConfigPath;
                 Common_AssetsTagsConfig.Load();
                 return true;
             }
             catch (Exception e)
             {
                 DisplayDialog("加载公共AssetsTags文件时发生错误：" + e.Message
-                    + "\n加载路径：" + Common_AssetsTagsConfig.Path
+                    + "\n加载路径：" + Common_AssetsTagsConfig.JsonPath
                     + "\n请正确设置形如以下所示的配置文件：\n" + Common_AssetsTagsConfig.ToString());
                 return false;
             }
@@ -35,14 +47,14 @@ namespace EazyBuildPipeline.Common.Editor
         {
             try
             {
-                Common_TagEnumConfig.Path = Common_LocalConfig.TagEnumConfigPath;
+                Common_TagEnumConfig.JsonPath = Common_LocalConfig.TagEnumConfigPath;
                 Common_TagEnumConfig.Load();
                 return true;
             }
             catch (Exception e)
             {
                 DisplayDialog("加载公共枚举配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + Common_TagEnumConfig.Path
+                    + "\n加载路径：" + Common_TagEnumConfig.JsonPath
                     + "\n请正确设置形如以下所示的配置文件：\n" + Common_TagEnumConfig.ToString());
                 return false;
             }
@@ -57,77 +69,90 @@ namespace EazyBuildPipeline.Common.Editor
                 {
                     throw new ApplicationException("未能找到公共本地配置文件! 搜索文本：" + commonConfigSearchText);
                 }
-                Common_LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                Common_LocalConfig.LocalRootPath = Path.GetDirectoryName(Common_LocalConfig.Path);
+                Common_LocalConfig.JsonPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                Common_LocalConfig.LocalRootPath = Path.GetDirectoryName(Common_LocalConfig.JsonPath);
                 Common_LocalConfig.Load();
                 return true;
             }
             catch (Exception e)
             {
                 DisplayDialog("加载公共本地配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + Common_LocalConfig.Path
+                    + "\n加载路径：" + Common_LocalConfig.JsonPath
                     + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + Common_LocalConfig.ToString());
                 return false;
             }
         }
 
-        public class CommonLocalConfig : EBPConfig
+        [Serializable]
+        public class CommonLocalConfig : EBPConfig<CommonLocalConfig.JsonClass>
         {
-            public string TagEnumConfigPath { get { return System.IO.Path.Combine(LocalRootPath, TagEnumConfigRelativePath); } }
-            public string TagEnumConfigRelativePath;
-            public string AssetsTagsConfigPath { get { return System.IO.Path.Combine(LocalRootPath, AssetsTagsConfigRelativePath); } }
-            public string AssetsTagsConfigRelativePath;
-            public string BundleIconPath { get { return System.IO.Path.Combine(LocalRootPath, BundleIconRelativePath); } }
-            public string BundleIconRelativePath;
-            public string BundleIcon_SceneConfigPath { get { return System.IO.Path.Combine(LocalRootPath, BundleIcon_SceneRelativePath); } }
-            public string BundleIcon_SceneRelativePath;
-            public string PackageIconPath { get { return System.IO.Path.Combine(LocalRootPath, PackageIconRelativePath); } }
-            public string PackageIconRelativePath;
-            public string SettingIconPath { get { return System.IO.Path.Combine(LocalRootPath, SettingIconRelativePath); } }
-            public string SettingIconRelativePath;
-            [NonSerialized]
+            public CommonLocalConfig()
+            {
+                Json = new JsonClass();
+            }
+            public string TagEnumConfigPath { get { return Path.Combine(LocalRootPath, Json.TagEnumConfigRelativePath); } }
+            public string AssetsTagsConfigPath { get { return Path.Combine(LocalRootPath, Json.AssetsTagsConfigRelativePath); } }
+            public string BundleIconPath { get { return Path.Combine(LocalRootPath, Json.BundleIconRelativePath); } }
+            public string BundleIcon_SceneConfigPath { get { return Path.Combine(LocalRootPath, Json.BundleIcon_SceneRelativePath); } }
+            public string PackageIconPath { get { return Path.Combine(LocalRootPath, Json.PackageIconRelativePath); } }
+            public string SettingIconPath { get { return Path.Combine(LocalRootPath, Json.SettingIconRelativePath); } }
             public string LocalRootPath;
-        }
-
-        public class CommonTagEnumConfig : EBPConfig
-        {
-            public Dictionary<string, string[]> Tags = new Dictionary<string, string[]>
+            [Serializable]
+            public class JsonClass
             {
-                { "Example Group 1:",new string[]{"example tag1","example tag2","example tag3"} },
-                { "Example Group 2:",new string[]{"example tag a","example tag b"} },
-            };
-
-            public override void Load()
-            {
-                string s = File.ReadAllText(Path);
-                Tags = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(s);
-            }
-            public override void Save()
-            {
-                File.WriteAllText(Path, JsonConvert.SerializeObject(Tags, Formatting.Indented));
-            }
-            public override string ToString()
-            {
-                return JsonConvert.SerializeObject(Tags, Formatting.Indented);
+                public string TagEnumConfigRelativePath;
+                public string AssetsTagsConfigRelativePath;
+                public string BundleIconRelativePath;
+                public string BundleIcon_SceneRelativePath;
+                public string PackageIconRelativePath;
+                public string SettingIconRelativePath;
             }
         }
 
-        public class CommonAssetsTagsConfig : EBPConfig
+        [Serializable]
+        public class CommonTagEnumConfig : EBPConfig<Dictionary<string,string[]>>, ISerializationCallbackReceiver
         {
-            public string[] CurrentTags = new string[] { "Example Tag1", "Example Tag2" };
+            [SerializeField] private List<TageEnumClass> tags = new List<TageEnumClass>();
+            public Dictionary<string,string[]> Tags { get { return Json; } }
+            public CommonTagEnumConfig()
+            {
+                Json = new Dictionary<string,string[]>()
+                {
+                    { "Example Group 1:",new string[]{"example tag1","example tag2","example tag3"} },
+                    { "Example Group 2:",new string[]{"example tag a","example tag b"} },
+                };
+            }
+            public void OnBeforeSerialize()
+            {
+                tags.Clear();
+                tags.Capacity = Json.Count;
+                foreach (var item in Json)
+                {
+                    tags.Add(new TageEnumClass() { type = item.Key, tags = item.Value });
+                }
+            }
+            public void OnAfterDeserialize()
+            {
+                Json.Clear();
+                for (int i = 0; i < tags.Count; ++i)
+                {
+                    Json.Add(tags[i].type, tags[i].tags);
+                }
+            }
+            [Serializable]
+            public class TageEnumClass
+            {
+                public string type;
+                public string[] tags;
+            }
+        }
 
-            public override void Load()
+        [Serializable]
+        public class CommonAssetsTagsConfig : EBPConfig<string[]>
+        {
+            public CommonAssetsTagsConfig()
             {
-                string s = File.ReadAllText(Path);
-                CurrentTags = JsonConvert.DeserializeObject<string[]>(s);
-            }
-            public override void Save()
-            {
-                File.WriteAllText(Path, JsonConvert.SerializeObject(CurrentTags, Formatting.Indented));
-            }
-            public override string ToString()
-            {
-                return JsonConvert.SerializeObject(CurrentTags, Formatting.Indented);
+                Json = new string[] { "Example Tag1", "Example Tag2" };
             }
         }
 
@@ -137,23 +162,23 @@ namespace EazyBuildPipeline.Common.Editor
         }
     }
 
-    public class EBPConfig
+    [Serializable]
+    public class EBPConfig<TJson>
     {
-        [NonSerialized]
-        public string Path;
+        public TJson Json;
+        public string JsonPath;
 
-        public virtual void Load()
+        public virtual void Load(string path = null)
         {
-            string s = File.ReadAllText(Path);
-            EditorJsonUtility.FromJsonOverwrite(s, this);
+            Json = JsonConvert.DeserializeObject<TJson>(File.ReadAllText(path ?? JsonPath));
         }
-        public virtual void Save()
+        public virtual void Save(string path = null)
         {
-            File.WriteAllText(Path, EditorJsonUtility.ToJson(this, true));
+            File.WriteAllText(path ?? JsonPath, JsonConvert.SerializeObject(Json, Formatting.Indented));
         }
         public override string ToString()
         {
-            return EditorJsonUtility.ToJson(this, true);
+            return JsonConvert.SerializeObject(Json, Formatting.Indented);
         }
     }
 }

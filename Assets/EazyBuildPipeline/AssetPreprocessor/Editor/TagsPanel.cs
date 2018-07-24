@@ -6,20 +6,26 @@ using UnityEngine;
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
+    [Serializable]
     public class TagsPanel
     {
         public Action OnToggleChanged = () => { };
         public bool Dirty;
         public int[] selectedTagIndexs;
-        int[] selectedTagIndexs_origin;
-        float OptionWidth = 70;
-        float headSpace = 20;
-        GUIStyle labelStyle;
-        GUIStyle dropDownStyle;
+        [SerializeField] int[] selectedTagIndexs_origin;
+        [SerializeField] float OptionWidth = 70;
+        [SerializeField] float headSpace = 20;
+        [SerializeField] GUIStyle labelStyle;
+        [SerializeField] GUIStyle dropDownStyle;
+
         public void Awake()
         {
-            InitStyles();
+            labelStyle = new GUIStyle(EditorStyles.label) { fixedWidth = headSpace - 8 };
+            dropDownStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
             Reset();
+        }
+        public void OnEnable()
+        {
             G.g.OnChangeCurrentConfig += Reset;
         }
         
@@ -29,11 +35,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             PullCurrentTags();
             selectedTagIndexs_origin = selectedTagIndexs.ToArray();
         }
-        void InitStyles()
-        {
-            labelStyle = new GUIStyle(EditorStyles.label) { fixedWidth = headSpace - 8 };
-            dropDownStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
-        }
+ 
         public void OnGUI(float panelWidth)
         {
             EditorGUILayout.BeginHorizontal();
@@ -83,7 +85,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 int j = selectedTagIndexs[i];
                 tags.Add(j == -1 ? "" : G.configs.Common_TagEnumConfig.Tags.Values.ToArray()[i][j]);
             }
-            G.configs.CurrentSavedConfig.Tags = tags.ToArray();
+            G.configs.CurrentSavedConfig.Json.Tags = tags.ToArray();
         }
 
         private void UpdateDirty()
@@ -102,19 +104,19 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         private void PullCurrentTags()
         {
             selectedTagIndexs = Enumerable.Repeat(-1, G.configs.Common_TagEnumConfig.Tags.Count).ToArray();
-            if (G.configs.Common_TagEnumConfig.Tags.Count >= G.configs.CurrentSavedConfig.Tags.Length)
+            if (G.configs.Common_TagEnumConfig.Tags.Count >= G.configs.CurrentSavedConfig.Json.Tags.Length)
             {
-                for (int i = 0; i < G.configs.CurrentSavedConfig.Tags.Length; i++)
+                for (int i = 0; i < G.configs.CurrentSavedConfig.Json.Tags.Length; i++)
                 {
-                    selectedTagIndexs[i] = GetIndex(G.configs.Common_TagEnumConfig.Tags.Values.ToArray()[i], G.configs.CurrentSavedConfig.Tags[i], i);
+                    selectedTagIndexs[i] = GetIndex(G.configs.Common_TagEnumConfig.Tags.Values.ToArray()[i], G.configs.CurrentSavedConfig.Json.Tags[i], i);
                 }
             }
-            else if (G.configs.Common_TagEnumConfig.Tags.Count < G.configs.CurrentSavedConfig.Tags.Length)
+            else if (G.configs.Common_TagEnumConfig.Tags.Count < G.configs.CurrentSavedConfig.Json.Tags.Length)
             {
                 EditorUtility.DisplayDialog("Preprocessor", "全局标签枚举类型少于欲加载的标签配置类型", "确定");
                 for (int i = 0; i < G.configs.Common_TagEnumConfig.Tags.Count; i++)
                 {
-                    selectedTagIndexs[i] = GetIndex(G.configs.Common_TagEnumConfig.Tags.Values.ToArray()[i], G.configs.CurrentSavedConfig.Tags[i], i);
+                    selectedTagIndexs[i] = GetIndex(G.configs.Common_TagEnumConfig.Tags.Values.ToArray()[i], G.configs.CurrentSavedConfig.Json.Tags[i], i);
                 }
             }
         }
@@ -131,7 +133,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             EditorUtility.DisplayDialog("错误", string.Format("加载保存的配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, G.configs.Common_TagEnumConfig.Path, G.configs.CurrentSavedConfig.Path), "确定");
+                  s, count, G.configs.Common_TagEnumConfig.JsonPath, G.configs.CurrentSavedConfig.JsonPath), "确定");
             return -1;
         }
     }

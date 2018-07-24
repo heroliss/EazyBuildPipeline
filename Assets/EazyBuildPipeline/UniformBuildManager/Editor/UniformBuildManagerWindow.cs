@@ -7,12 +7,14 @@ using System.Collections.Generic;
 
 namespace EazyBuildPipeline.UniformBuildManager.Editor
 {
-    public class UniformBuildManagerWindow : EditorWindow
+    public class UniformBuildManagerWindow : EditorWindow, ISerializationCallbackReceiver
     {
+        Configs.Configs configs;
         readonly int settingPanelHeight = 150;
  
         private BuildSettingsPanel buildSettingsPanel;
         private SettingPanel settingPanel;
+
 
         [MenuItem("Window/EazyBuildPipeline/UniformBuildManager")]
         static void ShowWindow()
@@ -22,10 +24,17 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         private void Awake()
         {
             G.Init();
+
             settingPanel = new SettingPanel();
             buildSettingsPanel = new BuildSettingsPanel();
             settingPanel.Awake();
             buildSettingsPanel.Awake();
+        }
+
+        private void OnEnable()
+        {
+            settingPanel.OnEnable();
+            buildSettingsPanel.OnEnable();
         }
 
         private void OnGUI()
@@ -49,6 +58,17 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             buildSettingsPanel.OnDestory();
             settingPanel.OnDestory();
             G.Clear();
+        }
+
+        public void OnBeforeSerialize()
+        {
+            configs = G.configs;
+        }
+
+        public void OnAfterDeserialize()
+        {
+            G.configs = configs;
+            G.g = new G.GlobalReference();
         }
     }
 }

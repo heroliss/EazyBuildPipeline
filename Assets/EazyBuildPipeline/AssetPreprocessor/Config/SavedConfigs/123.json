@@ -1,27 +1,27 @@
 {
-    "Groups": [
-        {
-            "FullGroupName": "Language",
-            "Options": [
-                "ZH_CN"
-            ]
-        },
-        {
-            "FullGroupName": "Texture Import Settings Override/Max Size",
-            "Options": [
-                "1024 -> 512"
-            ]
-        },
-        {
-            "FullGroupName": "Texture Import Settings Override/Format",
-            "Options": [
-                "RGBA32 -> ASTC RGBA 4x4"
-            ]
-        }
-    ],
-    "Tags": [
-        "iOS",
-        "SD",
-        "EN"
-    ]
+  "Groups": [
+    {
+      "FullGroupName": "Language",
+      "Options": [
+        "ZH_CN"
+      ]
+    },
+    {
+      "FullGroupName": "Texture Import Settings Override/Max Size",
+      "Options": [
+        "1024 -> 512"
+      ]
+    },
+    {
+      "FullGroupName": "Texture Import Settings Override/Format",
+      "Options": [
+        "RGBA32 -> ASTC RGBA 4x4"
+      ]
+    }
+  ],
+  "Tags": [
+    "iOS",
+    "SD",
+    "ZH_CN"
+  ]
 }

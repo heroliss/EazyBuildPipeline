@@ -35,6 +35,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
 namespace EazyBuildPipeline.BundleManager.Editor.Configs
 {
+    [Serializable]
     public class Configs : EBPConfigs
     {
         public Dictionary<string, BuildAssetBundleOptions> CompressionEnumMap = new Dictionary<string, BuildAssetBundleOptions>
@@ -74,14 +75,14 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         {
             try
             {
-                if (Directory.Exists(LocalConfig.RootPath))
+                if (Directory.Exists(LocalConfig.Json.RootPath))
                 {
-                    CurrentConfig.Path = LocalConfig.BundleManagerConfigPath;
-                    if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.Path)))
+                    CurrentConfig.JsonPath = LocalConfig.BundleManagerConfigPath;
+                    if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.JsonPath)))
                     {
-                        if (!File.Exists(CurrentConfig.Path))
+                        if (!File.Exists(CurrentConfig.JsonPath))
                         {
-                            File.Create(CurrentConfig.Path).Close();
+                            File.Create(CurrentConfig.JsonPath).Close();
                             CurrentConfig.Save();
                         }
                         CurrentConfig.Load();
@@ -89,14 +90,14 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
                     }
                     else
                     {
-                        DisplayDialog("不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path));
+                        DisplayDialog("不是有效的Pipeline根目录:" + LocalConfig.Json.RootPath +
+                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.JsonPath));
                         return false;
                     }
                 }
                 else
                 {
-                    DisplayDialog("根目录不存在:" + LocalConfig.RootPath);
+                    DisplayDialog("根目录不存在:" + LocalConfig.Json.RootPath);
                     return false;
                 }
             }
@@ -116,19 +117,19 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
                 {
                     throw new ApplicationException("未能找到本地配置文件! 搜索文本：" + localConfigSearchText);
                 }
-                LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.Path);
+                LocalConfig.JsonPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.JsonPath);
                 LocalConfig.Load();
                 if (rootPath != null)
                 {
-                    LocalConfig.RootPath = rootPath;
+                    LocalConfig.Json.RootPath = rootPath;
                 }
                 return true;
             }
             catch (Exception e)
             {
                 DisplayDialog("加载本地配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + LocalConfig.Path
+                    + "\n加载路径：" + LocalConfig.JsonPath
                     + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
                 return false;
             }
@@ -137,80 +138,84 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         {
             try
             {
-                if (!string.IsNullOrEmpty(CurrentConfig.CurrentBundleMap))
+                if (!string.IsNullOrEmpty(CurrentConfig.Json.CurrentBundleMap))
                 {
-                    BundleBuildMapConfig.Path = Path.Combine(LocalConfig.Local_BundleMapsFolderPath, CurrentConfig.CurrentBundleMap);
+                    BundleBuildMapConfig.JsonPath = Path.Combine(LocalConfig.Local_BundleMapsFolderPath, CurrentConfig.Json.CurrentBundleMap);
                     BundleBuildMapConfig.Load();
                     return true;
                 }
                 else
                 {
-                    CurrentConfig.CurrentBundleMap = null;
-                    BundleBuildMapConfig.Path = null;
+                    CurrentConfig.Json.CurrentBundleMap = null;
+                    BundleBuildMapConfig.JsonPath = null;
                     return false;
                 }
             }
             catch(Exception e)
             {
-                DisplayDialog("加载BundleBuildMap时发生错误：" + e.Message + "\n加载路径：" + BundleBuildMapConfig.Path);
+                DisplayDialog("加载BundleBuildMap时发生错误：" + e.Message + "\n加载路径：" + BundleBuildMapConfig.JsonPath);
                 return false;
             }
         }
-
     }
 
-
-    public class LocalConfig : EBPConfig
+    [Serializable]
+    public class LocalConfig : EBPConfig<LocalConfig.JsonClass>
     {
+        public LocalConfig()
+        {
+            Json = new JsonClass();
+        }
         //本地配置路径
-        public string Local_BundleMapsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_BundleMapsFolderRelativePath); } }
-        public string Local_BundleMapsFolderRelativePath;
-        [NonSerialized]
+        public string Local_BundleMapsFolderPath { get { return Path.Combine(LocalRootPath, Json.Local_BundleMapsFolderRelativePath); } }
         public string LocalRootPath;
         //Pipeline配置路径
-        public string RootPath;
-        public string BundleManagerConfigPath { get { return System.IO.Path.Combine(RootPath, BundleManagerConfigRelativePath); } }
-        public string BundleManagerConfigRelativePath;
-        public string BundlesFolderPath { get { return System.IO.Path.Combine(RootPath, BundlesFolderRelativePath); } }
-        public string BundlesFolderRelativePath;
-    }
-
-    public class BundleBuildMapConfig : EBPConfig
-    {
-        public AssetBundleBuild[] BundleBuildMap;
-        public override void Load()
+        public string BundleManagerConfigPath { get { return Path.Combine(Json.RootPath, Json.BundleManagerConfigRelativePath); } }
+        public string BundlesFolderPath { get { return Path.Combine(Json.RootPath, Json.BundlesFolderRelativePath); } }
+        [Serializable]
+        public class JsonClass
         {
-            string content = File.ReadAllText(Path);
-            BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(content);
-        }
-        public override void Save()
-        {
-            string content = JsonConvert.SerializeObject(BundleBuildMap);
-            File.WriteAllText(Path, content);
+            public string Local_BundleMapsFolderRelativePath;
+            public string RootPath;
+            public string BundleManagerConfigRelativePath;
+            public string BundlesFolderRelativePath;
         }
     }
 
-    public class CurrentConfig : EBPConfig
+    [Serializable]
+    public class BundleBuildMapConfig : EBPConfig<AssetBundleBuild[]>
     {
-        public string[] CurrentTags;
-        public string CurrentBundleMap;
-        public int CurrentBuildAssetBundleOptionsValue;
-        public int CurrentResourceVersion;
-        public int CurrentBundleVersion;
-        public bool Applying;
-        public bool IsPartOfPipeline;
+    }
 
-        public BuildAssetBundleOptions CompressionOption
+    [Serializable]
+    public class CurrentConfig : EBPConfig<CurrentConfig.JsonClass>
+    {
+        public CurrentConfig()
         {
-            get
+            Json = new JsonClass();
+        }
+        [Serializable]
+        public class JsonClass
+        {
+            public BuildAssetBundleOptions CompressionOption
             {
-                return
-                    (CurrentBuildAssetBundleOptionsValue & (int)BuildAssetBundleOptions.ChunkBasedCompression) == 0 ?
-                    (CurrentBuildAssetBundleOptionsValue & (int)BuildAssetBundleOptions.UncompressedAssetBundle) == 0 ?
-                    BuildAssetBundleOptions.None :
-                    BuildAssetBundleOptions.UncompressedAssetBundle :
-                    BuildAssetBundleOptions.ChunkBasedCompression;
+                get
+                {
+                    return
+                        (CurrentBuildAssetBundleOptionsValue & (int)BuildAssetBundleOptions.ChunkBasedCompression) == 0 ?
+                        (CurrentBuildAssetBundleOptionsValue & (int)BuildAssetBundleOptions.UncompressedAssetBundle) == 0 ?
+                        BuildAssetBundleOptions.None :
+                        BuildAssetBundleOptions.UncompressedAssetBundle :
+                        BuildAssetBundleOptions.ChunkBasedCompression;
+                }
             }
+            public string[] CurrentTags;
+            public string CurrentBundleMap;
+            public int CurrentBuildAssetBundleOptionsValue;
+            public int CurrentResourceVersion;
+            public int CurrentBundleVersion;
+            public bool Applying;
+            public bool IsPartOfPipeline;
         }
     }
 }

@@ -1,37 +1,51 @@
 {
-    "Packages": [
-        {
-            "PackageName": "New Package",
-            "Color": "6376FF",
-            "Bundles": [],
-            "EmptyFolders": [],
-            "Necessery": "",
-            "DeploymentLocation": "",
-            "CopyToStreaming": false,
-            "FileName": "ios_addon_7.8.9_default_New Package.jpg"
-        },
-        {
-            "PackageName": "New Package 1",
-            "Color": "FF77C7",
-            "Bundles": [],
-            "EmptyFolders": [],
-            "Necessery": "",
-            "DeploymentLocation": "",
-            "CopyToStreaming": false,
-            "FileName": "ios_addon_7.8.9_default_New Package 1.jpg"
-        },
-        {
-            "PackageName": "New Package 2",
-            "Color": "2F45FF",
-            "Bundles": [],
-            "EmptyFolders": [],
-            "Necessery": "",
-            "DeploymentLocation": "",
-            "CopyToStreaming": false,
-            "FileName": "ios_addon_7.8.9_default_New Package 2.jpg"
-        }
-    ],
-    "PackageMode": "Addon",
-    "LuaSource": "Origin",
-    "CompressionLevel": 1
+  "Packages": [
+    {
+      "PackageName": "New Package",
+      "Color": "59E56F",
+      "Bundles": [],
+      "EmptyFolders": [
+        "newfolder108"
+      ],
+      "Necessery": "Immediate",
+      "DeploymentLocation": "Server",
+      "CopyToStreaming": false
+    },
+    {
+      "PackageName": "New Package 1",
+      "Color": "FF77C7",
+      "Bundles": [
+        "assetbundlemanifest",
+        "newbundle106"
+      ],
+      "EmptyFolders": [],
+      "Necessery": "",
+      "DeploymentLocation": "Built-in",
+      "CopyToStreaming": false
+    },
+    {
+      "PackageName": "New Package 2",
+      "Color": "2F45FF",
+      "Bundles": [
+        "newbundle107",
+        "assetbundlemanifest"
+      ],
+      "EmptyFolders": [],
+      "Necessery": "",
+      "DeploymentLocation": "Server",
+      "CopyToStreaming": true
+    },
+    {
+      "PackageName": "New Package 3",
+      "Color": "220A85",
+      "Bundles": [],
+      "EmptyFolders": [],
+      "Necessery": "Immediate",
+      "DeploymentLocation": "Built-in",
+      "CopyToStreaming": false
+    }
+  ],
+  "PackageMode": "Addon",
+  "LuaSource": "Origin",
+  "CompressionLevel": 4
 }

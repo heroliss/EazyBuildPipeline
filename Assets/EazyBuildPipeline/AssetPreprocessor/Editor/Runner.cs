@@ -129,12 +129,12 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         public void ApplyOptions(bool isPartOfPipeline = false)
         {
-            configs.CurrentConfig.IsPartOfPipeline = isPartOfPipeline;
-            configs.CurrentConfig.Applying = true;
+            configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
+            configs.CurrentConfig.Json.Applying = true;
             configs.CurrentConfig.Save();
 
-            string tags = JsonConvert.SerializeObject(new string[] { "Applying" }.Concat(configs.CurrentSavedConfig.Tags));
-            File.WriteAllText(configs.Common_AssetsTagsConfig.Path, tags);
+            string tags = JsonConvert.SerializeObject(new string[] { "Applying" }.Concat(configs.CurrentSavedConfig.Json.Tags));
+            File.WriteAllText(configs.Common_AssetsTagsConfig.JsonPath, tags);
 
             string platform = "";//TODO：这里能否使用EditorUserBuildSettings.activeBuildTarget？
 #if UNITY_ANDROID
@@ -146,7 +146,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             string copyFileArgs = Path.Combine(configs.LocalConfig.Local_ShellsFolderPath, "CopyFile.sh") + " " + configs.LocalConfig.LogsFolderPath + " Assets " + configs.LocalConfig.PreStoredAssetsFolderPath;
             string changeMetaArgs = Path.Combine(configs.LocalConfig.Local_ShellsFolderPath, "ModifyMeta.sh") + " " + configs.LocalConfig.LogsFolderPath + " Assets " + platform;
             int changeMetaArgsLength = changeMetaArgs.Length;
-            foreach (var group in configs.CurrentSavedConfig.Groups)
+            foreach (var group in configs.CurrentSavedConfig.Json.Groups)
             {
                 switch (group.FullGroupName)
                 {
@@ -193,10 +193,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 RunShell_ShowProgress_WaitForExit(changeMetaArgs, "正在查找.meta文件...", "第2步(共2步) 修改meta文件");
             }
 
-            tags = JsonConvert.SerializeObject(configs.CurrentSavedConfig.Tags);
-            File.WriteAllText(configs.Common_AssetsTagsConfig.Path, tags);
+            tags = JsonConvert.SerializeObject(configs.CurrentSavedConfig.Json.Tags);
+            File.WriteAllText(configs.Common_AssetsTagsConfig.JsonPath, tags);
 
-            configs.CurrentConfig.Applying = false;
+            configs.CurrentConfig.Json.Applying = false;
             configs.CurrentConfig.Save();
 
             AssetDatabase.Refresh();

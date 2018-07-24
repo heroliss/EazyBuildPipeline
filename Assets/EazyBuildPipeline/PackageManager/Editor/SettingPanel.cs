@@ -6,44 +6,39 @@ using UnityEngine;
 
 namespace EazyBuildPipeline.PackageManager.Editor
 {
+    [Serializable]
     public class SettingPanel
     {
-        int[] compressionLevelEnum = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        string[] compressionLevelsEnumStr = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-        int[] selectedTagIndexs;
-        int selectedMapIndex;
-        private int selectedPackageModeIndex;
-        private int selectedLuaSourceIndex;
+        readonly int[] compressionLevelEnum = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        readonly string[] compressionLevelsEnumStr = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+        [SerializeField] int[] selectedTagIndexs;
+        [SerializeField] int selectedMapIndex;
+        [SerializeField] int selectedPackageModeIndex;
+        [SerializeField] int selectedLuaSourceIndex;
         List<PackageTreeItem> wrongItems;
         List<PackageTreeItem> emptyItems;
 
-        private GUIStyle dropdownStyle;
-        private GUIStyle buttonStyle;
-        private GUIStyle labelStyle;
-        private GUILayoutOption[] buttonOptions;
-        private GUILayoutOption[] dropdownOptions;
-        private GUILayoutOption[] miniDropdownOptions;
-        private GUILayoutOption[] miniButtonOptions;
-        private GUILayoutOption[] popupOptions;
-        private GUILayoutOption[] labelOptions;
-        private GUILayoutOption[] shortLabelOptions;
-        private GUILayoutOption[] shortLabelOptions2;
-        private string[] savedConfigNames;
-        private bool creatingNewConfig;
+        [SerializeField] GUIStyle dropdownStyle;
+        [SerializeField] GUIStyle buttonStyle;
+        [SerializeField] GUIStyle labelStyle;
+
+        GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
+        GUILayoutOption[] dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(80) };
+        GUILayoutOption[] miniDropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
+        GUILayoutOption[] miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
+        GUILayoutOption[] popupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
+        GUILayoutOption[] labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
+        GUILayoutOption[] shortLabelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
+        GUILayoutOption[] shortLabelOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(40) };
+
+        [SerializeField] string[] savedConfigNames;
+        [SerializeField] bool creatingNewConfig;
 
         private void InitStyles()
         {
             dropdownStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
             buttonStyle = new GUIStyle("Button") { fixedHeight = 0, fixedWidth = 0 };
             labelStyle = new GUIStyle(EditorStyles.label) { fixedWidth = 0, fixedHeight = 0, alignment = TextAnchor.MiddleLeft };
-            buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
-            dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(80) };
-            miniDropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
-            miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
-            popupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
-            labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
-            shortLabelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
-            shortLabelOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(40) };
         }
 
         public void Awake()
@@ -55,10 +50,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "加载配置文件时发生错误：" + e.Message, "确定");
+                G.configs.DisplayDialog("加载配置文件时发生错误：" + e.Message);
             }
         }
-        
+
         public void OnGUI(Rect rect)
         {
             if (creatingNewConfig == true && GUI.GetNameOfFocusedControl() != "InputField1")
@@ -73,12 +68,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-                        string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.RootPath);
+                        string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
                         if (GUILayout.Button("...", miniButtonOptions))
                         {
-                            path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.RootPath, null);
+                            path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
                         }
-						if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.RootPath)
+						if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
 						{
 							ChangeRootPath(path);
                             return;
@@ -116,9 +111,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         if (selectedPackageModeIndex != currentPackageModeIndex_new)
                         {
                             selectedPackageModeIndex = currentPackageModeIndex_new;
-                            G.configs.PackageMapConfig.PackageMode = G.PackageModeEnum[selectedPackageModeIndex];
+                            G.configs.PackageMapConfig.Json.PackageMode = G.PackageModeEnum[selectedPackageModeIndex];
                             G.g.packageTree.UpdateAllFileName();
-                            G.g.packageTree.Dirty = true;
+                            G.configs.Dirty = true;
                             return;
                         }
                         GUILayout.Space(10);
@@ -127,18 +122,18 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         if (selectedLuaSourceIndex != currentLuaSourceIndex_new)
                         {
                             selectedLuaSourceIndex = currentLuaSourceIndex_new;
-                            G.configs.PackageMapConfig.LuaSource = G.LuaSourceEnum[selectedLuaSourceIndex];
-                            G.g.packageTree.Dirty = true;
+                            G.configs.PackageMapConfig.Json.LuaSource = G.LuaSourceEnum[selectedLuaSourceIndex];
+                            G.configs.Dirty = true;
                             return;
                         }
                         GUILayout.Space(10);
                         EditorGUILayout.LabelField("CompressLevel:", labelStyle, labelOptions);
-                        int compressionLevel_new = EditorGUILayout.IntPopup(G.configs.PackageMapConfig.CompressionLevel, compressionLevelsEnumStr,
+                        int compressionLevel_new = EditorGUILayout.IntPopup(G.configs.PackageMapConfig.Json.CompressionLevel, compressionLevelsEnumStr,
                             compressionLevelEnum, dropdownStyle, miniDropdownOptions);
-                        if (compressionLevel_new != G.configs.PackageMapConfig.CompressionLevel)
+                        if (compressionLevel_new != G.configs.PackageMapConfig.Json.CompressionLevel)
                         {
-                            G.configs.PackageMapConfig.CompressionLevel = compressionLevel_new;
-                            G.g.packageTree.Dirty = true;
+                            G.configs.PackageMapConfig.Json.CompressionLevel = compressionLevel_new;
+                            G.configs.Dirty = true;
                             return;
                         }
                         GUILayout.Space(20);
@@ -154,15 +149,15 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     EditorGUILayout.LabelField("Resource Version: " + G.g.bundleTree.BundleVersions.ResourceVersion, labelStyle, GUILayout.MaxWidth(150));
                     EditorGUILayout.LabelField("  Bundle Version: " + G.g.bundleTree.BundleVersions.BundleVersion, labelStyle, GUILayout.MaxWidth(150));
                     GUILayout.FlexibleSpace();
-                    if (G.configs.PackageMapConfig.PackageMode == "Addon")
+                    if (G.configs.PackageMapConfig.Json.PackageMode == "Addon")
                     {
                         EditorGUILayout.LabelField("Addon Version:", labelStyle, GUILayout.MaxWidth(110));
-                        string addonVersion_new = EditorGUILayout.TextField(G.configs.CurrentConfig.CurrentAddonVersion);
+                        string addonVersion_new = EditorGUILayout.TextField(G.configs.CurrentConfig.Json.CurrentAddonVersion);
                         {
                             if (!string.IsNullOrEmpty(addonVersion_new)) addonVersion_new = addonVersion_new.Trim();
-                            if (addonVersion_new != G.configs.CurrentConfig.CurrentAddonVersion)
+                            if (addonVersion_new != G.configs.CurrentConfig.Json.CurrentAddonVersion)
                             {
-                                G.configs.CurrentConfig.CurrentAddonVersion = addonVersion_new;
+                                G.configs.CurrentConfig.Json.CurrentAddonVersion = addonVersion_new;
                                 G.g.packageTree.UpdateAllFileName();
                                 return;
                             }
@@ -182,7 +177,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 if (selectedIndexs_new[i] != selectedTagIndexs[i])
                 {
                     selectedTagIndexs[i] = selectedIndexs_new[i];
-                    G.configs.CurrentConfig.CurrentTags[i] = tagType[selectedTagIndexs[i]];
+                    G.configs.CurrentConfig.Json.CurrentTags[i] = tagType[selectedTagIndexs[i]];
                     OnChangeTags();
                     return true;
                 }
@@ -220,7 +215,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void ClickedApply()
         {
-            G.configs.PackageMapConfig.Packages = GetPackageMap(); //从配置现场覆盖当前map
+            G.configs.PackageMapConfig.Json.Packages = GetPackageMap(); //从配置现场覆盖当前map
             if (!G.configs.Runner.Check()) return;
             if (!CheckAllPackageItem()) return;
 
@@ -239,7 +234,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                         "显示文件", "关闭"))
                     {
-                        string firstPackagePath = Path.Combine(G.configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(G.configs.CurrentConfig.CurrentTags) +
+                        string firstPackagePath = Path.Combine(G.configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(G.configs.CurrentConfig.Json.CurrentTags) +
                             "/" + G.g.packageTree.Packages[0].fileName);
                         EditorUtility.RevealInFinder(firstPackagePath);
                     }
@@ -287,7 +282,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     repeatedBundleList.Add(bundle);
                 }
             }
-            if (G.configs.PackageMapConfig.PackageMode == "Addon") //仅在addon模式下提示遗漏bundle
+            if (G.configs.PackageMapConfig.Json.PackageMode == "Addon") //仅在addon模式下提示遗漏bundle
             {
                 if (omittedBundleList.Count != 0)
                 {
@@ -348,7 +343,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 		private void ChangeRootPath(string path)
 		{
 			bool ensure = true;
-			if (G.g.packageTree.Dirty)
+			if (G.configs.Dirty)
 			{
                 ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
 			}
@@ -414,7 +409,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         }
         private void HandleApplyingWarning()
         {
-            if (G.configs.CurrentConfig.Applying)
+            if (G.configs.CurrentConfig.Json.Applying)
             {
                 EditorUtility.DisplayDialog("提示", "上次执行打包时发生错误或被强制中断，可能导致产生不完整或错误的压缩包、在StreamingAssets下产生不完整或错误的文件，建议重新打包。", "确定");
             }
@@ -422,34 +417,34 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void ConfigToIndex()
         {
-            if (G.configs.CurrentConfig.CurrentTags == null)
+            if (G.configs.CurrentConfig.Json.CurrentTags == null)
             {
                 return;
             }
-            int length = G.configs.CurrentConfig.CurrentTags.Length;
+            int length = G.configs.CurrentConfig.Json.CurrentTags.Length;
             if (length > G.configs.Common_TagEnumConfig.Tags.Count)
             {
                 EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
             }
             else if(length < G.configs.Common_TagEnumConfig.Tags.Count)
             {
-                string[] originCurrentTags = G.configs.CurrentConfig.CurrentTags;
-                G.configs.CurrentConfig.CurrentTags = new string[G.configs.Common_TagEnumConfig.Tags.Count];
-                originCurrentTags.CopyTo(G.configs.CurrentConfig.CurrentTags, 0);
+                string[] originCurrentTags = G.configs.CurrentConfig.Json.CurrentTags;
+                G.configs.CurrentConfig.Json.CurrentTags = new string[G.configs.Common_TagEnumConfig.Tags.Count];
+                originCurrentTags.CopyTo(G.configs.CurrentConfig.Json.CurrentTags, 0);
             }
             int i = 0;
             foreach (var item in G.configs.Common_TagEnumConfig.Tags.Values)
             {
-                selectedTagIndexs[i] = GetIndex(item, G.configs.CurrentConfig.CurrentTags[i], i);
+                selectedTagIndexs[i] = GetIndex(item, G.configs.CurrentConfig.Json.CurrentTags[i], i);
                 i++;
             }
-            if (G.configs.CurrentConfig.CurrentPackageMap == null)
+            if (G.configs.CurrentConfig.Json.CurrentPackageMap == null)
             {
                 return;
             }
-            selectedMapIndex = savedConfigNames.IndexOf(G.configs.CurrentConfig.CurrentPackageMap.RemoveExtension());
-            selectedLuaSourceIndex = G.LuaSourceEnum.IndexOf(G.configs.PackageMapConfig.LuaSource);
-            selectedPackageModeIndex = G.PackageModeEnum.IndexOf(G.configs.PackageMapConfig.PackageMode);
+            selectedMapIndex = savedConfigNames.IndexOf(G.configs.CurrentConfig.Json.CurrentPackageMap.RemoveExtension());
+            selectedLuaSourceIndex = G.LuaSourceEnum.IndexOf(G.configs.PackageMapConfig.Json.LuaSource);
+            selectedPackageModeIndex = G.PackageModeEnum.IndexOf(G.configs.PackageMapConfig.Json.PackageMode);
         }
 
         private int GetIndex(string[] sList, string s, int count)
@@ -462,17 +457,17 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     return i;
                 }
             }
-            EditorUtility.DisplayDialog("错误", string.Format("加载配置文件时发生错误：\n欲加载的类型“{0}”"
+            G.configs.DisplayDialog(string.Format("加载配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, G.configs.CurrentConfig.Path, G.configs.Common_TagEnumConfig.Path), "确定");
+                  s, count, G.configs.CurrentConfig.JsonPath, G.configs.Common_TagEnumConfig.JsonPath));
             return -1;
         }
 
         private void ClickedSave()
         {
             bool ensure = true;
-            if (G.g.packageTree.Dirty)
+            if (G.configs.Dirty)
             {
                 ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + savedConfigNames[selectedMapIndex], "覆盖保存", "取消");
             }
@@ -485,11 +480,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             try
             {
-                G.configs.PackageMapConfig.Packages = GetPackageMap();
+                G.configs.PackageMapConfig.Json.Packages = GetPackageMap();
                 G.configs.PackageMapConfig.Save();
 
                 EditorUtility.DisplayDialog("保存", "保存配置成功！", "确定");
-                G.g.packageTree.Dirty = false;
+                G.configs.Dirty = false;
             }
 
             catch (Exception e)
@@ -501,12 +496,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
         }
 
         //由于PackageMapConfig不会随Package的修改而更新，所以必须由此函数获取package信息
-        private List<Configs.PackageMapConfig.Package> GetPackageMap()
+        public List<Configs.PackageMapConfig.JsonClass.Package> GetPackageMap()
         {
-            var packages = new List<Configs.PackageMapConfig.Package>();
+            var packages = new List<Configs.PackageMapConfig.JsonClass.Package>();
             foreach (var package in G.g.packageTree.Packages)
             {
-                var p = new Configs.PackageMapConfig.Package()
+                var p = new Configs.PackageMapConfig.JsonClass.Package()
                 {
                     Bundles = new List<string>(),
                     EmptyFolders = new List<string>(),
@@ -529,7 +524,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             return packages;
         }
 
-        private void RecursiveAddItem(PackageTreeItem packageItem, Configs.PackageMapConfig.Package package)
+        private void RecursiveAddItem(PackageTreeItem packageItem, Configs.PackageMapConfig.JsonClass.Package package)
         {
             if (packageItem.hasChildren)
             {
@@ -589,10 +584,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //更新列表
             savedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PackageMapsFolderPath);
             //保存
-            G.configs.PackageMapConfig.Path = path;
+            G.configs.PackageMapConfig.JsonPath = path;
             SaveCurrentMap();
             //切换
-            G.g.packageTree.Dirty = false;
+            G.configs.Dirty = false;
             ChangeMap(savedConfigNames.IndexOf(name));
             //用于总控
             G.g.OnChangeConfigList();
@@ -605,7 +600,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void ShowMapDropdown()
         {
-            if (G.g.packageTree.Dirty)
+            if (G.configs.Dirty)
             {
                 try
                 {
@@ -614,7 +609,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 catch { }
             }
             int selectedMapIndex_new = EditorGUILayout.Popup(selectedMapIndex, savedConfigNames, dropdownStyle, popupOptions);
-            if (G.g.packageTree.Dirty)
+            if (G.configs.Dirty)
             {
                 try
                 {
@@ -630,7 +625,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         public void OnDestory()
         {
-            if (G.g.packageTree.Dirty)
+            if (G.configs.Dirty)
             {
                 bool result = false;
                 try
@@ -649,7 +644,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private void ChangeMap(int selectedMapIndex_new)
         {
             bool ensureLoad = true;
-            if (G.g.packageTree.Dirty)
+            if (G.configs.Dirty)
             {
                 ensureLoad = EditorUtility.DisplayDialog("切换配置", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
             }
@@ -659,10 +654,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     var newPackageMapConfig = new Configs.PackageMapConfig();
                     string newPackageMap = savedConfigNames[selectedMapIndex_new] + ".json";
-                    newPackageMapConfig.Path = Path.Combine(G.configs.LocalConfig.Local_PackageMapsFolderPath, newPackageMap);
+                    newPackageMapConfig.JsonPath = Path.Combine(G.configs.LocalConfig.Local_PackageMapsFolderPath, newPackageMap);
                     newPackageMapConfig.Load();
                     //至此加载成功
-                    G.configs.CurrentConfig.CurrentPackageMap = newPackageMap;
+                    G.configs.Dirty = false;
+                    G.configs.CurrentConfig.Json.CurrentPackageMap = newPackageMap;
                     G.configs.PackageMapConfig = newPackageMapConfig;
                     selectedMapIndex = selectedMapIndex_new;
                     ConfigToIndex();

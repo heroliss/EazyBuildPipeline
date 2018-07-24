@@ -1,35 +1,33 @@
-{
-	"Groups":[
-		{
-			"FullGroupName": "Language",
-			"Options": [
-				"ZH_CN", "ZH_HK", "ZH_TW", "EN"
-			],
-			"MultiSelect": false
-		},
-		{
-			"FullGroupName": "Texture Import Settings Override/Max Size",
-			"Options": [
-        "1024 -> 512",
-        "2048 -> 1024"
-			],
-			"MultiSelect": true
-		},
-		{
-			"FullGroupName": "Texture Import Settings Override/Format",
-			"Options": [
-				"RGBA32 -> ASTC RGBA 4x4", "RGB24 -> ASTC RGB 4x4"
-			],
-			"MultiSelect": true,
-			"Platform": "iOS"
-		},
-		{
-			"FullGroupName": "Texture Import Settings Override/Format",
-			"Options": [
-				"RGBA32 -> ASTC RGBA 4x4", "RGB24 -> ASTC RGB 4x4", "ETC2 RGBA 8bits -> ASTC RGBA 4x4"
-			],
-			"MultiSelect": true,
-			"Platform": "Android"
-		}
-	]
-}
+[
+	{
+		"FullGroupName": "Language",
+		"Options": [
+			"ZH_CN", "ZH_HK", "ZH_TW", "EN"
+		],
+		"MultiSelect": false
+	},
+	{
+		"FullGroupName": "Texture Import Settings Override/Max Size",
+		"Options": [
+			"1024 -> 512",
+			"2048 -> 1024"
+		],
+		"MultiSelect": true
+	},
+	{
+		"FullGroupName": "Texture Import Settings Override/Format",
+		"Options": [
+			"RGBA32 -> ASTC RGBA 4x4", "RGB24 -> ASTC RGB 4x4"
+		],
+		"MultiSelect": true,
+		"Platform": ["iOS"]
+	},
+	{
+		"FullGroupName": "Texture Import Settings Override/Format",
+		"Options": [
+			"RGBA32 -> ASTC RGBA 4x4", "RGB24 -> ASTC RGB 4x4", "ETC2 RGBA 8bits -> ASTC RGBA 4x4"
+		],
+		"MultiSelect": true,
+		"Platform": ["", "Android"]
+	}
+]

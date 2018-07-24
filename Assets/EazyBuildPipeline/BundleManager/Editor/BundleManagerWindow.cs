@@ -3,8 +3,9 @@ using UnityEditor;
 
 namespace EazyBuildPipeline.BundleManager.Editor
 {
-    public class BundleManagerWindow : EditorWindow
+    public class BundleManagerWindow : EditorWindow, ISerializationCallbackReceiver
     {
+        private Configs.Configs configs;
         private AssetBundleManagement2.AssetBundleMainWindow mainTab;
         private SettingPanel settingPanel;
         private float settingPanelHeight = 70;
@@ -26,10 +27,13 @@ namespace EazyBuildPipeline.BundleManager.Editor
             settingPanel.Awake();
 
             mainTab = new AssetBundleManagement2.AssetBundleMainWindow();
-            G.g.mainTab = mainTab;
-            mainTab.OnEnable_extension();
         }
-            
+        private void OnEnable()
+        {
+            mainTab.OnEnable_extension();
+            settingPanel.OnEnable();
+        }
+
         private void OnDestroy()
         {
             mainTab.OnDestroy_extension();
@@ -55,6 +59,18 @@ namespace EazyBuildPipeline.BundleManager.Editor
         private void Update()
         {
             mainTab.Update_extension();
+        }
+
+        public void OnBeforeSerialize()
+        {
+            configs = G.configs;
+        }
+
+        public void OnAfterDeserialize()
+        {
+            G.configs = configs;
+            G.g = new G.GlobalReference();
+            G.g.mainTab = mainTab; //TODO:对BundleMaster的特殊处理
         }
     }
 }

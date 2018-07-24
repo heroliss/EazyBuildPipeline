@@ -37,6 +37,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
 {
+    [Serializable]
     public class Configs : EBPConfigs
     {
         public override string ModuleName{ get { return "AssetPreprocessor"; } }
@@ -71,41 +72,41 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
         {
             try
             {
-                if (Directory.Exists(LocalConfig.RootPath))
+                if (Directory.Exists(LocalConfig.Json.RootPath))
                 {
-                    CurrentConfig.Path = LocalConfig.CurrentConfigPath;
-                    if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.Path)))
+                    CurrentConfig.JsonPath = LocalConfig.CurrentConfigPath;
+                    if (Directory.Exists(Path.GetDirectoryName(CurrentConfig.JsonPath)))
                     {
-                        if (!File.Exists(CurrentConfig.Path))
+                        if (!File.Exists(CurrentConfig.JsonPath))
                         {
-                            File.Create(CurrentConfig.Path).Close();
+                            File.Create(CurrentConfig.JsonPath).Close();
                             CurrentConfig.Save();
                         }
                         CurrentConfig.Load();
 
                         if (G.OverrideCurrentSavedConfigName != null) //用于总控
                         {
-                            CurrentConfig.CurrentSavedConfigName = G.OverrideCurrentSavedConfigName;
+                            CurrentConfig.Json.CurrentSavedConfigName = G.OverrideCurrentSavedConfigName;
                             G.OverrideCurrentSavedConfigName = null;
                         }
                         return true;
                     }
                     else
                     {
-                        DisplayDialog("不是有效的Pipeline根目录:" + LocalConfig.RootPath +
-                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.Path));
+                        DisplayDialog("不是有效的Pipeline根目录:" + LocalConfig.Json.RootPath +
+                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(CurrentConfig.JsonPath));
                         return false;
                     }
                 }
                 else
                 {
-                    DisplayDialog("根目录不存在:" + LocalConfig.RootPath);
+                    DisplayDialog("根目录不存在:" + LocalConfig.Json.RootPath);
                     return false;
                 }
             }
             catch (Exception e)
             {
-                CurrentConfig.CurrentSavedConfigName = "";
+                CurrentConfig.Json.CurrentSavedConfigName = "";
                 DisplayDialog("加载当前配置时发生错误：" + e.Message);
                 return false;
             }
@@ -115,14 +116,14 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
         {
             try
             {
-                OptionsEnumConfig.Path = LocalConfig.Local_OptionsEnumConfigPath;
+                OptionsEnumConfig.JsonPath = LocalConfig.Local_OptionsEnumConfigPath;
                 OptionsEnumConfig.Load();
                 return true;
             }
             catch (Exception e)
             {
                 DisplayDialog("加载选项配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + OptionsEnumConfig.Path
+                    + "\n加载路径：" + OptionsEnumConfig.JsonPath
                     + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + OptionsEnumConfig.ToString());
                 return false;
             }
@@ -132,10 +133,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
         {
             try
             {
-                CurrentSavedConfig.Path = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, CurrentConfig.CurrentSavedConfigName);
-                if (CurrentConfig.CurrentSavedConfigName == "")
+                CurrentSavedConfig.JsonPath = Path.Combine(LocalConfig.Local_SavedConfigsFolderPath, CurrentConfig.Json.CurrentSavedConfigName);
+                if (CurrentConfig.Json.CurrentSavedConfigName == "")
                 {
-                    CurrentSavedConfig.Path = "";
+                    CurrentSavedConfig.JsonPath = "";
                 }
                 else
                 {
@@ -164,67 +165,99 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
                 {
                     throw new ApplicationException("未能找到本地配置文件! 搜索文本：" + localConfigSearchText);
                 }
-                LocalConfig.Path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.Path);
+                LocalConfig.JsonPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                LocalConfig.LocalRootPath = Path.GetDirectoryName(LocalConfig.JsonPath);
                 LocalConfig.Load();
                 if (rootPath != null)
                 {
-                    LocalConfig.RootPath = rootPath;
+                    LocalConfig.Json.RootPath = rootPath;
                 }
                 return true;
             }
             catch (Exception e)
             {
                 DisplayDialog("加载本地配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + LocalConfig.Path
+                    + "\n加载路径：" + LocalConfig.JsonPath
                     + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
                 return false;
             }
         }
     }
 
-    public class OptionsEnumConfig : EBPConfig
+    [Serializable]
+    public class OptionsEnumConfig : EBPConfig<List<OptionsEnumConfig.Group>>
     {
+        public OptionsEnumConfig()
+        {
+            Json = new List<Group>()
+            {
+                 new Group(){ FullGroupName = "Title1/Title2/Example Group Name", MultiSelect = true, Options = new List<string>{ "Example Option 1","Example Option 2" ,"Example Option 3"},Platform = new string[]{"android" } },
+                 new Group(){ FullGroupName = "Title1/Title3/Example Group Name 2", MultiSelect = false, Options =  new List<string>{ "Example Option 1","Example Option 2" ,"Example Option 3"},Platform = new string[]{"android","ios" } }
+            };
+        }
         [Serializable]
-        public class Group { public string FullGroupName; public List<string> Options; public bool MultiSelect; public string Platform; }
-        public List<Group> Groups = new List<Group>
-        { new Group(){ FullGroupName = "Title1/Title2/Example Group Name", MultiSelect = true, Options = new List<string>{ "Example Option 1","Example Option 2" ,"Example Option 3"} },
-          new Group(){ FullGroupName = "Title1/Title3/Example Group Name 2", MultiSelect = false, Options =  new List<string>{ "Example Option 1","Example Option 2" ,"Example Option 3"} } };
+        public class Group { public string FullGroupName; public List<string> Options; public bool MultiSelect; public string[] Platform; }
     }
 
-    public class LocalConfig : EBPConfig
+    [Serializable]
+    public class LocalConfig : EBPConfig<LocalConfig.JsonClass>
     {
+        public LocalConfig()
+        {
+            Json = new JsonClass();
+        }
         //本地配置路径
-        public string Local_OptionsEnumConfigPath { get { return System.IO.Path.Combine(LocalRootPath, Local_OptionsEnumConfigRelativePath); } }
-        public string Local_OptionsEnumConfigRelativePath;
-        public string Local_SavedConfigsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_SavedConfigsFolderRelativePath); } }
-        public string Local_SavedConfigsFolderRelativePath;
-        public string Local_ShellsFolderPath { get { return System.IO.Path.Combine(LocalRootPath, Local_ShellsFolderRelativePath); } }
-        public string Local_ShellsFolderRelativePath;
-        [NonSerialized]
+        public string Local_OptionsEnumConfigPath { get { return Path.Combine(LocalRootPath, Json.Local_OptionsEnumConfigRelativePath); } }
+        public string Local_SavedConfigsFolderPath { get { return Path.Combine(LocalRootPath, Json.Local_SavedConfigsFolderRelativePath); } }
+        public string Local_ShellsFolderPath { get { return Path.Combine(LocalRootPath, Json.Local_ShellsFolderRelativePath); } }
         public string LocalRootPath;
         //Pipeline配置路径
-        public string RootPath;
-        public string CurrentConfigPath { get { return System.IO.Path.Combine(RootPath, CurrentConfigRelativePath); } }
-        public string CurrentConfigRelativePath;
-        public string PreStoredAssetsFolderPath { get { return System.IO.Path.Combine(RootPath, PreStoredAssetsFolderRelativePath); } }
-        public string PreStoredAssetsFolderRelativePath;
-        public string LogsFolderPath { get { return System.IO.Path.Combine(RootPath, LogsFolderRelativePath); } }
-        public string LogsFolderRelativePath;
+        public string CurrentConfigPath { get { return Path.Combine(Json.RootPath, Json.CurrentConfigRelativePath); } }
+        public string PreStoredAssetsFolderPath { get { return Path.Combine(Json.RootPath, Json.PreStoredAssetsFolderRelativePath); } }
+        public string LogsFolderPath { get { return Path.Combine(Json.RootPath, Json.LogsFolderRelativePath); } }
+        [Serializable]
+        public class JsonClass
+        {
+            public string Local_OptionsEnumConfigRelativePath;
+            public string Local_SavedConfigsFolderRelativePath;
+            public string Local_ShellsFolderRelativePath;
+            public string RootPath;
+            public string CurrentConfigRelativePath;
+            public string PreStoredAssetsFolderRelativePath;
+            public string LogsFolderRelativePath;
+        }
     }
 
-    public class CurrentSavedConfig : EBPConfig
+    [Serializable]
+    public class CurrentSavedConfig : EBPConfig<CurrentSavedConfig.JsonClass>
     {
+        public CurrentSavedConfig()
+        {
+            Json = new JsonClass();
+        }
         [Serializable]
         public class Group { public string FullGroupName; public List<string> Options; }
-        public List<Group> Groups = new List<Group>();
-        public string[] Tags = new string[0];
+        [Serializable]
+        public class JsonClass
+        {
+            public List<Group> Groups = new List<Group>();
+            public string[] Tags = new string[0];
+        }
     }
 
-    public class CurrentConfig : EBPConfig
+    [Serializable]
+    public class CurrentConfig : EBPConfig<CurrentConfig.JsonClass>
     {
-        public string CurrentSavedConfigName;
-        public bool Applying;
-        public bool IsPartOfPipeline;
+        public CurrentConfig()
+        {
+            Json = new JsonClass();
+        }
+        [Serializable]
+        public class JsonClass
+        {
+            public string CurrentSavedConfigName;
+            public bool Applying;
+            public bool IsPartOfPipeline;
+        }
     }
 }

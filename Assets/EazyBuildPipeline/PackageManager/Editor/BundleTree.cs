@@ -11,18 +11,19 @@ namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class BundleTree : TreeView
 	{
-		public Texture2D folderIcon, bundleIcon, bundleIcon_Scene;
-		int loadFileProgressCount;
-		List<BundleTreeItem> checkFailedItems;
-		public Dictionary<string, BundleTreeItem> bundleDic, folderDic; //key为相对路径，必须首尾无斜杠
-		private int directoryLastID;
-		private int fileLastID;
-		GUIStyle labelWarningStyle;
-		GUIStyle labelBundleStyle;
-
         public struct BundleVersionsStruct { public int ResourceVersion; public int BundleVersion; }
         public BundleVersionsStruct BundleVersions;
         public AssetBundleBuild[] BundleBuildMap;
+        public Texture2D folderIcon, bundleIcon, bundleIcon_Scene;
+        public class BundleTreeItemDictionary : SerializableDictionary<string, BundleTreeItem> { }
+		public BundleTreeItemDictionary bundleDic, folderDic; //key为相对路径，必须首尾无斜杠
+
+        int loadFileProgressCount;
+		List<BundleTreeItem> checkFailedItems;
+		int directoryLastID;
+        int fileLastID;
+        GUIStyle labelWarningStyle;
+        GUIStyle labelBundleStyle;
 
         #region 列枚举
         enum ColumnEnum
@@ -86,14 +87,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
 			//base.multiColumnHeader.sortingChanged += OnSortingChanged;
 			#endregion
             
-			bundleDic = new Dictionary<string, BundleTreeItem>();
-			folderDic = new Dictionary<string, BundleTreeItem>();
+			bundleDic = new BundleTreeItemDictionary();
+			folderDic = new BundleTreeItemDictionary();
 			checkFailedItems = new List<BundleTreeItem>();
 
 			Reload();
 		}
 
-		public void ClearAllConnection()
+        public void ClearAllConnection()
 		{
 			foreach (var item in bundleDic.Values)
 			{
@@ -107,9 +108,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
 		private void InitStyles()
 		{
-			labelWarningStyle = new GUIStyle(EditorStyles.label);
-			labelWarningStyle.normal.textColor = EditorGUIUtility.isProSkin ? new Color(0.8f, 0.8f, 0f) : new Color(0.6f, 0.5f, 0f);
-			labelBundleStyle = new GUIStyle(EditorStyles.label);
+            labelWarningStyle = new GUIStyle(G.g.styles.LabelStyle);
+            labelBundleStyle = new GUIStyle(G.g.styles.LabelStyle);
+            labelWarningStyle.normal.textColor = EditorGUIUtility.isProSkin ? new Color(0.8f, 0.8f, 0f) : new Color(0.6f, 0.5f, 0f);
 			labelBundleStyle.normal.textColor = EditorGUIUtility.isProSkin ? new Color(0.3f, 0.8f, 0.7f) : new Color(0.0f, 0.4f, 0.0f);
         }
 

@@ -2,16 +2,21 @@
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
+using System;
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
-    public class PreprocessorWindow : EditorWindow
+    public class PreprocessorWindow : EditorWindow, ISerializationCallbackReceiver
     {
+        Configs.Configs configs;
+        [Serializable] public class GroupDictionary1 : SerializableDictionary<string, GroupPanel> { }
+        [Serializable] public class GroupDictionary2 : SerializableDictionary<string, GroupDictionary1> { }
+        [Serializable] public class GroupDictionary3 : SerializableDictionary<string, GroupDictionary2> { }
         float settingPanelHeight = 90;
         Vector2 scrollPosition;
         SettingPanel settingPanel;
         TagsPanel tagsPanel;
-        Dictionary<string, Dictionary<string, Dictionary<string, GroupPanel>>> groupPanels;
+        GroupDictionary3 groupPanels;
         string currentPlatform = "";
 
         [MenuItem("Window/EazyBuildPipeline/AssetPreprocessor")]
@@ -36,13 +41,32 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
             settingPanel = new SettingPanel();
             tagsPanel = new TagsPanel();
-            tagsPanel.OnToggleChanged += OnToggleChanged;
             CreateOptionGroupPanels();
             settingPanel.Awake();
             tagsPanel.Awake();
-
         }
+        private void OnEnable()
+        {
+            tagsPanel.OnToggleChanged += OnToggleChanged;
+            foreach (var g1 in groupPanels)
+            {
+                foreach (var g2 in g1.Value)
+                {
+                    foreach (var g3 in g2.Value)
+                    {
+                        g3.Value.OnToggleChanged += OnToggleChanged;
+                        g3.Value.OnEnable();
+                    }
+                }
+            }
 
+            settingPanel.OnEnable();
+            tagsPanel.OnEnable();
+        }
+        private void OnDisable()
+        {
+            settingPanel.OnDisable();
+        }
         private void OnDestroy()
         {
             settingPanel.OnDestory();
@@ -51,10 +75,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void CreateOptionGroupPanels()
         {
-            groupPanels = new Dictionary<string, Dictionary<string, Dictionary<string, GroupPanel>>>();
-            foreach (var group in G.configs.OptionsEnumConfig.Groups)
+            groupPanels = new GroupDictionary3();
+            foreach (var group in G.configs.OptionsEnumConfig.Json)
             {
-                if (!string.IsNullOrEmpty(group.Platform) && group.Platform.ToLower() != currentPlatform)
+                if (group.Platform != null && group.Platform.Length != 0 && !group.Platform.Contains(currentPlatform.ToLower()))
                 {
                     continue;
                 }
@@ -62,12 +86,12 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 string g0 = s.Length > 0 ? s[0] : "";
                 if (!groupPanels.ContainsKey(s[0]))
                 {
-                    groupPanels.Add(g0, new Dictionary<string, Dictionary<string, GroupPanel>>());
+                    groupPanels.Add(g0, new GroupDictionary2());
                 }
                 string g1 = s.Length > 1 ? s[1] : "";
                 if (!groupPanels[g0].ContainsKey(g1))
                 {
-                    groupPanels[g0].Add(g1, new Dictionary<string, GroupPanel>());
+                    groupPanels[g0].Add(g1, new GroupDictionary1());
                 }
                 string g2 = s.Length > 2 ? s[2] : "";
                 if (!groupPanels[g0][g1].ContainsKey(g2))
@@ -75,10 +99,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     var optionsPanel = new GroupPanel()
                     {
                         Group = group,
-                        Options = group.Options.ToDictionary((x) => x, (x) => false),
+                        Options = (GroupPanel.OptionsDictionary)new GroupPanel.OptionsDictionary().CopyFrom(group.Options.ToDictionary((x) => x, (x) => false)),
                     };
                     optionsPanel.OnToggleChanged += OnToggleChanged;
-                    optionsPanel.OnEnable();
+                    optionsPanel.Awake();
                     groupPanels[g0][g1].Add(g2, optionsPanel);
                 }
             }
@@ -156,6 +180,17 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 }
             }
             G.configs.Dirty = false;
+        }
+
+        public void OnBeforeSerialize()
+        {
+            configs = G.configs;
+        }
+
+        public void OnAfterDeserialize()
+        {
+            G.configs = configs;
+            G.g = new G.GlobalReference();
         }
     }
 }

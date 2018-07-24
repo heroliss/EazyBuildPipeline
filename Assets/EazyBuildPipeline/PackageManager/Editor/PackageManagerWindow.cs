@@ -1,30 +1,30 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
 namespace EazyBuildPipeline.PackageManager.Editor
 {
-    public class PackageManagerWindow : EditorWindow
+    public class PackageManagerWindow : EditorWindow, ISerializationCallbackReceiver
     {
         #region 成员变量
-        private SettingPanel settingPanel = new SettingPanel();
+        private Styles styles;
+        private Configs.Configs configs;
+        private SettingPanel settingPanel;
         private Rect m_splitterRect;
         private Rect upFixedRect;
         private Rect downFixedRect;
         private Rect leftRect;
         private Rect rightRect;
-        [SerializeField]
         private float m_splitterPercent = 0.4f;
         private float k_SplitterWidth = 3;
         private bool m_ResizingSplitter;
         private float k_fixedPanelHight = 130;
         private float k_fixedSpace = 3;
-        private MultiColumnHeaderState bundleTreeHeaderState;
-        private TreeViewState bundleTreeState;
-        private MultiColumnHeader bundleTreeHeader;
-        private MultiColumnHeaderState packageTreeHeaderState;
-        private MultiColumnHeader packageTreeHeader;
-        private TreeViewState packageTreeState;
+        TreeViewState bundleTreeViewState;
+        TreeViewState packageTreeViewState;
+        MultiColumnHeaderState bundleTreeHeaderState;
+        MultiColumnHeaderState packageTreeHeaderState;
         #endregion
 
         [MenuItem("Window/EazyBuildPipeline/PackageManager")]
@@ -53,13 +53,30 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
             G.Init();
 
+            settingPanel = new SettingPanel();
             settingPanel.Awake();
 
+            bundleTreeViewState = new TreeViewState();
             bundleTreeHeaderState = BundleTree.CreateDefaultHeaderState(leftRect.width);
-            G.g.bundleTree = new BundleTree(new TreeViewState(), new MultiColumnHeader(bundleTreeHeaderState));
 
+            packageTreeViewState = new TreeViewState();
             packageTreeHeaderState = PackageTree.CreateDefaultHeaderState(rightRect.width);
-            G.g.packageTree = new PackageTree(new TreeViewState(), new MultiColumnHeader(packageTreeHeaderState));
+        }
+        private void OnEnable()
+        {
+            MultiColumnHeaderState bundleMCHS = BundleTree.CreateDefaultHeaderState(leftRect.width);
+            MultiColumnHeaderState packageMCHS = PackageTree.CreateDefaultHeaderState(rightRect.width);
+
+            if (MultiColumnHeaderState.CanOverwriteSerializedFields(bundleTreeHeaderState, bundleMCHS))
+                MultiColumnHeaderState.OverwriteSerializedFields(bundleTreeHeaderState, bundleMCHS);
+            bundleTreeHeaderState = bundleMCHS;
+
+            if (MultiColumnHeaderState.CanOverwriteSerializedFields(packageTreeHeaderState, packageMCHS))
+                MultiColumnHeaderState.OverwriteSerializedFields(packageTreeHeaderState, packageMCHS);
+            packageTreeHeaderState = packageMCHS;
+
+            G.g.bundleTree = new BundleTree(bundleTreeViewState, new MultiColumnHeader(bundleTreeHeaderState));
+            G.g.packageTree = new PackageTree(packageTreeViewState, new MultiColumnHeader(packageTreeHeaderState));
         }
 
         private void OnGUI()
@@ -76,8 +93,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 m_splitterRect.height = downFixedRect.height;
             }
             #endregion
-            
-			settingPanel.OnGUI(upFixedRect);
+
+            settingPanel.OnGUI(upFixedRect);
             G.g.bundleTree.OnGUI(leftRect);
             G.g.packageTree.OnGUI(rightRect);
         }
@@ -123,6 +140,20 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 m_ResizingSplitter = false;
             }
+        }
+
+        public void OnBeforeSerialize()
+        {
+            configs = G.configs;
+            configs.PackageMapConfig.Json.Packages = settingPanel.GetPackageMap();
+            styles = G.g.styles;
+        }
+
+        public void OnAfterDeserialize()
+        {
+            G.configs = configs;
+            G.g = new G.GlobalReference();
+            G.g.styles = styles;
         }
     }
 }

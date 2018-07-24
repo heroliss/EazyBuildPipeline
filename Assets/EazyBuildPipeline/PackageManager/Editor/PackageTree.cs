@@ -11,18 +11,18 @@ namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class PackageTree : TreeView
     {
-        public bool Dirty;
-        Texture2D compressionIcon;
+        public List<PackageTreeItem> Packages = new List<PackageTreeItem>();
+        readonly ColorPickerHDRConfig colorPickerHDRConfig = new ColorPickerHDRConfig(0, 1, 0, 1);
         const int packageIDStart = -2000000000;
+
+        Texture2D compressionIcon;
         int packageID = packageIDStart;
         int folderID = 0;
         int bundleID = 0;
         int packageCount, folderCount, bundleCount;
-        private GUIStyle labelErrorStyle;
-        private GUIStyle inDropDownStyle;
-        private GUIStyle inToggleStyle;
-
-        public List<PackageTreeItem> Packages = new List<PackageTreeItem>();
+        GUIStyle labelErrorStyle;
+        GUIStyle inDropDownStyle;
+        GUIStyle inToggleStyle;
 
         #region 列枚举
         enum ColumnEnum
@@ -77,10 +77,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
 		private void InitStyles()
 		{
-			labelErrorStyle = new GUIStyle(EditorStyles.label);
+			labelErrorStyle = new GUIStyle(G.g.styles.LabelStyle);
 			labelErrorStyle.normal.textColor = new Color(1, 0.3f, 0.3f);
-			inDropDownStyle = new GUIStyle("IN DropDown");
-			inToggleStyle = new GUIStyle(EditorGUIUtility.isProSkin ? "OL ToggleWhite" : "OL Toggle");//这样做是因为OL Toggle样式在专业版皮肤下有Bug，因此用OL ToggleWhite代替
+			inDropDownStyle = G.g.styles.InDropDownStyle;
+            inToggleStyle = G.g.styles.InToggleStyle;
 		}
 
 		public void ReConnectWithBundleTree()
@@ -174,7 +174,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         protected override TreeViewItem BuildRoot()
         {
-            Dirty = false;
             Packages.Clear();
             PackageTreeItem root = new PackageTreeItem()
             {
@@ -197,7 +196,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void BuildTreeFromMap(TreeViewItem root)
         {
-            foreach (var package in G.configs.PackageMapConfig.Packages)
+            foreach (var package in G.configs.PackageMapConfig.Json.Packages)
             {
                 Color color = Color.black;
                 ColorUtility.TryParseHtmlString("#" + package.Color, out color);
@@ -222,7 +221,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             UpdateAllFileName();
         }
 
-        private void BuildPackageTreeFromBundleTree(PackageMapConfig.Package package, PackageTreeItem p)
+        private void BuildPackageTreeFromBundleTree(PackageMapConfig.JsonClass.Package package, PackageTreeItem p)
         {
             foreach (string bundlePath in package.Bundles)
             {
@@ -240,7 +239,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
         }
 
-        private void BuildPackageTree_lostItems(PackageMapConfig.Package package, PackageTreeItem p)
+        private void BuildPackageTree_lostItems(PackageMapConfig.JsonClass.Package package, PackageTreeItem p)
         {
             //遍历bundles数组添加所有丢失的bundle
             foreach (string bundlePath in package.Bundles) 
@@ -375,7 +374,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 }
                 PackageTreeItem item = FindItem(args.itemID, rootItem) as PackageTreeItem;
                 item.displayName = newName;
-                Dirty = true;
+                G.configs.Dirty = true;
             }
             UpdateAllFileName();
         }
@@ -415,7 +414,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 CellGUI(args.GetCellRect(i), item, (ColumnEnum)args.GetColumn(i), ref args);
             }
         }
-        ColorPickerHDRConfig colorPickerHDRConfig = new ColorPickerHDRConfig(0, 1, 0, 1);
+
         private void CellGUI(Rect rect, PackageTreeItem item, ColumnEnum column, ref RowGUIArgs args)
         {
             CenterRectUsingSingleLineHeight(ref rect);
@@ -444,38 +443,38 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                     break;
                 case ColumnEnum.Necessery:
-                    if (item.isPackage && G.configs.PackageMapConfig.PackageMode == "Addon")
+                    if (item.isPackage && G.configs.PackageMapConfig.Json.PackageMode == "Addon")
                     {
                         int index = G.NecesseryEnum.IndexOf(item.necessery);
                         int index_new = EditorGUI.Popup(rect, index, G.NecesseryEnum, inDropDownStyle);
                         if (index_new != index)
                         {
                             item.necessery = G.NecesseryEnum[index_new];
-                            Dirty = true;
+                            G.configs.Dirty = true;
                         }
                     }
                     break;
                 case ColumnEnum.DeploymentLocation:
-                    if (item.isPackage && G.configs.PackageMapConfig.PackageMode == "Addon")
+                    if (item.isPackage && G.configs.PackageMapConfig.Json.PackageMode == "Addon")
                     {
                         int index = G.DeploymentLocationEnum.IndexOf(item.deploymentLocation);
                         int index_new = EditorGUI.Popup(rect, index, G.DeploymentLocationEnum, inDropDownStyle);
                         if (index_new != index)
                         {
                             item.deploymentLocation = G.DeploymentLocationEnum[index_new];
-                            Dirty = true;
+                            G.configs.Dirty = true;
                         }
                     }
                     break;
                 case ColumnEnum.CopyToStreaming:
-                    if (item.isPackage && G.configs.PackageMapConfig.PackageMode == "Addon")
+                    if (item.isPackage && G.configs.PackageMapConfig.Json.PackageMode == "Addon")
                     {
                         Rect rect_new = new Rect(rect.x + rect.width / 2 - 8, rect.y, 16, rect.height);
                         bool selected = EditorGUI.Toggle(rect_new, item.copyToStreaming, inToggleStyle);
                         if (selected != item.copyToStreaming)
                         {
                             item.copyToStreaming = selected;
-                            Dirty = true;
+                            G.configs.Dirty = true;
                         }
                     }
                     break;
@@ -648,7 +647,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void DeletePackageItem(IList<int> list)
         {
-            Dirty = true;
+            G.configs.Dirty = true;
             foreach (var id in list)
             {
                 PackageTreeItem item = (PackageTreeItem)FindItem(id, rootItem);
@@ -693,12 +692,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void CreatePackage()
         {
-            if (string.IsNullOrEmpty(G.configs.CurrentConfig.CurrentPackageMap))
+            if (string.IsNullOrEmpty(G.configs.CurrentConfig.Json.CurrentPackageMap))
             {
                 EditorUtility.DisplayDialog("创建Package", "请先选择配置或创建一个空配置", "确定");
                 return;
             }
-            Dirty = true;
+            G.configs.Dirty = true;
             PackageTreeItem package = new PackageTreeItem()
             {
                 id = --packageID,
@@ -763,7 +762,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         public void AddBundlesToPackage(PackageTreeItem packageItem, List<TreeViewItem> bundleItems)
         {
-            Dirty = true;
+            G.configs.Dirty = true;
             foreach (BundleTreeItem item in bundleItems)
             {
                 AddBundlesToPackage(packageItem, item);
