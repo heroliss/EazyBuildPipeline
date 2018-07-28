@@ -37,6 +37,18 @@ namespace EazyBuildPipeline
             int len = Path.GetExtension(path).Length;
             return path.Remove(path.Length - len, len);
         }
+
+        public static T ToEnum<T>(this string s)
+        {
+            try
+            {
+               return (T)Enum.Parse(typeof(T), s);
+            }
+            catch
+            {
+                return default(T);
+            }
+        }
     }
 
     [Serializable]

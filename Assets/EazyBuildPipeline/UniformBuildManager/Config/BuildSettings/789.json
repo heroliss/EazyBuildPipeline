@@ -1,0 +1,55 @@
+{
+  "PlayerSettings": {
+    "CompanyName": "阿斯蒂芬",
+    "ProductName": "wefwef",
+    "IOS": {
+      "BundleID": "wefwef",
+      "ClientVersion": "wefwef",
+      "BuildNumber": "2fwefef",
+      "AutomaticallySign": true,
+      "TeamID": "4egsdfg",
+      "CameraUsageDesc": "rgsergsdfgserthsths",
+      "LocationUsageDesc": "seryhsdysdfg",
+      "MicrophoneUsageDesc": "sdhsdfghdftysrtysdty",
+      "BlueToothUsageDesc": "sdfgsergdfgs",
+      "TargetDevice_str": "iPhoneAndiPad",
+      "TargetSDK_str": "0",
+      "TargetMinimumIOSVersion": "srtyrty",
+      "StripEngineCode": true,
+      "ScriptCallOptimization_str": "FastButNoExceptions",
+      "ProvisioningProfile": "wfwef",
+      "Architecture_str": "Universal",
+      "TargetDevice": 2,
+      "TargetSDK": 0,
+      "ScriptCallOptimization": 1,
+      "Architecture": 2
+    },
+    "Android": {
+      "PreserveFramebufferAlpha": true,
+      "BlitType_str": "Never",
+      "ProtectGraphicsMemory": true,
+      "ClientVersion": "wefwef",
+      "BundleVersionCode": 3234,
+      "MinimumAPILevel_str": "AndroidApiLevel24",
+      "TargetAPILevel_str": "AndroidApiLevel19",
+      "InstallLocation_str": "Auto",
+      "ForceInternetPermission": false,
+      "ForceSDCardPermission": false,
+      "AndroidTVCompatibility": true,
+      "AndroidGame": true,
+      "StripEngineCode": true,
+      "DeviceFilter_str": "ARMv7",
+      "PackageName": "wefwef",
+      "BlitType": 1,
+      "MinimumAPILevel": 24,
+      "TargetAPILevel": 19,
+      "InstallLocation": 0,
+      "InternetAccess": 0,
+      "WritePermission": 0,
+      "DeviceFilter": 3
+    }
+  },
+  "BuildSettings": {
+    "CompressionMethod": 1
+  }
+}

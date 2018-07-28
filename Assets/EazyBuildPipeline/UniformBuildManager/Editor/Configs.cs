@@ -39,7 +39,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
         public Runner Runner;
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();
-        public BuildSettingConfig BuildSettingConfig = new BuildSettingConfig();
+        public PlayerSettingsConfig PlayerSettingsConfig = new PlayerSettingsConfig();
         public AssetPreprocessor.Editor.Configs.Configs AssetPreprocessorConfigs;
         public BundleManager.Editor.Configs.Configs BundleManagerConfigs;
         public PackageManager.Editor.Configs.Configs PackageManagerConfigs;
@@ -147,29 +147,29 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
             }
         }
 
-        public bool LoadCurrentBuildSetting()
+        public bool LoadCurrentPlayerSetting()
         {
             try
             {
-                if (!string.IsNullOrEmpty(CurrentConfig.Json.CurrentBuildSettingName))
+                if (!string.IsNullOrEmpty(CurrentConfig.Json.CurrentPlayerSettingName))
                 {
-                    string currentBuildSettingPath = Path.Combine(LocalConfig.Local_BuildSettingsFolderPath, CurrentConfig.Json.CurrentBuildSettingName);
-                    BuildSettingConfig.JsonPath = currentBuildSettingPath;
-                    BuildSettingConfig.Load();
+                    string currentBuildSettingPath = Path.Combine(LocalConfig.Local_BuildSettingsFolderPath, CurrentConfig.Json.CurrentPlayerSettingName);
+                    PlayerSettingsConfig.JsonPath = currentBuildSettingPath;
+                    PlayerSettingsConfig.Load();
                     return true;
                 }
                 else
                 {
-                    CurrentConfig.Json.CurrentBuildSettingName = null;
-                    BuildSettingConfig.JsonPath = null;
+                    CurrentConfig.Json.CurrentPlayerSettingName = null;
+                    PlayerSettingsConfig.JsonPath = null;
                     return false;
                 }
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "载入BuildSetting文件：" + CurrentConfig.Json.CurrentBuildSettingName + " 时发生错误：" + e.Message, "确定");
-                CurrentConfig.Json.CurrentBuildSettingName = null;
-                BuildSettingConfig.JsonPath = null;
+                EditorUtility.DisplayDialog("错误", "载入BuildSetting文件：" + CurrentConfig.Json.CurrentPlayerSettingName + " 时发生错误：" + e.Message, "确定");
+                CurrentConfig.Json.CurrentPlayerSettingName = null;
+                PlayerSettingsConfig.JsonPath = null;
                 return false;
             }
         }
@@ -207,16 +207,19 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
         [Serializable]
         public class JsonClass
         {
-            public string CurrentBuildSettingName;
+            public string CurrentPlayerSettingName;
             public bool Applying;
             public bool IsPartOfPipeline;
+            public bool DevelopmentBuild;
+            public bool ConnectWithProfiler;
+            public bool AllowDebugging;
         }
     }
 
     [Serializable]
-    public class BuildSettingConfig : EBPConfig<BuildSettingConfig.JsonClass>
+    public class PlayerSettingsConfig : EBPConfig<PlayerSettingsConfig.JsonClass>
     {
-        public BuildSettingConfig()
+        public PlayerSettingsConfig()
         {
             Json = new JsonClass();
         }
@@ -224,7 +227,123 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
         [Serializable]
         public class JsonClass
         {
+            public PlayerSettings PlayerSettings = new PlayerSettings();
+            public BuildSettings BuildSettings = new BuildSettings();
+        }
+        [Serializable]
+        public class BuildSettings
+        {
+            public enum CompressionMethodEnum
+            {
+                Default, LZ4, LZ4HC
+            }
+            public CompressionMethodEnum CompressionMethod;
+        }
+        [Serializable]
+        public class PlayerSettings
+        {
+            public string CompanyName;
+            public string ProductName;
+            public IOSSettings IOS = new IOSSettings();
+            public AndroidSettings Android = new AndroidSettings();
+            [Serializable]
+            public class IOSSettings
+            {
+                public string BundleID;
+                public string ClientVersion;
+                public string BuildNumber;
+                public bool AutomaticallySign;
+                public string TeamID;
+                public string CameraUsageDesc;
+                public string LocationUsageDesc;
+                public string MicrophoneUsageDesc;
+                public string BlueToothUsageDesc;
+                public string TargetDevice_str;
+                public iOSTargetDevice TargetDevice
+                {
+                    get { return TargetDevice_str.ToEnum<iOSTargetDevice>(); }
+                    set { TargetDevice_str = value.ToString(); }
+                }
+                public string TargetSDK_str;
+                public iOSSdkVersion TargetSDK
+                {
+                    get { return TargetSDK_str.ToEnum<iOSSdkVersion>(); }
+                    set { TargetSDK_str = value.ToString(); }
+                }
+                public string TargetMinimumIOSVersion;
+                public bool StripEngineCode;
+                public string ScriptCallOptimization_str;
+                public ScriptCallOptimizationLevel ScriptCallOptimization
+                {
+                    get { return ScriptCallOptimization_str.ToEnum<ScriptCallOptimizationLevel>(); }
+                    set { ScriptCallOptimization_str = value.ToString(); }
+                }
+                public string ProvisioningProfile;
+                public string Architecture_str;
+                public enum ArchitectureEnum { ARMv7, ARM64, Universal } //TODO: 没有找到该枚举类型，所以自己创建了一个
+                public ArchitectureEnum Architecture
+                {
+                    get { return Architecture_str.ToEnum<ArchitectureEnum>(); }
+                    set { Architecture_str = value.ToString(); }
+                }
+            }
+            [Serializable]
+            public class AndroidSettings
+            {
+                public bool PreserveFramebufferAlpha;
+                public string BlitType_str;
+                public AndroidBlitType BlitType
+                {
+                    get { return BlitType_str.ToEnum<AndroidBlitType>(); }
+                    set { BlitType_str = value.ToString(); }
+                }
+                public bool ProtectGraphicsMemory;
+                public string ClientVersion;
+                public int BundleVersionCode;
+                public string MinimumAPILevel_str;
+                public AndroidSdkVersions MinimumAPILevel
+                {
+                    get { return MinimumAPILevel_str.ToEnum<AndroidSdkVersions>(); }
+                    set { MinimumAPILevel_str = value.ToString(); }
+                }
+                public string TargetAPILevel_str;
+                public AndroidSdkVersions TargetAPILevel
+                {
+                    get { return TargetAPILevel_str.ToEnum<AndroidSdkVersions>(); }
+                    set { TargetAPILevel_str = value.ToString(); }
+                }
+                public string InstallLocation_str;
+                public AndroidPreferredInstallLocation InstallLocation
+                {
+                    get { return InstallLocation_str.ToEnum<AndroidPreferredInstallLocation>(); }
+                    set { InstallLocation_str = value.ToString(); }
+                }
+                public enum InternetAccessEnum { Auto, Require }
+                public InternetAccessEnum InternetAccess
+                {
+                    get { return ForceInternetPermission ? InternetAccessEnum.Require : InternetAccessEnum.Auto; }
+                    set { ForceInternetPermission = (value == InternetAccessEnum.Auto) ? false : true;  }
+                }
+                public bool ForceInternetPermission;
+                public enum WritePermissionEnum { Internal, External_SDCard }
+                public WritePermissionEnum WritePermission
+                {
+                    get { return ForceSDCardPermission ? WritePermissionEnum.External_SDCard : WritePermissionEnum.Internal; }
+                    set { ForceSDCardPermission = (value == WritePermissionEnum.Internal) ? false : true; }
+                }
+                public bool ForceSDCardPermission;
+                public bool AndroidTVCompatibility;
+                public bool AndroidGame;
+                public bool StripEngineCode;
+                public string DeviceFilter_str;
+                public AndroidTargetDevice DeviceFilter
+                {
+                    get { return DeviceFilter_str.ToEnum<AndroidTargetDevice>(); }
+                    set { DeviceFilter_str = value.ToString(); }
+                }
 
+                public string PackageName;
+            }
         }
     }
 }

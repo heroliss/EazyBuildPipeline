@@ -12,7 +12,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         Configs.Configs configs;
         readonly int settingPanelHeight = 150;
  
-        private BuildSettingsPanel buildSettingsPanel;
+        private PlayerSettingsPanel buildSettingsPanel;
         private SettingPanel settingPanel;
 
 
@@ -26,7 +26,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             G.Init();
 
             settingPanel = new SettingPanel();
-            buildSettingsPanel = new BuildSettingsPanel();
+            buildSettingsPanel = new PlayerSettingsPanel();
             settingPanel.Awake();
             buildSettingsPanel.Awake();
         }
