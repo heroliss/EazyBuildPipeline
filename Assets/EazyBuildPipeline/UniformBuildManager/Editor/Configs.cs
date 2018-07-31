@@ -2,6 +2,7 @@
 using EazyBuildPipeline.Common.Editor;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 
@@ -153,7 +154,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
             {
                 if (!string.IsNullOrEmpty(CurrentConfig.Json.CurrentPlayerSettingName))
                 {
-                    string currentBuildSettingPath = Path.Combine(LocalConfig.Local_BuildSettingsFolderPath, CurrentConfig.Json.CurrentPlayerSettingName);
+                    string currentBuildSettingPath = Path.Combine(LocalConfig.Local_PlayerSettingsFolderPath, CurrentConfig.Json.CurrentPlayerSettingName);
                     PlayerSettingsConfig.JsonPath = currentBuildSettingPath;
                     PlayerSettingsConfig.Load();
                     return true;
@@ -183,14 +184,14 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
         }
         //本地配置路径
         public string LocalRootPath;
-        public string Local_BuildSettingsFolderPath { get { return Path.Combine(LocalRootPath, Json.Local_BuildSettingsFolderRelativePath); } }
+        public string Local_PlayerSettingsFolderPath { get { return Path.Combine(LocalRootPath, Json.Local_PlayerSettingsFolderRelativePath); } }
         //Pipeline配置路径
         public string PlayersFolderPath { get { return Path.Combine(Json.RootPath, Json.PlayersFolderRelativePath); } }
         public string PlayersConfigPath { get { return Path.Combine(Json.RootPath, Json.PlayersConfigRelativePath); } }
         [Serializable]
         public class JsonClass
         {
-            public string Local_BuildSettingsFolderRelativePath;
+            public string Local_PlayerSettingsFolderRelativePath;
             public string RootPath;
             public string PlayersFolderRelativePath;
             public string PlayersConfigRelativePath;
@@ -217,12 +218,51 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
     }
 
     [Serializable]
-    public class PlayerSettingsConfig : EBPConfig<PlayerSettingsConfig.JsonClass>
+    public class PlayerSettingsConfig : EBPConfig<PlayerSettingsConfig.JsonClass>, UnityEngine.ISerializationCallbackReceiver
     {
         public PlayerSettingsConfig()
         {
             Json = new JsonClass();
         }
+        public override void Load(string path = null)
+        {
+            base.Load(path);
+            InitAllRepeatList();
+        }
+        private void InitAllRepeatList()
+        {
+            InitRepeatList(Json.PlayerSettings.IOS.ScriptDefines);
+            InitRepeatList(Json.PlayerSettings.Android.ScriptDefines);
+        }
+        private void InitRepeatList(List<PlayerSettings.ScriptDefinesGroup> scriptDefines)
+        {
+            foreach (var group in scriptDefines)
+            {
+                foreach (var define in group.Defines)
+                {
+                    foreach (var group2 in scriptDefines)
+                    {
+                        foreach (var define2 in group2.Defines)
+                        {
+                            if (define.Define == define2.Define && define != define2)
+                            {
+                                define2.RepeatList.Add(define);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void OnBeforeSerialize()
+        {
+        }
+
+        public void OnAfterDeserialize()
+        {
+            InitAllRepeatList();
+        }
+
         public bool Dirty;
         [Serializable]
         public class JsonClass
@@ -242,13 +282,20 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
         [Serializable]
         public class PlayerSettings
         {
-            public string CompanyName;
-            public string ProductName;
+            public GeneralSettings General = new GeneralSettings();
             public IOSSettings IOS = new IOSSettings();
             public AndroidSettings Android = new AndroidSettings();
             [Serializable]
+            public class GeneralSettings
+            {
+                public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
+                public string CompanyName;
+                public string ProductName;
+            }
+            [Serializable]
             public class IOSSettings
             {
+                public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
                 public string BundleID;
                 public string ClientVersion;
                 public string BuildNumber;
@@ -290,6 +337,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
             [Serializable]
             public class AndroidSettings
             {
+                public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
                 public bool PreserveFramebufferAlpha;
                 public string BlitType_str;
                 public AndroidBlitType BlitType
@@ -343,6 +391,21 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
                 }
 
                 public string PackageName;
+            }
+            [Serializable]
+            public class ScriptDefine
+            {
+                public bool Active;
+                public string Define;
+                [NonSerialized]
+                public List<ScriptDefine> RepeatList = new List<ScriptDefine>();
+            }
+            [Serializable]
+            public class ScriptDefinesGroup
+            {
+                public bool Active;
+                public string GroupName;
+                public List<ScriptDefine> Defines = new List<ScriptDefine>();
             }
         }
     }

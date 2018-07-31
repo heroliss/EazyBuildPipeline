@@ -84,17 +84,19 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             var activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
             var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(activeBuildTarget);
 
-            PlayerSettings.companyName = configs.PlayerSettingsConfig.Json.PlayerSettings.CompanyName;
-            PlayerSettings.productName = configs.PlayerSettingsConfig.Json.PlayerSettings.ProductName;
-            switch (activeBuildTarget)
+            ApplyScriptDefines(buildTargetGroup);
+
+            PlayerSettings.companyName = configs.PlayerSettingsConfig.Json.PlayerSettings.General.CompanyName;
+            PlayerSettings.productName = configs.PlayerSettingsConfig.Json.PlayerSettings.General.ProductName;
+            switch (buildTargetGroup)
             {
-                case BuildTarget.iOS:
+                case BuildTargetGroup.iOS:
                     PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BundleID);
                     PlayerSettings.bundleVersion = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ClientVersion;
                     PlayerSettings.iOS.buildNumber = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BuildNumber;
                     PlayerSettings.iOS.appleEnableAutomaticSigning = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.AutomaticallySign;
                     iOSBuildPostProcessor.ProvisioningProfile = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ProvisioningProfile;
-                    iOSBuildPostProcessor.TeamID = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID;                    
+                    iOSBuildPostProcessor.TeamID = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID;
                     PlayerSettings.iOS.cameraUsageDescription = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.CameraUsageDesc;
                     PlayerSettings.iOS.locationUsageDescription = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.LocationUsageDesc;
                     PlayerSettings.iOS.microphoneUsageDescription = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.MicrophoneUsageDesc;
@@ -106,7 +108,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     PlayerSettings.stripEngineCode = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.StripEngineCode;
                     PlayerSettings.iOS.scriptCallOptimization = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptCallOptimization;
                     break;
-                case BuildTarget.Android:
+                case BuildTargetGroup.Android:
                     PlayerSettings.preserveFramebufferAlpha = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PreserveFramebufferAlpha;
                     //Resolution Scaling Mode
                     //PlayerSettings.
@@ -127,11 +129,47 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     //PlayerSettings.Android.
                     PlayerSettings.stripEngineCode = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.StripEngineCode;
                     break;
-                case BuildTarget.NoTarget:
+                default:
+                    break;
+            }
+        }
+
+        public void ApplyScriptDefines(BuildTargetGroup buildTargetGroup)
+        {
+            switch (buildTargetGroup)
+            {
+                case BuildTargetGroup.iOS:
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS,
+                        GetScriptDefinesStr(configs.PlayerSettingsConfig.Json.PlayerSettings.General.ScriptDefines) +
+                        GetScriptDefinesStr(configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptDefines));
+                    break;
+                case BuildTargetGroup.Android:
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android,
+                        GetScriptDefinesStr(configs.PlayerSettingsConfig.Json.PlayerSettings.General.ScriptDefines) +
+                        GetScriptDefinesStr(configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ScriptDefines));
                     break;
                 default:
                     break;
             }
+        }
+
+        private string GetScriptDefinesStr(List<Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup> scriptDefines)
+        {
+            string s = "";
+            foreach (var definesGroup in scriptDefines)
+            {
+                if (definesGroup.Active)
+                {
+                    foreach (var define in definesGroup.Defines)
+                    {
+                        if (define.Active)
+                        {
+                            s += define.Define + ";";
+                        }
+                    }
+                }
+            }
+            return s;
         }
     }
 }

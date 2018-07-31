@@ -12,8 +12,8 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
     public class SettingPanel
     {
         [SerializeField] bool creatingNewConfig;
-        [SerializeField] string[] buildSettingNames;
-        [SerializeField] int selectedBuildSettingIndex;
+        [SerializeField] string[] playerSettingNames;
+        [SerializeField] int selectedPlayerSettingIndex;
         [SerializeField] string[] assetPreprocessorSavedConfigNames;
         [SerializeField] string[] bundleManagerSavedConfigNames;
         [SerializeField] string[] packageManagerSavedConfigNames;
@@ -23,12 +23,11 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         [SerializeField] int selectedCompressionIndex;
         [SerializeField] int[] selectedTagIndexs;
 
-        [SerializeField] GUIStyle toggleStyle;
-        [SerializeField] GUIContent settingGUIContent;
-        [SerializeField] GUIStyle dropdownStyle;
+        [SerializeField] GUIStyle labelMidRight;
         [SerializeField] Texture2D settingIcon;
         [SerializeField] Texture2D warnIcon;
 
+        [SerializeField] GUIContent settingGUIContent;
         [SerializeField] GUIContent assetPreprocessorContent;
         [SerializeField] GUIContent bundleManagerContent;
         [SerializeField] GUIContent packageManagerContent;
@@ -38,15 +37,12 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         [SerializeField] GUIContent packageManagerWarnContent;
         [SerializeField] GUIContent buildSettingsWarnContent;
 
-        GUILayoutOption[] dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(22), GUILayout.MaxWidth(160) };
-        GUILayoutOption[] dropdownOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
-        GUILayoutOption[] tagDropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(22), GUILayout.MaxWidth(80) };
-        GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(22), GUILayout.MaxWidth(70) };
-        GUILayoutOption[] labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(22), GUILayout.MinWidth(20), GUILayout.MaxWidth(110) };
-        GUILayoutOption[] labelOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(22), GUILayout.MinWidth(20), GUILayout.MaxWidth(135) };
-        GUILayoutOption[] shortLabelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(22), GUILayout.MinWidth(20), GUILayout.MaxWidth(40) };
-        GUILayoutOption[] miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(22), GUILayout.MaxWidth(22) };
-        GUILayoutOption[] inputOptions = new GUILayoutOption[] { GUILayout.MaxHeight(22), GUILayout.Width(40) };
+        GUILayoutOption[] dropdownOptions = new GUILayoutOption[] { GUILayout.MaxWidth(160) };
+        GUILayoutOption[] dropdownOptions2 = new GUILayoutOption[] { GUILayout.MaxWidth(100) };
+        GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(60) };
+        GUILayoutOption[] labelOptions = new GUILayoutOption[] { GUILayout.MinWidth(20), GUILayout.MaxWidth(110) };
+        GUILayoutOption[] miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(18), GUILayout.MaxWidth(22) };
+        GUILayoutOption[] inputOptions = new GUILayoutOption[] { GUILayout.Width(50) };
 
         public void Awake()
         {
@@ -112,8 +108,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         private void InitStyles()
         {
-            dropdownStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
-            toggleStyle = new GUIStyle("Toggle") { fixedWidth = 0, fixedHeight = 0, alignment = TextAnchor.MiddleLeft };
+            labelMidRight = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleRight };
 
             settingGUIContent = new GUIContent(settingIcon);
             assetPreprocessorContent = new GUIContent("Preprocess Assets:");
@@ -151,11 +146,11 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         {
             if (G.configs.CurrentConfig.Json.CurrentPlayerSettingName == null)
             {
-                selectedBuildSettingIndex = -1;
+                selectedPlayerSettingIndex = -1;
             }
             else
             {
-                selectedBuildSettingIndex = buildSettingNames.IndexOf(G.configs.CurrentConfig.Json.CurrentPlayerSettingName.RemoveExtension());
+                selectedPlayerSettingIndex = playerSettingNames.IndexOf(G.configs.CurrentConfig.Json.CurrentPlayerSettingName.RemoveExtension());
             }
             //if (G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Tags == null)
             //{
@@ -214,7 +209,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         private void InitSelectedIndex()
         {
-            selectedBuildSettingIndex = -1;
+            selectedPlayerSettingIndex = -1;
             selectedCompressionIndex = -1;
             assetPreprocessorSavedConfigSelectedIndex = -1;
             bundleManagerSavedConfigSelectedIndex = -1;
@@ -252,160 +247,191 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 }
             }
             GUILayout.FlexibleSpace();
+            //SVN Update     
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginToggleGroup("SVN Update", false);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndToggleGroup();
+            EditorGUILayout.EndHorizontal();
 
-            //AssetPreprocessor
-            using (new GUILayout.HorizontalScope())
-            {
-                G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline = GUILayout.Toggle(G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline, GUIContent.none);
-                EditorGUILayout.PrefixLabel(G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.Applying ? assetPreprocessorWarnContent : assetPreprocessorContent);
-                int index_new = EditorGUILayout.Popup(assetPreprocessorSavedConfigSelectedIndex, assetPreprocessorSavedConfigNames, dropdownStyle, dropdownOptions);
-                if (assetPreprocessorSavedConfigSelectedIndex != index_new)
-                {
-                    assetPreprocessorSavedConfigSelectedIndex = index_new;
-                    G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.CurrentSavedConfigName = assetPreprocessorSavedConfigNames[index_new] + ".json";
-                    G.configs.AssetPreprocessorConfigs.LoadCurrentSavedConfig();
-                }
-                if (GUILayout.Button(settingGUIContent, miniButtonOptions))
-                {
-                    AssetPreprocessor.Editor.G.OverrideCurrentSavedConfigName = G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.CurrentSavedConfigName;
-                    if (AssetPreprocessor.Editor.G.g == null)
-                    {
-                        EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
-                        AssetPreprocessor.Editor.G.g.OnChangeCurrentConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
-                        AssetPreprocessor.Editor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
-                    }
-                    else
-                    {
-                        EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
-                    }
-                }
-                GUILayout.Space(10);
-                GUILayout.Label(G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline ?
-                    "→ " + EBPUtility.GetTagStr(G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags) : EBPUtility.GetTagStr(G.configs.Common_AssetsTagsConfig.Json));
-                GUILayout.FlexibleSpace();
-            }
             GUILayout.FlexibleSpace();
 
-            //BundleManager
-            using (new GUILayout.HorizontalScope())
+            //AssetPreprocessor   
+            EditorGUILayout.BeginHorizontal();
+            G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
+                G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.Applying ? assetPreprocessorWarnContent : assetPreprocessorContent, 
+                G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline);
+            EditorGUILayout.BeginHorizontal();
+            int index_new = EditorGUILayout.Popup(assetPreprocessorSavedConfigSelectedIndex, assetPreprocessorSavedConfigNames, dropdownOptions);
+            if (assetPreprocessorSavedConfigSelectedIndex != index_new)
             {
-                G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = GUILayout.Toggle(G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline, GUIContent.none);
-                EditorGUILayout.PrefixLabel(G.configs.BundleManagerConfigs.CurrentConfig.Json.Applying ? bundleManagerWarnContent : bundleManagerContent);
-                int index_new = EditorGUILayout.Popup(bundleManagerSavedConfigSelectedIndex, bundleManagerSavedConfigNames, dropdownStyle, dropdownOptions);
-                if (bundleManagerSavedConfigSelectedIndex != index_new)
-                {
-                    bundleManagerSavedConfigSelectedIndex = index_new;
-                    G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleMap = bundleManagerSavedConfigNames[index_new] + ".json";
-                }
-                if (GUILayout.Button(settingGUIContent, miniButtonOptions))
-                {
-                    if (BundleManager.Editor.G.g == null)
-                    {
-                        EditorWindow.GetWindow<BundleManager.Editor.BundleManagerWindow>();
-                        BundleManager.Editor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
-                    }
-                    else
-                    {
-                        EditorWindow.GetWindow<BundleManager.Editor.BundleManagerWindow>();
-                    }
-                }
-                GUILayout.Space(10);
-
-                int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.configs.BundleManagerConfigs.CompressionEnum, dropdownStyle, dropdownOptions2);
-                if (selectedCompressionIndex_new != selectedCompressionIndex)
-                {
-                    G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue -= (int)G.configs.BundleManagerConfigs.CompressionEnumMap[G.configs.BundleManagerConfigs.CompressionEnum[selectedCompressionIndex]];
-                    G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue += (int)G.configs.BundleManagerConfigs.CompressionEnumMap[G.configs.BundleManagerConfigs.CompressionEnum[selectedCompressionIndex_new]];
-                    selectedCompressionIndex = selectedCompressionIndex_new;
-                    return;
-                }
-
-                EditorGUILayout.LabelField("Resource Version:", labelOptions);
-                int n = EditorGUILayout.IntField(G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion, inputOptions);
-                if (G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion != n)
-                {
-                    G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion = n;
-                }
-
-                EditorGUILayout.LabelField("  Bundle Version:", labelOptions);
-                n = EditorGUILayout.IntField(G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion, inputOptions);
-                if (G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion != n)
-                {
-                    G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion = n;
-                }
-
-                GUILayout.FlexibleSpace();
+                assetPreprocessorSavedConfigSelectedIndex = index_new;
+                G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.CurrentSavedConfigName = assetPreprocessorSavedConfigNames[index_new] + ".json";
+                G.configs.AssetPreprocessorConfigs.LoadCurrentSavedConfig();
             }
-            GUILayout.FlexibleSpace();
-
-            //PackageManager
-            using (new GUILayout.HorizontalScope())
+            if (GUILayout.Button(settingGUIContent, miniButtonOptions))
             {
-                G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = GUILayout.Toggle(G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline, GUIContent.none);
-                EditorGUILayout.PrefixLabel(G.configs.PackageManagerConfigs.CurrentConfig.Json.Applying ? packageManagerWarnContent : packageManagerContent);
-                int index_new = EditorGUILayout.Popup(packageManagerSavedConfigSelectedIndex, packageManagerSavedConfigNames, dropdownStyle, dropdownOptions);
-                if (packageManagerSavedConfigSelectedIndex != index_new)
+                AssetPreprocessor.Editor.G.OverrideCurrentSavedConfigName = G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.CurrentSavedConfigName;
+                if (AssetPreprocessor.Editor.G.g == null)
                 {
-                    packageManagerSavedConfigSelectedIndex = index_new;
-                    G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentPackageMap = packageManagerSavedConfigNames[index_new] + ".json";
-                }
-                if (GUILayout.Button(settingGUIContent, miniButtonOptions))
-                {
-                    PackageManager.Editor.G.OverrideCurrentSavedConfigName = G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentPackageMap;
-                    if (PackageManager.Editor.G.g == null)
-                    {
-                        EditorWindow.GetWindow<PackageManager.Editor.PackageManagerWindow>();
-                        PackageManager.Editor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
-                    }
-                    else
-                    {
-                        EditorWindow.GetWindow<PackageManager.Editor.PackageManagerWindow>();
-                    }
-                }
-                GUILayout.Space(10);
-
-                EditorGUILayout.LabelField("Addon Version:", labelOptions);
-                string packageVersion_new = EditorGUILayout.TextField(G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentAddonVersion);
-                if (G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentAddonVersion != packageVersion_new)
-                {
-                    G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentAddonVersion = packageVersion_new;
-                }
-                GUILayout.FlexibleSpace();
-            }
-            GUILayout.FlexibleSpace();
-
-            //SceneBuilder
-            using (new GUILayout.HorizontalScope())
-            {
-                G.configs.CurrentConfig.Json.IsPartOfPipeline = GUILayout.Toggle(G.configs.CurrentConfig.Json.IsPartOfPipeline, GUIContent.none);
-                EditorGUILayout.PrefixLabel(G.configs.CurrentConfig.Json.Applying ? buildSettingsWarnContent : buildSettingsContent);
-
-                if (creatingNewConfig)
-                {
-                    ShowInputField();
+                    EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
+                    AssetPreprocessor.Editor.G.g.OnChangeCurrentConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
+                    AssetPreprocessor.Editor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
                 }
                 else
                 {
-                    ShowBuildSettingDropdown();
+                    EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
                 }
-                if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), miniButtonOptions))
-                { ClickedShowConfigFile(); return; }
-
-                if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonOptions))
-                { ClickedNew(); }
-                if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonOptions))
-                { ClickedSave(); return; }
-                if (GUILayout.Button(new GUIContent("Revert", "保存配置文件"), buttonOptions))
-                { ClickedRevert(); return; }
-
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button(new GUIContent("Run"), buttonOptions))
-                { ClickedApply(); return; }
             }
+            GUILayout.Space(10);
+            GUILayout.Label(G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline ?
+                "→ " + EBPUtility.GetTagStr(G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags) : EBPUtility.GetTagStr(G.configs.Common_AssetsTagsConfig.Json));
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndToggleGroup();
+            EditorGUILayout.EndHorizontal();
+
+            GUILayout.FlexibleSpace();
+
+            //BundleManager     
+            EditorGUILayout.BeginHorizontal();
+            G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.Applying ? bundleManagerWarnContent : bundleManagerContent,
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline);
+            EditorGUILayout.BeginHorizontal();
+
+            index_new = EditorGUILayout.Popup(bundleManagerSavedConfigSelectedIndex, bundleManagerSavedConfigNames, dropdownOptions);
+            if (bundleManagerSavedConfigSelectedIndex != index_new)
+            {
+                bundleManagerSavedConfigSelectedIndex = index_new;
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleMap = bundleManagerSavedConfigNames[index_new] + ".json";
+            }
+            if (GUILayout.Button(settingGUIContent, miniButtonOptions))
+            {
+                if (BundleManager.Editor.G.g == null)
+                {
+                    EditorWindow.GetWindow<BundleManager.Editor.BundleManagerWindow>();
+                    BundleManager.Editor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
+                }
+                else
+                {
+                    EditorWindow.GetWindow<BundleManager.Editor.BundleManagerWindow>();
+                }
+            }
+            GUILayout.Space(10);
+
+            int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.configs.BundleManagerConfigs.CompressionEnum, dropdownOptions2);
+            if (selectedCompressionIndex_new != selectedCompressionIndex)
+            {
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue -= (int)G.configs.BundleManagerConfigs.CompressionEnumMap[G.configs.BundleManagerConfigs.CompressionEnum[selectedCompressionIndex]];
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue += (int)G.configs.BundleManagerConfigs.CompressionEnumMap[G.configs.BundleManagerConfigs.CompressionEnum[selectedCompressionIndex_new]];
+                selectedCompressionIndex = selectedCompressionIndex_new;
+                return;
+            }
+
+            EditorGUILayout.LabelField("Resource Version:", labelMidRight, labelOptions);
+            int n = EditorGUILayout.IntField(G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion, inputOptions);
+            if (G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion != n)
+            {
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion = n;
+            }
+
+            EditorGUILayout.LabelField("  Bundle Version:", labelMidRight, labelOptions);
+            n = EditorGUILayout.IntField(G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion, inputOptions);
+            if (G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion != n)
+            {
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion = n;
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndToggleGroup();
+            EditorGUILayout.EndHorizontal();
+
+            GUILayout.FlexibleSpace();
+
+            //PackageManager
+            EditorGUILayout.BeginHorizontal();
+            G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
+                 G.configs.PackageManagerConfigs.CurrentConfig.Json.Applying ? packageManagerWarnContent : packageManagerContent,
+                 G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline);
+            EditorGUILayout.BeginHorizontal();
+
+            index_new = EditorGUILayout.Popup(packageManagerSavedConfigSelectedIndex, packageManagerSavedConfigNames, dropdownOptions);
+            if (packageManagerSavedConfigSelectedIndex != index_new)
+            {
+                packageManagerSavedConfigSelectedIndex = index_new;
+                G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentPackageMap = packageManagerSavedConfigNames[index_new] + ".json";
+            }
+            if (GUILayout.Button(settingGUIContent, miniButtonOptions))
+            {
+                PackageManager.Editor.G.OverrideCurrentSavedConfigName = G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentPackageMap;
+                if (PackageManager.Editor.G.g == null)
+                {
+                    EditorWindow.GetWindow<PackageManager.Editor.PackageManagerWindow>();
+                    PackageManager.Editor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
+                }
+                else
+                {
+                    EditorWindow.GetWindow<PackageManager.Editor.PackageManagerWindow>();
+                }
+            }
+            GUILayout.Space(10);
+
+            EditorGUILayout.LabelField("Addon Version:", labelOptions);
+            string packageVersion_new = EditorGUILayout.TextField(G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentAddonVersion);
+            if (G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentAddonVersion != packageVersion_new)
+            {
+                G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentAddonVersion = packageVersion_new;
+            }
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndToggleGroup();
+            EditorGUILayout.EndHorizontal();
+
+            GUILayout.FlexibleSpace();
+
+            //SceneBuilder     
+            EditorGUILayout.BeginHorizontal();
+            G.configs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
+                G.configs.CurrentConfig.Json.Applying ? buildSettingsWarnContent : buildSettingsContent,
+                G.configs.CurrentConfig.Json.IsPartOfPipeline);
+            EditorGUILayout.BeginHorizontal();
+            if (creatingNewConfig)
+            {
+                ShowInputField();
+            }
+            else
+            {
+                ShowBuildSettingDropdown();
+            }
+            if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), miniButtonOptions))
+            { ClickedShowConfigFile(); return; }
+            GUILayout.Space(10);
+            if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonOptions))
+            { ClickedNew(); }
+            if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonOptions))
+            { ClickedSave(); return; }
+            if (GUILayout.Button(new GUIContent("Revert", "重新载入配置文件"), buttonOptions))
+            { ClickedRevert(); return; }
+            if (GUILayout.Button(new GUIContent("Apply", "应用当前的PlayerSettings"), buttonOptions))
+            { ClickedApply(); return; }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndToggleGroup();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(new GUIContent("Run Pipeline"))) { ClickedRunPipeline(); return; }
+            EditorGUILayout.EndHorizontal();
+
             GUILayout.FlexibleSpace();
         }
 
         private void ClickedApply()
+        {
+            G.configs.Runner.ApplyPlayerSettings();
+        }
+
+        private void ClickedRunPipeline()
         {
             //更换后续步骤的Tags改为将被AssetPreprocessor改变的Tags或当前的AssetsTags
             if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
@@ -480,26 +506,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 //BuildPlayer
                 if (G.configs.CurrentConfig.Json.IsPartOfPipeline)
                 {
-                    //bool compileOccoured = false;
-                    PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildPipeline.GetBuildTargetGroup(BuildTarget.iOS), "aaa;bbb,ccc");
-
-                    //float process = 0;
-                    //float lastTime = 0;
-                    //while (EditorApplication.isCompiling)
-                    //{
-                    //    if (Time.realtimeSinceStartup - lastTime > 0.1f)
-                    //    {
-                    //        compileOccoured = true;
-                    //        EditorUtility.DisplayProgressBar("正在编译...", "", process++ % 100);
-                    //        lastTime = Time.realtimeSinceStartup;
-                    //    }
-                    //}
-                    //if (compileOccoured == false)
-                    //{
-                    //    G.configs.DisplayDialog("没有发生编译!");
-                    //}
-                    //Debug.Log("完成");
-                    //G.configs.Runner.Apply(true);
+                    G.configs.Runner.Apply(true);
                 }
                 else
                 {
@@ -572,14 +579,14 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         private void LoadBuildSettings()
         {
             G.configs.LoadCurrentPlayerSetting();
-            buildSettingNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_BuildSettingsFolderPath);
+            playerSettingNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PlayerSettingsFolderPath);
         }
 
         private void ShowInputField()
         {
             GUI.SetNextControlName("InputField1");
             string tip = "<输入名称>(回车确定，空串取消)";
-            string s = EditorGUILayout.DelayedTextField(tip, dropdownStyle, dropdownOptions);
+            string s = EditorGUILayout.DelayedTextField(tip, dropdownOptions);
             GUI.FocusControl("InputField1");
             s = s.Trim().Replace('\\', '/');
             if (s != tip)
@@ -588,7 +595,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 {
                     try
                     {
-                        string path = Path.Combine(G.configs.LocalConfig.Local_BuildSettingsFolderPath, s + ".json");
+                        string path = Path.Combine(G.configs.LocalConfig.Local_PlayerSettingsFolderPath, s + ".json");
                         if (File.Exists(path))
                             EditorUtility.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
                         else
@@ -617,28 +624,28 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             {
                 try
                 {
-                    buildSettingNames[selectedBuildSettingIndex] += "*";
+                    playerSettingNames[selectedPlayerSettingIndex] += "*";
                 }
                 catch { }
             }
-            int selectedBuildSetting_new = EditorGUILayout.Popup(selectedBuildSettingIndex, buildSettingNames, dropdownStyle, dropdownOptions);
+            int selectedBuildSetting_new = EditorGUILayout.Popup(selectedPlayerSettingIndex, playerSettingNames, dropdownOptions);
             if (G.configs.PlayerSettingsConfig.Dirty)
             {
                 try
                 {
-                    buildSettingNames[selectedBuildSettingIndex] = buildSettingNames[selectedBuildSettingIndex].Remove(buildSettingNames[selectedBuildSettingIndex].Length - 1);
+                    playerSettingNames[selectedPlayerSettingIndex] = playerSettingNames[selectedPlayerSettingIndex].Remove(playerSettingNames[selectedPlayerSettingIndex].Length - 1);
                 }
                 catch { }
             }
-            if (selectedBuildSetting_new != selectedBuildSettingIndex)
+            if (selectedBuildSetting_new != selectedPlayerSettingIndex)
             {
-                ChangeBuildSetting(selectedBuildSetting_new);
+                ChangePlayerSetting(selectedBuildSetting_new);
             }
         }
 
         private void ClickedRevert()
         {
-            ChangeBuildSetting(selectedBuildSettingIndex);
+            ChangePlayerSetting(selectedPlayerSettingIndex);
         }
 
         private void CreateNewBuildSetting(string name, string path)
@@ -648,17 +655,17 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             File.Create(path).Close();
             EditorUtility.DisplayDialog("创建成功", "创建成功!", "确定");
             //更新列表
-            buildSettingNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_BuildSettingsFolderPath);
+            playerSettingNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PlayerSettingsFolderPath);
             //保存
             G.configs.PlayerSettingsConfig.JsonPath = path;
             SaveCurrentBuildSetting();
             //切换
-            ChangeBuildSetting(buildSettingNames.IndexOf(name));
+            ChangePlayerSetting(playerSettingNames.IndexOf(name));
             //用于总控
             G.g.OnChangeConfigList();
         }
 
-        private void ChangeBuildSetting(int selectedBuildSettingIndex_new)
+        private void ChangePlayerSetting(int selectedPlayerSettingIndex_new)
         {
             bool ensureLoad = true;
             if (G.configs.PlayerSettingsConfig.Dirty)
@@ -669,14 +676,14 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             {
                 try
                 {
-                    var newBuildSettingConfig = new Configs.PlayerSettingsConfig();
-                    string newBuildSettingConfigName = buildSettingNames[selectedBuildSettingIndex_new] + ".json";
-                    newBuildSettingConfig.JsonPath = Path.Combine(G.configs.LocalConfig.Local_BuildSettingsFolderPath, newBuildSettingConfigName);
-                    newBuildSettingConfig.Load();
+                    var newPlayerSettingConfig = new Configs.PlayerSettingsConfig();
+                    string newPlayerSettingConfigName = playerSettingNames[selectedPlayerSettingIndex_new] + ".json";
+                    newPlayerSettingConfig.JsonPath = Path.Combine(G.configs.LocalConfig.Local_PlayerSettingsFolderPath, newPlayerSettingConfigName);
+                    newPlayerSettingConfig.Load();
                     //至此加载成功
-                    G.configs.CurrentConfig.Json.CurrentPlayerSettingName = newBuildSettingConfigName;
-                    G.configs.PlayerSettingsConfig = newBuildSettingConfig;
-                    selectedBuildSettingIndex = selectedBuildSettingIndex_new;
+                    G.configs.CurrentConfig.Json.CurrentPlayerSettingName = newPlayerSettingConfigName;
+                    G.configs.PlayerSettingsConfig = newPlayerSettingConfig;
+                    selectedPlayerSettingIndex = selectedPlayerSettingIndex_new;
                     ConfigToIndex();
                 }
                 catch (Exception e)
@@ -690,12 +697,12 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             string path = "";
             try
             {
-                path = Path.Combine(G.configs.LocalConfig.Local_BuildSettingsFolderPath, buildSettingNames[selectedBuildSettingIndex] + ".json");
+                path = Path.Combine(G.configs.LocalConfig.Local_PlayerSettingsFolderPath, playerSettingNames[selectedPlayerSettingIndex] + ".json");
             }
             catch { }
             if (!File.Exists(path))
             {
-                path = G.configs.LocalConfig.Local_BuildSettingsFolderPath;
+                path = G.configs.LocalConfig.Local_PlayerSettingsFolderPath;
             }
             EditorUtility.RevealInFinder(path);
         }
@@ -705,7 +712,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             bool ensure = true;
             if (G.configs.PlayerSettingsConfig.Dirty)
             {
-                ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + buildSettingNames[selectedBuildSettingIndex], "覆盖保存", "取消");
+                ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + playerSettingNames[selectedPlayerSettingIndex], "覆盖保存", "取消");
             }
             if (!ensure) return;
 

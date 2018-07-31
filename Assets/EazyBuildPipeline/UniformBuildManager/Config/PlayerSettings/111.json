@@ -1,0 +1,195 @@
+{
+  "PlayerSettings": {
+    "CompanyName": "786",
+    "ProductName": "45687",
+    "IOS": {
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "7897893333",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "4563573753"
+            }
+          ]
+        },
+        {
+          "Active": false,
+          "GroupName": "Script Defines Group111",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "44444"
+            },
+            {
+              "Active": true,
+              "Define": "555555"
+            },
+            {
+              "Active": true,
+              "Define": "444444"
+            },
+            {
+              "Active": true,
+              "Define": "444"
+            },
+            {
+              "Active": true,
+              "Define": "4444"
+            },
+            {
+              "Active": true,
+              "Define": ""
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group222",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "987"
+            },
+            {
+              "Active": true,
+              "Define": "987"
+            },
+            {
+              "Active": true,
+              "Define": ""
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group555",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "87378373783873873"
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group444",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "78387393453453"
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "ujutj"
+            },
+            {
+              "Active": true,
+              "Define": "tyiutyiutyyi"
+            }
+          ]
+        },
+        {
+          "Active": false,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "44445"
+            }
+          ]
+        }
+      ],
+      "BundleID": "",
+      "ClientVersion": "",
+      "BuildNumber": "",
+      "AutomaticallySign": false,
+      "TeamID": "",
+      "CameraUsageDesc": "",
+      "LocationUsageDesc": "",
+      "MicrophoneUsageDesc": "",
+      "BlueToothUsageDesc": "",
+      "TargetDevice_str": "iPhoneOnly",
+      "TargetSDK_str": "0",
+      "TargetMinimumIOSVersion": "",
+      "StripEngineCode": false,
+      "ScriptCallOptimization_str": "SlowAndSafe",
+      "ProvisioningProfile": "",
+      "Architecture_str": "ARMv7",
+      "TargetDevice": 0,
+      "TargetSDK": 0,
+      "ScriptCallOptimization": 0,
+      "Architecture": 0
+    },
+    "Android": {
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "44444"
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "333"
+            },
+            {
+              "Active": true,
+              "Define": "44444"
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "sssawsefa"
+            }
+          ]
+        }
+      ],
+      "PreserveFramebufferAlpha": false,
+      "BlitType_str": "Always",
+      "ProtectGraphicsMemory": false,
+      "ClientVersion": "",
+      "BundleVersionCode": 0,
+      "MinimumAPILevel_str": "AndroidApiLevelAuto",
+      "TargetAPILevel_str": "AndroidApiLevelAuto",
+      "InstallLocation_str": "Auto",
+      "ForceInternetPermission": false,
+      "ForceSDCardPermission": false,
+      "AndroidTVCompatibility": false,
+      "AndroidGame": false,
+      "StripEngineCode": false,
+      "DeviceFilter_str": "FAT",
+      "PackageName": "",
+      "BlitType": 0,
+      "MinimumAPILevel": 0,
+      "TargetAPILevel": 0,
+      "InstallLocation": 0,
+      "InternetAccess": 0,
+      "WritePermission": 0,
+      "DeviceFilter": 0
+    }
+  },
+  "BuildSettings": {
+    "CompressionMethod": 0
+  }
+}
