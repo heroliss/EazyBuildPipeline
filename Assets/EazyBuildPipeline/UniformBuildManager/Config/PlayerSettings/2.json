@@ -1,0 +1,101 @@
+{
+  "PlayerSettings": {
+    "General": {
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "ghjgh"
+            },
+            {
+              "Active": true,
+              "Define": "uyi"
+            },
+            {
+              "Active": true,
+              "Define": "tyiyi"
+            },
+            {
+              "Active": true,
+              "Define": ""
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "dsgsg"
+            },
+            {
+              "Active": true,
+              "Define": "erg"
+            },
+            {
+              "Active": true,
+              "Define": ""
+            }
+          ]
+        }
+      ],
+      "CompanyName": null,
+      "ProductName": null
+    },
+    "IOS": {
+      "ScriptDefines": [],
+      "BundleID": null,
+      "ClientVersion": null,
+      "BuildNumber": null,
+      "AutomaticallySign": false,
+      "TeamID": null,
+      "CameraUsageDesc": null,
+      "LocationUsageDesc": null,
+      "MicrophoneUsageDesc": null,
+      "BlueToothUsageDesc": null,
+      "TargetDevice_str": null,
+      "TargetSDK_str": null,
+      "TargetMinimumIOSVersion": null,
+      "StripEngineCode": false,
+      "ScriptCallOptimization_str": null,
+      "ProvisioningProfile": null,
+      "Architecture_str": null,
+      "TargetDevice": 0,
+      "TargetSDK": 0,
+      "ScriptCallOptimization": 0,
+      "Architecture": 0
+    },
+    "Android": {
+      "ScriptDefines": [],
+      "PreserveFramebufferAlpha": false,
+      "BlitType_str": null,
+      "ProtectGraphicsMemory": false,
+      "ClientVersion": null,
+      "BundleVersionCode": 0,
+      "MinimumAPILevel_str": null,
+      "TargetAPILevel_str": null,
+      "InstallLocation_str": null,
+      "ForceInternetPermission": false,
+      "ForceSDCardPermission": false,
+      "AndroidTVCompatibility": false,
+      "AndroidGame": false,
+      "StripEngineCode": false,
+      "DeviceFilter_str": null,
+      "PackageName": null,
+      "BlitType": 0,
+      "MinimumAPILevel": 0,
+      "TargetAPILevel": 0,
+      "InstallLocation": 0,
+      "InternetAccess": 0,
+      "WritePermission": 0,
+      "DeviceFilter": 0
+    }
+  },
+  "BuildSettings": {
+    "CompressionMethod": 0
+  }
+}

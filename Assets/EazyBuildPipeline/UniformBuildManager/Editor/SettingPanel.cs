@@ -710,7 +710,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         private void ClickedSave()
         {
             bool ensure = true;
-            if (G.configs.PlayerSettingsConfig.Dirty)
+            if (G.configs.PlayerSettingsConfig.Dirty && selectedPlayerSettingIndex >= 0)
             {
                 ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + playerSettingNames[selectedPlayerSettingIndex], "覆盖保存", "取消");
             }

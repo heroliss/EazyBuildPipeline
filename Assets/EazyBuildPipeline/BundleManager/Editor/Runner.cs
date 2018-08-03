@@ -86,7 +86,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             configs.CurrentConfig.Json.Applying = false;
             configs.CurrentConfig.Save();
 
-            AssetDatabase.Refresh();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
         private void RenameMainBundleManifest(string folderPath)

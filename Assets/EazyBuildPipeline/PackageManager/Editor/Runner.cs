@@ -294,7 +294,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             configs.CurrentConfig.Json.Applying = false;
             configs.CurrentConfig.Save();
 
-            AssetDatabase.Refresh();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
         private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)
