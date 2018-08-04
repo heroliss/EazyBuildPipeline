@@ -37,12 +37,12 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         [SerializeField] GUIContent packageManagerWarnContent;
         [SerializeField] GUIContent buildSettingsWarnContent;
 
-        GUILayoutOption[] dropdownOptions = new GUILayoutOption[] { GUILayout.MaxWidth(160) };
-        GUILayoutOption[] dropdownOptions2 = new GUILayoutOption[] { GUILayout.MaxWidth(100) };
-        GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(60) };
-        GUILayoutOption[] labelOptions = new GUILayoutOption[] { GUILayout.MinWidth(20), GUILayout.MaxWidth(110) };
-        GUILayoutOption[] miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(18), GUILayout.MaxWidth(22) };
-        GUILayoutOption[] inputOptions = new GUILayoutOption[] { GUILayout.Width(50) };
+        GUILayoutOption[] dropdownOptions = { GUILayout.MaxWidth(160) };
+        GUILayoutOption[] dropdownOptions2 = { GUILayout.MaxWidth(100) };
+        GUILayoutOption[] buttonOptions = { GUILayout.MaxWidth(60) };
+        GUILayoutOption[] labelOptions = { GUILayout.MinWidth(20), GUILayout.MaxWidth(110) };
+        GUILayoutOption[] miniButtonOptions = { GUILayout.MaxHeight(18), GUILayout.MaxWidth(22) };
+        GUILayoutOption[] inputOptions = { GUILayout.Width(50) };
 
         public void Awake()
         {
