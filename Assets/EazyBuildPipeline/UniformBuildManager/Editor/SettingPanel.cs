@@ -204,7 +204,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             assetPreprocessorSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.AssetPreprocessorConfigs.LocalConfig.Local_SavedConfigsFolderPath);
             bundleManagerSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.BundleManagerConfigs.LocalConfig.Local_BundleMapsFolderPath);
             packageManagerSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.PackageManagerConfigs.LocalConfig.Local_PackageMapsFolderPath);
-            LoadBuildSettings();
+            playerSettingNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PlayerSettingsFolderPath);
+
+            G.configs.LoadCurrentPlayerSetting();
         }
 
         private void InitSelectedIndex()
@@ -574,12 +576,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         public void OnDestory()
         {
             SetdownActions();
-        }
-
-        private void LoadBuildSettings()
-        {
-            G.configs.LoadCurrentPlayerSetting();
-            playerSettingNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.LocalConfig.Local_PlayerSettingsFolderPath);
         }
 
         private void ShowInputField()

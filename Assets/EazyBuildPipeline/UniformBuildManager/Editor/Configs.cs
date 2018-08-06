@@ -227,12 +227,13 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
         public override void Load(string path = null)
         {
             base.Load(path);
-            InitAllRepeatList();
+            InitAllRepeatList(Json.PlayerSettings);
         }
-        private void InitAllRepeatList()
+        private void InitAllRepeatList(PlayerSettings playerSettings)
         {
-            InitRepeatList(Json.PlayerSettings.IOS.ScriptDefines);
-            InitRepeatList(Json.PlayerSettings.Android.ScriptDefines);
+            InitRepeatList(playerSettings.IOS.ScriptDefines);
+            InitRepeatList(playerSettings.Android.ScriptDefines);
+            InitRepeatList(playerSettings.General.ScriptDefines);
         }
         private void InitRepeatList(List<PlayerSettings.ScriptDefinesGroup> scriptDefines)
         {
@@ -260,7 +261,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
 
         public void OnAfterDeserialize()
         {
-            InitAllRepeatList();
+            InitAllRepeatList(Json.PlayerSettings);
         }
 
         public bool Dirty;
