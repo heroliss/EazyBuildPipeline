@@ -417,8 +417,10 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             { ClickedSave(); return; }
             if (GUILayout.Button(new GUIContent("Revert", "重新载入配置文件"), buttonOptions))
             { ClickedRevert(); return; }
-            if (GUILayout.Button(new GUIContent("Apply", "应用当前的PlayerSettings"), buttonOptions))
+            if (GUILayout.Button(new GUIContent("Apply", "应用下面的PlayerSettings"), buttonOptions))
             { ClickedApply(); return; }
+            if (GUILayout.Button(new GUIContent("Fetch", "获取当前的PlayerSettings"), buttonOptions))
+            { FetchSettings(); return; }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
             GUILayout.FlexibleSpace();
@@ -428,6 +430,12 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             GUILayout.FlexibleSpace();
         }
 
+        private void FetchSettings()
+        {
+            G.configs.Runner.FetchPlayerSettings();
+            G.configs.PlayerSettingsConfig.InitAllRepeatList();
+            G.configs.PlayerSettingsConfig.Dirty = true;
+        }
         private void ClickedApply()
         {
             G.configs.Runner.ApplyPlayerSettings();
@@ -680,7 +688,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     G.configs.CurrentConfig.Json.CurrentPlayerSettingName = newPlayerSettingConfigName;
                     G.configs.PlayerSettingsConfig = newPlayerSettingConfig;
                     selectedPlayerSettingIndex = selectedPlayerSettingIndex_new;
-                    ConfigToIndex();
+                    //ConfigToIndex(); //应该不需要，暂留,如没有问题可删除
                 }
                 catch (Exception e)
                 {

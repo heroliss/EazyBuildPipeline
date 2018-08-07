@@ -71,14 +71,57 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             buildPlayerOptions.locationPathName = tagsPath;
             buildPlayerOptions.target = target;
             buildPlayerOptions.options = buildOptions;
-            string error = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            Debug.Log(error);
+            var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            Debug.Log(report);
 
             //结束
             configs.CurrentConfig.Json.Applying = false;
             configs.CurrentConfig.Save();
         }
+        public void FetchPlayerSettings()
+        {
+            FetchAllScriptDefines();
 
+            configs.PlayerSettingsConfig.Json.PlayerSettings.General.CompanyName = PlayerSettings.companyName;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.General.ProductName = PlayerSettings.productName;
+
+            //iOS
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BundleID = PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.iOS);
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ClientVersion = PlayerSettings.bundleVersion;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BuildNumber = PlayerSettings.iOS.buildNumber;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.AutomaticallySign = PlayerSettings.iOS.appleEnableAutomaticSigning;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ProvisioningProfile = PlayerSettings.iOS.iOSManualProvisioningProfileID;//TODO: 原来是：iOSBuildPostProcessor.ProvisioningProfile;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID = PlayerSettings.iOS.appleDeveloperTeamID; //TODO: 原来是：iOSBuildPostProcessor.TeamID;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.CameraUsageDesc = PlayerSettings.iOS.cameraUsageDescription;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.LocationUsageDesc = PlayerSettings.iOS.locationUsageDescription;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.MicrophoneUsageDesc = PlayerSettings.iOS.microphoneUsageDescription;
+            //TODO: 未找到 //configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BlueToothUsageDesc = iOSBuildPostProcessor.BlueToothUsageDesc;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetDevice = PlayerSettings.iOS.targetDevice;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetSDK = PlayerSettings.iOS.sdkVersion;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetMinimumIOSVersion = PlayerSettings.iOS.targetOSVersionString;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.Architecture = (Configs.PlayerSettingsConfig.PlayerSettings.IOSSettings.ArchitectureEnum)PlayerSettings.GetArchitecture(BuildTargetGroup.iOS);
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.StripEngineCode = PlayerSettings.stripEngineCode;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptCallOptimization = PlayerSettings.iOS.scriptCallOptimization;
+
+            //Android
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PreserveFramebufferAlpha = PlayerSettings.preserveFramebufferAlpha;
+            //TODO: 未找到 Resolution Scaling Mode
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BlitType = PlayerSettings.Android.blitType;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ProtectGraphicsMemory = PlayerSettings.protectGraphicsMemory;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PackageName = PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android);
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ClientVersion = PlayerSettings.bundleVersion;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BundleVersionCode = PlayerSettings.Android.bundleVersionCode;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.MinimumAPILevel = PlayerSettings.Android.minSdkVersion;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.TargetAPILevel = PlayerSettings.Android.targetSdkVersion;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.DeviceFilter = PlayerSettings.Android.targetDevice;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InstallLocation = PlayerSettings.Android.preferredInstallLocation;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ForceInternetPermission = PlayerSettings.Android.forceInternetPermission;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ForceSDCardPermission = PlayerSettings.Android.forceSDCardPermission;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidTVCompatibility = PlayerSettings.Android.androidTVCompatibility;
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidGame = PlayerSettings.Android.androidIsGame;
+            //TODO: 未找到 16.	Android GamePad Support
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.StripEngineCode = PlayerSettings.stripEngineCode;
+        }
         public void ApplyPlayerSettings()
         {
             var activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
@@ -95,12 +138,14 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     PlayerSettings.bundleVersion = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ClientVersion;
                     PlayerSettings.iOS.buildNumber = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BuildNumber;
                     PlayerSettings.iOS.appleEnableAutomaticSigning = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.AutomaticallySign;
-                    iOSBuildPostProcessor.ProvisioningProfile = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ProvisioningProfile;
-                    iOSBuildPostProcessor.TeamID = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID;
+                    //TODO: 原来是：iOSBuildPostProcessor.ProvisioningProfile = 
+                    PlayerSettings.iOS.iOSManualProvisioningProfileID = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ProvisioningProfile;
+                    //TODO: 原来是：iOSBuildPostProcessor.TeamID = 
+                    PlayerSettings.iOS.appleDeveloperTeamID = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID;
                     PlayerSettings.iOS.cameraUsageDescription = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.CameraUsageDesc;
                     PlayerSettings.iOS.locationUsageDescription = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.LocationUsageDesc;
                     PlayerSettings.iOS.microphoneUsageDescription = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.MicrophoneUsageDesc;
-                    iOSBuildPostProcessor.BlueToothUsageDesc = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BlueToothUsageDesc;
+                    //TODO：未找到：iOSBuildPostProcessor.BlueToothUsageDesc = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BlueToothUsageDesc;
                     PlayerSettings.iOS.targetDevice = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetDevice;
                     PlayerSettings.iOS.sdkVersion = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetSDK;
                     PlayerSettings.iOS.targetOSVersionString = configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetMinimumIOSVersion;
@@ -110,8 +155,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     break;
                 case BuildTargetGroup.Android:
                     PlayerSettings.preserveFramebufferAlpha = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PreserveFramebufferAlpha;
-                    //Resolution Scaling Mode
-                    //PlayerSettings.
+                    //TODO：未找到：Resolution Scaling Mode
                     PlayerSettings.Android.blitType = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BlitType;
                     PlayerSettings.protectGraphicsMemory = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ProtectGraphicsMemory;
                     PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PackageName);
@@ -125,13 +169,32 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     PlayerSettings.Android.forceSDCardPermission = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ForceSDCardPermission;
                     PlayerSettings.Android.androidTVCompatibility = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidTVCompatibility;
                     PlayerSettings.Android.androidIsGame = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidGame;
-                    //16.	Android GamePad Support
-                    //PlayerSettings.Android.
+                    //TODO：未找到：16.	Android GamePad Support
                     PlayerSettings.stripEngineCode = configs.PlayerSettingsConfig.Json.PlayerSettings.Android.StripEngineCode;
                     break;
                 default:
                     break;
             }
+        }
+
+        public void FetchAllScriptDefines()
+        {
+            configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptDefines.Add(FetchScriptDefineGroup(BuildTargetGroup.iOS));
+            configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ScriptDefines.Add(FetchScriptDefineGroup(BuildTargetGroup.Android));
+        }
+
+        public Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup FetchScriptDefineGroup(BuildTargetGroup buildTargetGroup)
+        {
+            var definesGroup = new Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup()
+            {
+                Active = true,
+                GroupName = "Current Script Defines",
+            };
+            foreach (var item in PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';'))
+            {
+                definesGroup.Defines.Add(new Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefine() { Active = true, Define = item });
+            }
+            return definesGroup;
         }
 
         public void ApplyScriptDefines(BuildTargetGroup buildTargetGroup)

@@ -43,56 +43,162 @@
           ]
         }
       ],
-      "CompanyName": null,
-      "ProductName": null
+      "CompanyName": "fhf",
+      "ProductName": "g_208new"
     },
     "IOS": {
-      "ScriptDefines": [],
-      "BundleID": null,
-      "ClientVersion": null,
-      "BuildNumber": null,
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Current Script Defines",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "dfgxdfg"
+            },
+            {
+              "Active": true,
+              "Define": "dgxga"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Current Script Defines",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "dfgxdfg"
+            },
+            {
+              "Active": true,
+              "Define": "dgxga"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            }
+          ]
+        }
+      ],
+      "BundleID": "",
+      "ClientVersion": "",
+      "BuildNumber": "",
       "AutomaticallySign": false,
-      "TeamID": null,
-      "CameraUsageDesc": null,
-      "LocationUsageDesc": null,
-      "MicrophoneUsageDesc": null,
-      "BlueToothUsageDesc": null,
-      "TargetDevice_str": null,
-      "TargetSDK_str": null,
-      "TargetMinimumIOSVersion": null,
+      "TeamID": "",
+      "CameraUsageDesc": "",
+      "LocationUsageDesc": "",
+      "MicrophoneUsageDesc": "",
+      "BlueToothUsageDesc": "",
+      "TargetDevice_str": "iPhoneOnly",
+      "TargetSDK_str": "DeviceSDK",
+      "TargetMinimumIOSVersion": "7.0",
       "StripEngineCode": false,
-      "ScriptCallOptimization_str": null,
-      "ProvisioningProfile": null,
-      "Architecture_str": null,
+      "ScriptCallOptimization_str": "SlowAndSafe",
+      "ProvisioningProfile": "",
+      "Architecture_str": "ARMv7",
       "TargetDevice": 0,
-      "TargetSDK": 0,
+      "TargetSDK": 988,
       "ScriptCallOptimization": 0,
       "Architecture": 0
     },
     "Android": {
-      "ScriptDefines": [],
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Current Script Defines",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "dfgxdfg"
+            },
+            {
+              "Active": true,
+              "Define": "dgxga"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            }
+          ]
+        },
+        {
+          "Active": true,
+          "GroupName": "Current Script Defines",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "dfgxdfg"
+            },
+            {
+              "Active": true,
+              "Define": "dgxga"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            },
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            }
+          ]
+        }
+      ],
       "PreserveFramebufferAlpha": false,
-      "BlitType_str": null,
+      "BlitType_str": "Always",
       "ProtectGraphicsMemory": false,
-      "ClientVersion": null,
-      "BundleVersionCode": 0,
-      "MinimumAPILevel_str": null,
-      "TargetAPILevel_str": null,
-      "InstallLocation_str": null,
+      "ClientVersion": "",
+      "BundleVersionCode": 1,
+      "MinimumAPILevel_str": "AndroidApiLevel16",
+      "TargetAPILevel_str": "AndroidApiLevelAuto",
+      "InstallLocation_str": "Auto",
       "ForceInternetPermission": false,
-      "ForceSDCardPermission": false,
-      "AndroidTVCompatibility": false,
-      "AndroidGame": false,
+      "ForceSDCardPermission": true,
+      "AndroidTVCompatibility": true,
+      "AndroidGame": true,
       "StripEngineCode": false,
-      "DeviceFilter_str": null,
-      "PackageName": null,
+      "DeviceFilter_str": "ARMv7",
+      "PackageName": "com.eazygame.g",
       "BlitType": 0,
-      "MinimumAPILevel": 0,
+      "MinimumAPILevel": 16,
       "TargetAPILevel": 0,
       "InstallLocation": 0,
       "InternetAccess": 0,
-      "WritePermission": 0,
-      "DeviceFilter": 0
+      "WritePermission": 1,
+      "DeviceFilter": 3
     }
   },
   "BuildSettings": {

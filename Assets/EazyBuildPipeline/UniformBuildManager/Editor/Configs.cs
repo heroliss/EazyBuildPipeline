@@ -227,15 +227,15 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
         public override void Load(string path = null)
         {
             base.Load(path);
-            InitAllRepeatList(Json.PlayerSettings);
+            InitAllRepeatList();
         }
-        private void InitAllRepeatList(PlayerSettings playerSettings)
+        public void InitAllRepeatList()
         {
-            InitRepeatList(playerSettings.IOS.ScriptDefines);
-            InitRepeatList(playerSettings.Android.ScriptDefines);
-            InitRepeatList(playerSettings.General.ScriptDefines);
+            InitRepeatList(Json.PlayerSettings.IOS.ScriptDefines);
+            InitRepeatList(Json.PlayerSettings.Android.ScriptDefines);
+            InitRepeatList(Json.PlayerSettings.General.ScriptDefines);
         }
-        private void InitRepeatList(List<PlayerSettings.ScriptDefinesGroup> scriptDefines)
+        public static void InitRepeatList(List<PlayerSettings.ScriptDefinesGroup> scriptDefines)
         {
             foreach (var group in scriptDefines)
             {
@@ -261,7 +261,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
 
         public void OnAfterDeserialize()
         {
-            InitAllRepeatList(Json.PlayerSettings);
+            InitAllRepeatList();
         }
 
         public bool Dirty;
@@ -385,6 +385,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
                 public bool AndroidGame;
                 public bool StripEngineCode;
                 public string DeviceFilter_str;
+                //Unity 2018 AndroidArchitecture ，2017 为 AndroidTargetDevice
                 public AndroidTargetDevice DeviceFilter
                 {
                     get { return DeviceFilter_str.ToEnum<AndroidTargetDevice>(); }

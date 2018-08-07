@@ -415,10 +415,10 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     group.Active = b;
                     G.configs.PlayerSettingsConfig.Dirty = true;
                 }
-                string s = GUILayout.TextField(group.GroupName, "flow overlay header upper left", GUILayout.MinWidth(100), GUILayout.MaxWidth(2000));
-                if(group.GroupName != s)
+                string newDefineStr = GUILayout.TextField(group.GroupName, "flow overlay header upper left", GUILayout.MinWidth(100), GUILayout.MaxWidth(2000));
+                if(group.GroupName != newDefineStr)
                 {
-                    group.GroupName = s;
+                    group.GroupName = newDefineStr;
                     G.configs.PlayerSettingsConfig.Dirty = true;
                 }
                 GUILayout.FlexibleSpace();
@@ -440,7 +440,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     }
                     if (ensure)
                     {
-                        scriptDefinesGroupList.RemoveAt(i);
+                        RemoveGroup(scriptDefinesGroupList, i);
                         G.configs.PlayerSettingsConfig.Dirty = true;
                         return;
                     }
@@ -474,28 +474,21 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                         define.Active = b;
                         G.configs.PlayerSettingsConfig.Dirty = true;
                     }
-                    s = GUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle ,GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
-                    if(define.Define != s)
+                    newDefineStr = GUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle ,GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
+                    if(define.Define != newDefineStr)
                     {
-                        foreach (var g in scriptDefinesGroupList)
+                        define.Define = newDefineStr;
+                        UpdateRepeatList(scriptDefinesGroupList, define);
+                        if (scriptDefinesGroupList != G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.ScriptDefines)
                         {
-                            foreach (var d in g.Defines)
-                            {
-                                if (d.Define == s)
-                                {
-                                    d.RepeatList.Add(define);
-                                    define.RepeatList.Add(d);
-                                }
-                                else
-                                {
-                                    d.RepeatList.Remove(define);
-                                    define.RepeatList.Remove(d);
-                                }
-                            }
+                            UpdateRepeatList(G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.ScriptDefines, define);
                         }
-                        define.Define = s;
+                        else
+                        {
+                            UpdateRepeatList(G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptDefines, define);
+                            UpdateRepeatList(G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ScriptDefines, define);
+                        }
                         G.configs.PlayerSettingsConfig.Dirty = true;
-       
                     }
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("-"))
@@ -507,7 +500,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                         }
                         if (ensure)
                         {
-                            group.Defines.RemoveAt(j);
+                            RemoveDefine(group, j);
                             G.configs.PlayerSettingsConfig.Dirty = true;
                         }
                         return;
@@ -534,6 +527,48 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 }
                 EditorGUILayout.EndVertical();
             }
+        }
+
+        private static void UpdateRepeatList(List<Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup> groupList, Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefine currentDefine)
+        {
+            foreach (var group in groupList)
+            {
+                foreach (var define in group.Defines)
+                {
+                    if (define == currentDefine)
+                        continue;
+                    if (define.Define == currentDefine.Define)
+                    {
+                        define.RepeatList.Add(currentDefine);
+                        currentDefine.RepeatList.Add(define);
+                    }
+                    else
+                    {
+                        define.RepeatList.Remove(currentDefine);
+                        currentDefine.RepeatList.Remove(define);
+                    }
+                }
+            }
+        }
+
+        private static void RemoveGroup(List<Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup> groupList, int index)
+        {
+            var group = groupList[index];
+            while(group.Defines.Count > 0)
+            {
+                RemoveDefine(group, 0);
+            }
+            groupList.RemoveAt(index);
+        }
+
+        private static void RemoveDefine(Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup group, int index)
+        {
+            var define = group.Defines[index];
+            for (int i = 0; i < define.RepeatList.Count; i++)
+            {
+                define.RepeatList[i].RepeatList.Remove(define);
+            }
+            group.Defines.RemoveAt(index);
         }
 
         private void ConfigToIndex()
