@@ -89,15 +89,13 @@ namespace EazyBuildPipeline.PackageManager.Editor
         }
 
         public void ApplyAllPackages(int bundleVersion, int resourceVersion, bool isPartOfPipeline = false)
-        {
-            //开始
-            configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
-            configs.CurrentConfig.Json.Applying = true;
-            configs.CurrentConfig.Save();
-            float lastTime = Time.realtimeSinceStartup;
-
+        {       
             //准备参数
             string bundlesFolderPath = configs.GetBundleFolderPath();
+            if (!Directory.Exists(bundlesFolderPath))
+            {
+                throw new ApplicationException("Bundles目录不存：" + bundlesFolderPath);
+            }
             string packagesFolderPath = Path.Combine(configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(configs.CurrentConfig.Json.CurrentTags));
             int count = 0;
             int total = 0;
@@ -108,13 +106,20 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 total += package.Bundles.Count;
             }
             int packagesCount = packageMap.Count;
-
+            
             //TODO:构建map改进方法
             //if (Configs.g.bundleTree.BundleBuildMap == null)
             //{
             //    throw new ApplicationException("BuildMap is null");
             //}
             //string mapContent = JsonConvert.SerializeObject(BuildAsset2BundleMap(Configs.g.bundleTree.BundleBuildMap), Formatting.Indented);
+           
+            //开始
+            configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
+            configs.CurrentConfig.Json.Applying = true;
+            configs.CurrentConfig.Save();
+            float lastTime = Time.realtimeSinceStartup;
+
 
             //重建目录
             EditorUtility.DisplayProgressBar("正在重建Package目录", packagesFolderPath, progress); progress += 0.01f;

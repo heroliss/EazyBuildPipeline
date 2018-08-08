@@ -481,6 +481,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
                 {
                     G.configs.AssetPreprocessorConfigs.Runner.ApplyOptions(true);
+                    G.configs.Common_AssetsTagsConfig.Load();
                 }
                 else
                 {

@@ -15,7 +15,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             this.configs = configs;
         }
         public bool Check()
-        {        
+        {
             //验证根目录
             if (!Directory.Exists(configs.LocalConfig.PlayersFolderPath))
             {
@@ -43,6 +43,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         public void Apply(bool isPartOfPipeline)
         {
+            //修改PlayerSettings
+            ApplyPlayerSettings();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             //准备BuildOptions
             BuildOptions buildOptions =
                 (configs.CurrentConfig.Json.DevelopmentBuild ? BuildOptions.Development : BuildOptions.None) |
@@ -50,20 +53,8 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 (configs.CurrentConfig.Json.AllowDebugging ? BuildOptions.AllowDebugging : BuildOptions.None) |
                 (configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod == Configs.PlayerSettingsConfig.BuildSettings.CompressionMethodEnum.LZ4 ? BuildOptions.CompressWithLz4 : BuildOptions.None) |
                 (configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod == Configs.PlayerSettingsConfig.BuildSettings.CompressionMethodEnum.LZ4HC ? BuildOptions.CompressWithLz4HC : BuildOptions.None);
-            //修改PlayerSettings
-            ApplyPlayerSettings();
-            //开始
-            configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
-            configs.CurrentConfig.Json.Applying = true;
-            configs.CurrentConfig.Save();
-            //重建目录
+
             string tagsPath = Path.Combine(configs.LocalConfig.PlayersFolderPath, EBPUtility.GetTagStr(configs.Common_AssetsTagsConfig.Json));
-            if (Directory.Exists(tagsPath))
-            {
-                Directory.Delete(tagsPath, true);
-            }
-            Directory.CreateDirectory(tagsPath);
-            //Build Player
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), configs.Common_AssetsTagsConfig.Json[0], true);
             string[] scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes);
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
@@ -71,9 +62,23 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             buildPlayerOptions.locationPathName = tagsPath;
             buildPlayerOptions.target = target;
             buildPlayerOptions.options = buildOptions;
-            var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            Debug.Log(report);
 
+            //开始
+            configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
+            configs.CurrentConfig.Json.Applying = true;
+            configs.CurrentConfig.Save();
+            //重建目录
+            if (Directory.Exists(tagsPath))
+            {
+                Directory.Delete(tagsPath, true);
+            }
+            Directory.CreateDirectory(tagsPath);
+            //Build Player
+            var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            if (!string.IsNullOrEmpty(report))
+            {
+                throw new ApplicationException("BuildPlayer时发生错误：" + report);
+            }
             //结束
             configs.CurrentConfig.Json.Applying = false;
             configs.CurrentConfig.Save();
