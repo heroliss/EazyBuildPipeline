@@ -11,6 +11,8 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
     [Serializable]
     public class SettingPanel
     {
+        enum Step { None, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer }
+        [SerializeField] Step currentSetp;
         [SerializeField] bool creatingNewConfig;
         [SerializeField] string[] playerSettingNames;
         [SerializeField] int selectedPlayerSettingIndex;
@@ -26,6 +28,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         [SerializeField] GUIStyle labelMidRight;
         [SerializeField] Texture2D settingIcon;
         [SerializeField] Texture2D warnIcon;
+        [SerializeField] Texture2D fingerIcon;
 
         [SerializeField] GUIContent settingGUIContent;
         [SerializeField] GUIContent assetPreprocessorContent;
@@ -114,11 +117,11 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             assetPreprocessorContent = new GUIContent("Preprocess Assets:");
             bundleManagerContent = new GUIContent("Build Bundles:");
             packageManagerContent = new GUIContent("Build Packages:");
-            buildSettingsContent = new GUIContent("Build Scenes:");
-            assetPreprocessorWarnContent = new GUIContent("Preprocess Assets:", warnIcon, "上次应用配置时发生错误或被强制中断，可能导致对Unity内的文件替换不完全或错误、对meta文件的修改不完全或错误，建议还原meta文件、重新应用配置。");
-            bundleManagerWarnContent = new GUIContent("Build Bundles:", warnIcon, "上次创建Bundles时发生错误或被强制中断，可能导致产生的文件不完全或错误，建议重新创建");
-            packageManagerWarnContent = new GUIContent("Build Packages:", warnIcon, "上次创建Packages时发生错误或被强制中断，可能导致产生不完整或错误的压缩包、在StreamingAssets下产生不完整或错误的文件，建议重新创建。");
-            buildSettingsWarnContent = new GUIContent("Build Scenes:", warnIcon, "上次执行打包时发生错误或被强制中断，建议重新打包。");
+            buildSettingsContent = new GUIContent("Build Player:");
+            assetPreprocessorWarnContent = new GUIContent(warnIcon, "上次应用配置时发生错误或被强制中断，可能导致对Unity内的文件替换不完全或错误、对meta文件的修改不完全或错误，建议还原meta文件、重新应用配置。");
+            bundleManagerWarnContent = new GUIContent(warnIcon, "上次创建Bundles时发生错误或被强制中断，可能导致产生的文件不完全或错误，建议重新创建");
+            packageManagerWarnContent = new GUIContent(warnIcon, "上次创建Packages时发生错误或被强制中断，可能导致产生不完整或错误的压缩包、在StreamingAssets下产生不完整或错误的文件，建议重新创建。");
+            buildSettingsWarnContent = new GUIContent(warnIcon, "上次执行打包时发生错误或被强制中断，建议重新打包。");
         }
 
         private void LoadAllConfigs()
@@ -135,6 +138,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             {
                 warnIcon = EditorGUIUtility.FindTexture("console.warnicon.sml");
                 settingIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(G.configs.Common_LocalConfig.SettingIconPath);
+                fingerIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(G.configs.Common_LocalConfig.FingerIconPath);
             }
             catch (Exception e)
             {
@@ -251,6 +255,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             GUILayout.FlexibleSpace();
             //SVN Update     
             EditorGUILayout.BeginHorizontal();
+            FrontIndicator(Step.SVNUpdate, false, assetPreprocessorWarnContent);
             EditorGUILayout.BeginToggleGroup("SVN Update", false);
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.EndHorizontal();
@@ -261,9 +266,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
             //AssetPreprocessor   
             EditorGUILayout.BeginHorizontal();
+            FrontIndicator(Step.PreprocessAssets, G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.Applying, assetPreprocessorWarnContent);
             G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
-                G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.Applying ? assetPreprocessorWarnContent : assetPreprocessorContent, 
-                G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline);
+                assetPreprocessorContent, G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
             int index_new = EditorGUILayout.Popup(assetPreprocessorSavedConfigSelectedIndex, assetPreprocessorSavedConfigNames, dropdownOptions);
             if (assetPreprocessorSavedConfigSelectedIndex != index_new)
@@ -298,9 +303,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
             //BundleManager     
             EditorGUILayout.BeginHorizontal();
+            FrontIndicator(Step.BuildBundles, G.configs.BundleManagerConfigs.CurrentConfig.Json.Applying, bundleManagerWarnContent);
             G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
-                G.configs.BundleManagerConfigs.CurrentConfig.Json.Applying ? bundleManagerWarnContent : bundleManagerContent,
-                G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline);
+                bundleManagerContent, G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
 
             index_new = EditorGUILayout.Popup(bundleManagerSavedConfigSelectedIndex, bundleManagerSavedConfigNames, dropdownOptions);
@@ -355,9 +360,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
             //PackageManager
             EditorGUILayout.BeginHorizontal();
+            FrontIndicator(Step.BuildPackages, G.configs.PackageManagerConfigs.CurrentConfig.Json.Applying, packageManagerWarnContent);
             G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
-                 G.configs.PackageManagerConfigs.CurrentConfig.Json.Applying ? packageManagerWarnContent : packageManagerContent,
-                 G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline);
+                   packageManagerContent, G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
 
             index_new = EditorGUILayout.Popup(packageManagerSavedConfigSelectedIndex, packageManagerSavedConfigNames, dropdownOptions);
@@ -394,11 +399,11 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
             GUILayout.FlexibleSpace();
 
-            //SceneBuilder     
+            //BuildPlayer    
             EditorGUILayout.BeginHorizontal();
+            FrontIndicator(Step.BuildPlayer, G.configs.CurrentConfig.Json.Applying, buildSettingsWarnContent);
             G.configs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
-                G.configs.CurrentConfig.Json.Applying ? buildSettingsWarnContent : buildSettingsContent,
-                G.configs.CurrentConfig.Json.IsPartOfPipeline);
+                  buildSettingsContent, G.configs.CurrentConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
             if (creatingNewConfig)
             {
@@ -428,6 +433,18 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             EditorGUILayout.EndHorizontal();
 
             GUILayout.FlexibleSpace();
+        }
+
+        private void FrontIndicator(Step step, bool applying, GUIContent warnContent)
+        {
+            if (currentSetp == step)
+            {
+                GUILayout.Label(fingerIcon, GUILayout.Width(20), GUILayout.Height(20));
+            }
+            else
+            {
+                GUILayout.Label(applying ? warnContent : GUIContent.none, GUILayout.Width(20), GUILayout.Height(20));
+            }
         }
 
         private void FetchSettings()
@@ -478,6 +495,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             {
                 float startTime = Time.realtimeSinceStartup;
                 //AssetPreprocessor
+                currentSetp = Step.PreprocessAssets;
                 if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
                 {
                     G.configs.AssetPreprocessorConfigs.Runner.ApplyOptions(true);
@@ -490,6 +508,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     G.configs.AssetPreprocessorConfigs.CurrentConfig.Save();
                 }
                 //BundleManager
+                currentSetp = Step.BuildBundles;
                 if (G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
                 {
                     G.configs.BundleManagerConfigs.Runner.Apply(true);
@@ -501,6 +520,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     G.configs.BundleManagerConfigs.CurrentConfig.Save();
                 }
                 //PackageManager
+                currentSetp = Step.BuildPackages;
                 if (G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
                 {
                     G.configs.PackageManagerConfigs.Runner.ApplyAllPackages(
@@ -515,6 +535,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     G.configs.PackageManagerConfigs.CurrentConfig.Save();
                 }
                 //BuildPlayer
+                currentSetp = Step.BuildPlayer;
                 if (G.configs.CurrentConfig.Json.IsPartOfPipeline)
                 {
                     G.configs.Runner.Apply(true);
@@ -525,6 +546,8 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                     G.configs.CurrentConfig.Json.IsPartOfPipeline = false;
                     G.configs.CurrentConfig.Save();
                 }
+                //Finish
+                currentSetp = Step.None;
                 TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
                 G.configs.DisplayDialog("全部完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds));
             }

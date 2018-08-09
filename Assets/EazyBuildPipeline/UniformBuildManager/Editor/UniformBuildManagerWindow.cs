@@ -12,7 +12,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         Configs.Configs configs;
         readonly int settingPanelHeight = 150;
  
-        private PlayerSettingsPanel buildSettingsPanel;
+        private PlayerSettingsPanel playerSettingsPanel;
         private SettingPanel settingPanel;
 
 
@@ -26,15 +26,15 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             G.Init();
 
             settingPanel = new SettingPanel();
-            buildSettingsPanel = new PlayerSettingsPanel();
+            playerSettingsPanel = new PlayerSettingsPanel();
             settingPanel.Awake();
-            buildSettingsPanel.Awake();
+            playerSettingsPanel.Awake();
         }
 
         private void OnEnable()
         {
             settingPanel.OnEnable();
-            buildSettingsPanel.OnEnable();
+            playerSettingsPanel.OnEnable();
         }
 
         private void OnGUI()
@@ -46,7 +46,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             Rect panelRect = new Rect(6, 6 + settingPanelHeight + 3, position.width - 12, position.height - settingPanelHeight - 3 - 12);
             using (new GUILayout.AreaScope(panelRect, GUIContent.none, EditorStyles.helpBox))
             {
-                buildSettingsPanel.OnGUI();
+                playerSettingsPanel.OnGUI();
             }
         }
         private void OnFocus()
@@ -55,7 +55,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         }
         private void OnDestroy()
         {
-            buildSettingsPanel.OnDestory();
+            playerSettingsPanel.OnDestory();
             settingPanel.OnDestory();
             G.Clear();
         }

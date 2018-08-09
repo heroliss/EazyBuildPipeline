@@ -4,5 +4,6 @@
 	"BundleIconRelativePath": "Icons/BundleIcon.png",
 	"BundleIcon_SceneRelativePath": "Icons/BundleIcon_Scene.png",
 	"PackageIconRelativePath": "Icons/PackageIcon.png",
-	"SettingIconRelativePath": "Icons/SettingIcon.png"
+	"SettingIconRelativePath": "Icons/SettingIcon.png",
+	"FingerIconRelativePath": "Icons/FingerIcon.png"
 }

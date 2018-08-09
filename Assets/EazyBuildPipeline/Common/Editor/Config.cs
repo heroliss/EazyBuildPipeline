@@ -96,6 +96,7 @@ namespace EazyBuildPipeline.Common.Editor
             public string BundleIcon_SceneConfigPath { get { return Path.Combine(LocalRootPath, Json.BundleIcon_SceneRelativePath); } }
             public string PackageIconPath { get { return Path.Combine(LocalRootPath, Json.PackageIconRelativePath); } }
             public string SettingIconPath { get { return Path.Combine(LocalRootPath, Json.SettingIconRelativePath); } }
+            public string FingerIconPath { get { return Path.Combine(LocalRootPath, Json.FingerIconRelativePath); } }
             public string LocalRootPath;
             [Serializable]
             public class JsonClass
@@ -106,6 +107,7 @@ namespace EazyBuildPipeline.Common.Editor
                 public string BundleIcon_SceneRelativePath;
                 public string PackageIconRelativePath;
                 public string SettingIconRelativePath;
+                public string FingerIconRelativePath;
             }
         }
 
