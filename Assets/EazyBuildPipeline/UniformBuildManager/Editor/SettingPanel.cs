@@ -11,8 +11,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
     [Serializable]
     public class SettingPanel
     {
-        enum Step { None, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer }
-        [SerializeField] Step currentSetp;
+        enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer, Finish }
+        [SerializeField] Step currentStep = Step.None;
+        [SerializeField] double startTime;
         [SerializeField] bool creatingNewConfig;
         [SerializeField] string[] playerSettingNames;
         [SerializeField] int selectedPlayerSettingIndex;
@@ -230,6 +231,11 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             }
         }
 
+        public void Update()
+        {
+            RunCurrentSetp();
+        }
+
         public void OnGUI()
         {
             if (creatingNewConfig == true && GUI.GetNameOfFocusedControl() != "InputField1")
@@ -437,7 +443,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         private void FrontIndicator(Step step, bool applying, GUIContent warnContent)
         {
-            if (currentSetp == step)
+            if (currentStep == step)
             {
                 GUILayout.Label(fingerIcon, GUILayout.Width(20), GUILayout.Height(20));
             }
@@ -491,87 +497,108 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             if (!ensure) return;
 
             //开始执行
+            currentStep = Step.Start;
+        }
+
+        private void RunCurrentSetp()
+        {
             try
             {
-                float startTime = Time.realtimeSinceStartup;
-                //AssetPreprocessor
-                currentSetp = Step.PreprocessAssets;
-                if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
+                switch (currentStep)
                 {
-                    G.configs.AssetPreprocessorConfigs.Runner.ApplyOptions(true);
-                    G.configs.Common_AssetsTagsConfig.Load();
+                    case Step.None:
+                        break;
+                    case Step.Start:
+                        startTime = EditorApplication.timeSinceStartup;
+                        currentStep = Step.SVNUpdate;
+                        G.g.MainWindow.Repaint();
+                        break;
+                    case Step.SVNUpdate:
+                        currentStep = Step.PreprocessAssets;
+                        G.g.MainWindow.Repaint();
+                        break;
+                    case Step.PreprocessAssets:
+                        if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
+                        {
+                            G.configs.AssetPreprocessorConfigs.Runner.ApplyOptions(true);
+                            G.configs.Common_AssetsTagsConfig.Load();
+                        }
+                        else
+                        {
+                            G.configs.AssetPreprocessorConfigs.CurrentConfig.Load();
+                            G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline = false;
+                            G.configs.AssetPreprocessorConfigs.CurrentConfig.Save();
+                        }
+                        currentStep = Step.BuildBundles;
+                        G.g.MainWindow.Repaint();
+                        break;
+                    case Step.BuildBundles:
+                        if (G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
+                        {
+                            G.configs.BundleManagerConfigs.Runner.Apply(true);
+                        }
+                        else
+                        {
+                            G.configs.BundleManagerConfigs.CurrentConfig.Load();
+                            G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = false;
+                            G.configs.BundleManagerConfigs.CurrentConfig.Save();
+                        }
+                        currentStep = Step.BuildPackages;
+                        G.g.MainWindow.Repaint();
+                        break;
+                    case Step.BuildPackages:
+                        if (G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
+                        {
+                            G.configs.PackageManagerConfigs.Runner.ApplyAllPackages(
+                                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion,
+                                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion,
+                                true);
+                        }
+                        else
+                        {
+                            G.configs.PackageManagerConfigs.CurrentConfig.Load();
+                            G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = false;
+                            G.configs.PackageManagerConfigs.CurrentConfig.Save();
+                        }
+                        currentStep = Step.BuildPlayer;
+                        G.g.MainWindow.Repaint();
+                        break;
+                    case Step.BuildPlayer:
+                        if (G.configs.CurrentConfig.Json.IsPartOfPipeline)
+                        {
+                            G.configs.Runner.Apply(true);
+                        }
+                        else
+                        {
+                            G.configs.CurrentConfig.Load();
+                            G.configs.CurrentConfig.Json.IsPartOfPipeline = false;
+                            G.configs.CurrentConfig.Save();
+                        }
+                        currentStep = Step.Finish;
+                        G.g.MainWindow.Repaint();
+                        break;
+                    case Step.Finish:
+                        TimeSpan endTime = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
+                        G.configs.DisplayDialog(string.Format("全部完成！用时：{0}时 {1}分 {2}秒", endTime.Hours, endTime.Minutes, endTime.Seconds));
+                        currentStep = Step.None;
+                        G.g.MainWindow.Repaint();
+                        break;
+                    default:
+                        break;
                 }
-                else
-                {
-                    G.configs.AssetPreprocessorConfigs.CurrentConfig.Load();
-                    G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline = false;
-                    G.configs.AssetPreprocessorConfigs.CurrentConfig.Save();
-                }
-                //BundleManager
-                currentSetp = Step.BuildBundles;
-                if (G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
-                {
-                    G.configs.BundleManagerConfigs.Runner.Apply(true);
-                }
-                else
-                {
-                    G.configs.BundleManagerConfigs.CurrentConfig.Load();
-                    G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = false;
-                    G.configs.BundleManagerConfigs.CurrentConfig.Save();
-                }
-                //PackageManager
-                currentSetp = Step.BuildPackages;
-                if (G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
-                {
-                    G.configs.PackageManagerConfigs.Runner.ApplyAllPackages(
-                        G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion, 
-                        G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion, 
-                        true);
-                }
-                else
-                {
-                    G.configs.PackageManagerConfigs.CurrentConfig.Load();
-                    G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline = false;
-                    G.configs.PackageManagerConfigs.CurrentConfig.Save();
-                }
-                //BuildPlayer
-                currentSetp = Step.BuildPlayer;
-                if (G.configs.CurrentConfig.Json.IsPartOfPipeline)
-                {
-                    G.configs.Runner.Apply(true);
-                }
-                else
-                {
-                    G.configs.CurrentConfig.Load();
-                    G.configs.CurrentConfig.Json.IsPartOfPipeline = false;
-                    G.configs.CurrentConfig.Save();
-                }
-                //Finish
-                currentSetp = Step.None;
-                TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
-                G.configs.DisplayDialog("全部完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds));
+
             }
             catch (Exception e)
             {
-                G.configs.DisplayDialog("管线运行时发生错误：" + e.Message);
+                TimeSpan endTime = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
+                G.configs.DisplayDialog(string.Format("管线运行时发生错误! 用时：{0}时 {1}分 {2}秒 \n错误信息：{3}", endTime.Hours, endTime.Minutes, endTime.Seconds, e.Message));
+                currentStep = Step.None;
             }
             finally
             {
                 EditorUtility.ClearProgressBar();
-                
             }
         }
-
-        //private static Action OnScriptReloadedAction;
-        //[UnityEditor.Callbacks.DidReloadScripts]
-        //private static void OnScriptReloaded()
-        //{
-        //    Debug.Log("eeeee");
-        //    if (OnScriptReloadedAction != null)
-        //    {
-        //        OnScriptReloadedAction();
-        //    }
-        //}
         
         private void ChangeRootPath(string path)
         {
@@ -689,8 +716,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             SaveCurrentBuildSetting();
             //切换
             ChangePlayerSetting(playerSettingNames.IndexOf(name));
-            //用于总控
-            G.g.OnChangeConfigList();
         }
 
         private void ChangePlayerSetting(int selectedPlayerSettingIndex_new)
@@ -761,8 +786,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             {
                 EditorUtility.DisplayDialog("保存", "保存配置时发生错误：\n" + e.Message, "确定");
             }
-            //总控暂时用不上
-            //G.g.OnChangeCurrentConfig();
         }
     }
 }

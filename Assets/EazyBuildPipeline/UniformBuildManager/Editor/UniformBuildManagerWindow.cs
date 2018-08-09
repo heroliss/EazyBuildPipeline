@@ -33,10 +33,14 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         private void OnEnable()
         {
+            G.g.MainWindow = this;
             settingPanel.OnEnable();
             playerSettingsPanel.OnEnable();
         }
-
+        private void Update()
+        {
+            settingPanel.Update();
+        }
         private void OnGUI()
         {
             using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), GUIContent.none, EditorStyles.helpBox))
@@ -69,6 +73,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         {
             G.configs = configs;
             G.g = new G.GlobalReference();
-        }
+        }        
     }
 }

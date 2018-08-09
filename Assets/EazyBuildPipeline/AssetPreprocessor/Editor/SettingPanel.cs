@@ -316,7 +316,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				HandleApplyingWarning();
 			}
 		}
-		float lastTime;
+		double lastTime;
 		private void ClickedSyncDirectory()
 		{
 			if (!Directory.Exists(Path.GetDirectoryName(G.configs.LocalConfig.PreStoredAssetsFolderPath)))
@@ -343,10 +343,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 					item = allDirectories[i];
 					string path = Path.Combine(G.configs.LocalConfig.PreStoredAssetsFolderPath, item.Remove(0, 7));
 					Directory.CreateDirectory(path);
-					if (Time.realtimeSinceStartup - lastTime > 0.06f)
+                    if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
 					{
 						EditorUtility.DisplayProgressBar("同步目录", path, (float)i / total);
-						lastTime = Time.realtimeSinceStartup;
+                        lastTime = EditorApplication.timeSinceStartup;
 					}
 				}
 				EditorUtility.ClearProgressBar();

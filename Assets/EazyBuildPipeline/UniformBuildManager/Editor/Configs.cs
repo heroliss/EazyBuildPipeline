@@ -14,7 +14,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         public static GlobalReference g;
         public class GlobalReference
         {
-            public Action OnChangeConfigList = ()=> { };
+            public EditorWindow MainWindow;
         }
 
         public static void Init()

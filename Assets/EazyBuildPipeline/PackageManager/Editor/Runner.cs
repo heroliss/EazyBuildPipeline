@@ -118,7 +118,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
             configs.CurrentConfig.Json.Applying = true;
             configs.CurrentConfig.Save();
-            float lastTime = Time.realtimeSinceStartup;
+            double lastTime = EditorApplication.timeSinceStartup;
 
 
             //重建目录
@@ -211,12 +211,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     for (int i = 0; i < bundlesCopyToStreamingCount; i++)
                     {
                         string bundle = bundlesCopyToStreaming[i];
-                        if (Time.realtimeSinceStartup - lastTime > 0.06f)
+                        if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
                         {
                             EditorUtility.DisplayProgressBar(string.Format("正在向StreamingAssets中拷贝Bundles({0}/{1})",
                                 i + 1, bundlesCopyToStreamingCount),
                                 bundle, progress + (float)i / bundlesCopyToStreamingCount * 0.1f);//拷贝Assetbundle过程占整个过程的10%
-                            lastTime = Time.realtimeSinceStartup;
+                            lastTime = EditorApplication.timeSinceStartup;
                         }
                         string targetPath = Path.Combine(bundlesRootPathInStreaming, bundle);
                         Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
@@ -244,12 +244,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         {
                             string bundleRelativePath = package.Bundles[i];
                             string bundlePath = Path.Combine(bundlesFolderPath, bundleRelativePath);
-                            if (Time.realtimeSinceStartup - lastTime > 0.06f)
+                            if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
                             {
                                 EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
                                     package.PackageName, pi + 1, packagesCount, i + 1, bundlesCount, count + 1, total),
                                     bundleRelativePath, progress + (float)count / total * restProgress);
-                                lastTime = Time.realtimeSinceStartup;
+                                lastTime = EditorApplication.timeSinceStartup;
                             }
                             AddFileToZipStream(zipStream, bundlePath, Path.Combine(bundlesRootPathInPackage, bundleRelativePath), buffer);
                             count++;

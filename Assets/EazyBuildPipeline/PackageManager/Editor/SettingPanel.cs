@@ -226,11 +226,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 try
                 {
                     EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
-                    float startTime = Time.realtimeSinceStartup;
+                    double startTime = EditorApplication.timeSinceStartup;
                     
                     G.configs.Runner.ApplyAllPackages(G.g.bundleTree.BundleVersions.BundleVersion, G.g.bundleTree.BundleVersions.ResourceVersion);
 
-                    TimeSpan time = TimeSpan.FromSeconds(Time.realtimeSinceStartup - startTime);
+                    TimeSpan time = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
                     if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                         "显示文件", "关闭"))
                     {

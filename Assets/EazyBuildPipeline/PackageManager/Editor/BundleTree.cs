@@ -309,18 +309,18 @@ namespace EazyBuildPipeline.PackageManager.Editor
 				folderDic.Add(folderItem.relativePath, folderItem);
 			}
 		}
-		float lastTime;
+		double lastTime;
 		void AddFiles(BundleTreeItem folderItem)
 		{
 			string[] files = Directory.GetFiles(folderItem.path);
 			foreach (string filePath in files)
 			{
-				if (Time.realtimeSinceStartup - lastTime > 0.06f)
+                if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
 				{
 					EditorUtility.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
 					    loadFileProgressCount,G.configs.LocalConfig.CheckBundle), filePath,
 					    (float)loadFileProgressCount % 100000 / 100000);
-					lastTime = Time.realtimeSinceStartup;
+                    lastTime = EditorApplication.timeSinceStartup;
 				}
 				loadFileProgressCount++;
 
