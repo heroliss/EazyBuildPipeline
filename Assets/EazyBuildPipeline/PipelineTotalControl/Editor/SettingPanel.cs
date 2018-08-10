@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace EazyBuildPipeline.UniformBuildManager.Editor
+namespace EazyBuildPipeline.PipelineTotalControl.Editor
 {
     [Serializable]
     public class SettingPanel
@@ -14,6 +14,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer, Finish }
         [SerializeField] Step currentStep = Step.None;
         [SerializeField] double startTime;
+        [SerializeField] Vector2 scrollPosition;
         [SerializeField] bool creatingNewConfig;
         [SerializeField] string[] playerSettingNames;
         [SerializeField] int selectedPlayerSettingIndex;
@@ -41,7 +42,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         [SerializeField] GUIContent packageManagerWarnContent;
         [SerializeField] GUIContent buildSettingsWarnContent;
 
-        GUILayoutOption[] dropdownOptions = { GUILayout.MaxWidth(160) };
+        GUILayoutOption[] dropdownOptions = { GUILayout.Width(150) };
         GUILayoutOption[] dropdownOptions2 = { GUILayout.MaxWidth(100) };
         GUILayoutOption[] buttonOptions = { GUILayout.MaxWidth(60) };
         GUILayoutOption[] labelOptions = { GUILayout.MinWidth(20), GUILayout.MaxWidth(110) };
@@ -233,32 +234,37 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
 
         public void Update()
         {
-            RunCurrentSetp();
+            if (currentStep != Step.None)
+            {
+                RunCurrentSetp();
+            }
         }
 
         public void OnGUI()
         {
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
             if (creatingNewConfig == true && GUI.GetNameOfFocusedControl() != "InputField1")
             {
                 creatingNewConfig = false;
             }
             //Root
             GUILayout.FlexibleSpace();
-            using (new EditorGUILayout.HorizontalScope())
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
+            string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
+            if (GUILayout.Button("...", miniButtonOptions))
             {
-                EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-                string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
-                if (GUILayout.Button("...", miniButtonOptions))
-                {
-                    path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
-                }
-                if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
-                {
-                    ChangeRootPath(path);
-                    return;
-                }
+                path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
             }
+            if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
+            {
+                ChangeRootPath(path);
+                return;
+            }
+            EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
+
             //SVN Update     
             EditorGUILayout.BeginHorizontal();
             FrontIndicator(Step.SVNUpdate, false, assetPreprocessorWarnContent);
@@ -275,6 +281,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             FrontIndicator(Step.PreprocessAssets, G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.Applying, assetPreprocessorWarnContent);
             G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                 assetPreprocessorContent, G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline);
+
             EditorGUILayout.BeginHorizontal();
             int index_new = EditorGUILayout.Popup(assetPreprocessorSavedConfigSelectedIndex, assetPreprocessorSavedConfigNames, dropdownOptions);
             if (assetPreprocessorSavedConfigSelectedIndex != index_new)
@@ -282,6 +289,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 assetPreprocessorSavedConfigSelectedIndex = index_new;
                 G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.CurrentSavedConfigName = assetPreprocessorSavedConfigNames[index_new] + ".json";
                 G.configs.AssetPreprocessorConfigs.LoadCurrentSavedConfig();
+                return;
             }
             if (GUILayout.Button(settingGUIContent, miniButtonOptions))
             {
@@ -296,6 +304,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 {
                     EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
                 }
+                return;
             }
             GUILayout.Space(10);
             GUILayout.Label(G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline ?
@@ -319,6 +328,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             {
                 bundleManagerSavedConfigSelectedIndex = index_new;
                 G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleMap = bundleManagerSavedConfigNames[index_new] + ".json";
+                return;
             }
             if (GUILayout.Button(settingGUIContent, miniButtonOptions))
             {
@@ -331,6 +341,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 {
                     EditorWindow.GetWindow<BundleManager.Editor.BundleManagerWindow>();
                 }
+                return;
             }
             GUILayout.Space(10);
 
@@ -376,6 +387,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             {
                 packageManagerSavedConfigSelectedIndex = index_new;
                 G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentPackageMap = packageManagerSavedConfigNames[index_new] + ".json";
+                return;
             }
             if (GUILayout.Button(settingGUIContent, miniButtonOptions))
             {
@@ -389,6 +401,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                 {
                     EditorWindow.GetWindow<PackageManager.Editor.PackageManagerWindow>();
                 }
+                return;
             }
             GUILayout.Space(10);
 
@@ -417,13 +430,13 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             }
             else
             {
-                ShowBuildSettingDropdown();
+                if (ShowBuildSettingDropdown()) return;
             }
             if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), miniButtonOptions))
             { ClickedShowConfigFile(); return; }
             GUILayout.Space(10);
             if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonOptions))
-            { ClickedNew(); }
+            { ClickedNew(); return; }
             if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonOptions))
             { ClickedSave(); return; }
             if (GUILayout.Button(new GUIContent("Revert", "重新载入配置文件"), buttonOptions))
@@ -437,8 +450,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(new GUIContent("Run Pipeline"))) { ClickedRunPipeline(); return; }
             EditorGUILayout.EndHorizontal();
-
             GUILayout.FlexibleSpace();
+
+            EditorGUILayout.EndScrollView();
         }
 
         private void FrontIndicator(Step step, bool applying, GUIContent warnContent)
@@ -506,16 +520,13 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             {
                 switch (currentStep)
                 {
-                    case Step.None:
-                        break;
                     case Step.Start:
+                        scrollPosition.x = 0;
                         startTime = EditorApplication.timeSinceStartup;
                         currentStep = Step.SVNUpdate;
-                        G.g.MainWindow.Repaint();
                         break;
                     case Step.SVNUpdate:
                         currentStep = Step.PreprocessAssets;
-                        G.g.MainWindow.Repaint();
                         break;
                     case Step.PreprocessAssets:
                         if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
@@ -530,7 +541,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                             G.configs.AssetPreprocessorConfigs.CurrentConfig.Save();
                         }
                         currentStep = Step.BuildBundles;
-                        G.g.MainWindow.Repaint();
                         break;
                     case Step.BuildBundles:
                         if (G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
@@ -544,7 +554,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                             G.configs.BundleManagerConfigs.CurrentConfig.Save();
                         }
                         currentStep = Step.BuildPackages;
-                        G.g.MainWindow.Repaint();
                         break;
                     case Step.BuildPackages:
                         if (G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
@@ -561,7 +570,6 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                             G.configs.PackageManagerConfigs.CurrentConfig.Save();
                         }
                         currentStep = Step.BuildPlayer;
-                        G.g.MainWindow.Repaint();
                         break;
                     case Step.BuildPlayer:
                         if (G.configs.CurrentConfig.Json.IsPartOfPipeline)
@@ -575,18 +583,13 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
                             G.configs.CurrentConfig.Save();
                         }
                         currentStep = Step.Finish;
-                        G.g.MainWindow.Repaint();
                         break;
                     case Step.Finish:
                         TimeSpan endTime = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
-                        G.configs.DisplayDialog(string.Format("全部完成！用时：{0}时 {1}分 {2}秒", endTime.Hours, endTime.Minutes, endTime.Seconds));
+                        G.configs.DisplayDialog(string.Format("管线运行成功！用时：{0}时 {1}分 {2}秒", endTime.Hours, endTime.Minutes, endTime.Seconds));
                         currentStep = Step.None;
-                        G.g.MainWindow.Repaint();
-                        break;
-                    default:
                         break;
                 }
-
             }
             catch (Exception e)
             {
@@ -597,6 +600,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             finally
             {
                 EditorUtility.ClearProgressBar();
+                G.g.MainWindow.Repaint();
             }
         }
         
@@ -673,7 +677,7 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             ShowInputField();
         }
 
-        private void ShowBuildSettingDropdown()
+        private bool ShowBuildSettingDropdown()
         {
             if (G.configs.PlayerSettingsConfig.Dirty)
             {
@@ -695,7 +699,9 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             if (selectedBuildSetting_new != selectedPlayerSettingIndex)
             {
                 ChangePlayerSetting(selectedBuildSetting_new);
+                return true;
             }
+            return false;
         }
 
         private void ClickedRevert()

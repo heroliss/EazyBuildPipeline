@@ -47,59 +47,63 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         }
 		public void OnGUI()
-		{            
-			if (creatingNewConfig == true && GUI.GetNameOfFocusedControl() != "InputField1")
-			{
-				creatingNewConfig = false;
-			}
-			GUILayout.FlexibleSpace();
-			using (new EditorGUILayout.HorizontalScope())
-			{
-				EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-				string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
-				if (GUILayout.Button("...", GUILayout.MaxWidth(24)))
-				{
-					path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
-				}
-				if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
-				{
-					ChangeRootPath(path);
-                    return;
-				}
-			}
-			GUILayout.FlexibleSpace();
-			using (new EditorGUILayout.HorizontalScope())
-			{
-				GUILayout.FlexibleSpace();
-				GUILayout.Space(10);
-                if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions))
-                { ClickedNew(); }
-                if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonStyle, buttonOptions))
-                { ClickedSave(); return; }
+		{
+            if (creatingNewConfig == true && GUI.GetNameOfFocusedControl() != "InputField1")
+            {
+                creatingNewConfig = false;
+            }
+            GUILayout.FlexibleSpace();
 
-                if (creatingNewConfig)
-                    ShowInputField();
-                else
-                    ShowDropdown();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
+            string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
+            if (GUILayout.Button("...", GUILayout.MaxWidth(24)))
+            {
+                path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
+            }
+            if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
+            {
+                ChangeRootPath(path);
+                return;
+            }
+            EditorGUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
 
-                if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), GUILayout.Height(25)))
-				{
-					ClickedShowConfigFile();
-                    return;
-				}
-			}
-			GUILayout.FlexibleSpace();
-			using (new EditorGUILayout.HorizontalScope())
-			{
-                if (GUILayout.Button(new GUIContent("Sync Directory", "同步Assets目录结构"), buttonStyle, GUILayout.MaxHeight(25), GUILayout.MaxWidth(120)))
-                { ClickedSyncDirectory(); return; }
-				GUILayout.FlexibleSpace();
-				if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions)) 
-				{ ClickedRevert(); return; }
-				if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions))
-				{ ClickedApply(); return; }
-			}
-			GUILayout.FlexibleSpace();
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Space(10);
+            if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions))
+            { ClickedNew(); return; }
+            if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonStyle, buttonOptions))
+            { ClickedSave(); return; }
+
+            if (creatingNewConfig)
+            {
+                ShowInputField();
+            }
+            else
+            {
+                if (ShowDropdown()) return;
+            }
+
+            if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), GUILayout.Height(25)))
+            {
+                ClickedShowConfigFile();
+                return;
+            }
+            EditorGUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button(new GUIContent("Sync Directory", "同步Assets目录结构"), buttonStyle, GUILayout.MaxHeight(25), GUILayout.MaxWidth(120)))
+            { ClickedSyncDirectory(); return; }
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions))
+            { ClickedRevert(); return; }
+            if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions))
+            { ClickedApply(); return; }
+            EditorGUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
         }
 
         private void ClickedApply()
@@ -170,7 +174,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			EditorUtility.RevealInFinder(path);
 		}
 
-		private void ShowDropdown()
+		private bool ShowDropdown()
 		{
 			if (G.configs.Dirty && selectedSavedConfigIndex != -1)
 				savedConfigNames[selectedSavedConfigIndex] += "*";
@@ -181,7 +185,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			if (selectedIndex_new != selectedSavedConfigIndex)
 			{
 				ChangeSavedConfig(selectedIndex_new);
+                return true;
 			}
+            return false;
 		}
 
 		private void ChangeSavedConfig(int selectedIndex_new)

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 
-namespace EazyBuildPipeline.UniformBuildManager.Editor
+namespace EazyBuildPipeline.PipelineTotalControl.Editor
 {
     public static class G
     {
@@ -30,13 +30,13 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         }
     }
 }
-namespace EazyBuildPipeline.UniformBuildManager.Editor.Configs
+namespace EazyBuildPipeline.PipelineTotalControl.Editor.Configs
 {
     [Serializable]
     public class Configs : EBPConfigs
     {
-        public override string ModuleName { get { return "UniformBuildManager"; } }
-        private readonly string localConfigSearchText = "EazyBuildPipeline UniformBuildManager LocalConfig";
+        public override string ModuleName { get { return "TotalControl"; } }
+        private readonly string localConfigSearchText = "EazyBuildPipeline TotalControl LocalConfig";
         public Runner Runner;
         public LocalConfig LocalConfig = new LocalConfig();
         public CurrentConfig CurrentConfig = new CurrentConfig();

@@ -5,7 +5,7 @@ using UnityEditor;
 using System;
 using System.IO;
 
-namespace EazyBuildPipeline.UniformBuildManager.Editor
+namespace EazyBuildPipeline.PipelineTotalControl.Editor
 {
     public class Runner
     {
@@ -44,9 +44,11 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         public void Apply(bool isPartOfPipeline)
         {
             //修改PlayerSettings
+            EditorUtility.DisplayProgressBar("Applying PlayerSettings", "", 0);
             ApplyPlayerSettings();
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             //准备BuildOptions
+            EditorUtility.DisplayProgressBar("Preparing BuildOptions", "", 0);
             BuildOptions buildOptions =
                 (configs.CurrentConfig.Json.DevelopmentBuild ? BuildOptions.Development : BuildOptions.None) |
                 (configs.CurrentConfig.Json.ConnectWithProfiler ? BuildOptions.ConnectWithProfiler : BuildOptions.None) |
@@ -68,12 +70,14 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
             configs.CurrentConfig.Json.Applying = true;
             configs.CurrentConfig.Save();
             //重建目录
+            EditorUtility.DisplayProgressBar("正在重建目录", tagsPath, 0);
             if (Directory.Exists(tagsPath))
             {
                 Directory.Delete(tagsPath, true);
             }
             Directory.CreateDirectory(tagsPath);
             //Build Player
+            EditorUtility.DisplayProgressBar("开始BuildPlayer", "", 0);
             var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             if (!string.IsNullOrEmpty(report))
             {

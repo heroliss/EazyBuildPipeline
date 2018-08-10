@@ -46,42 +46,41 @@ namespace EazyBuildPipeline.BundleManager.Editor
         public void OnGUI()
         {
             GUILayout.FlexibleSpace();
-            using (new EditorGUILayout.HorizontalScope())
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
+            string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
+            if (GUILayout.Button("...", miniButtonOptions))
             {
-                EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-                string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
-                if (GUILayout.Button("...", miniButtonOptions))
-                {
-                    path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
-                }
-				if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
-				{
-					ChangeRootPath(path);
-                    return;
-				}
+                path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
             }
+            if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
+            {
+                ChangeRootPath(path);
+                return;
+            }
+            EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
-            using (new EditorGUILayout.HorizontalScope())
+
+            EditorGUILayout.BeginHorizontal();
+            if (ShowTagsDropdown()) return;
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.LabelField("Resource Version:", labelOptions);
+            G.configs.CurrentConfig.Json.CurrentResourceVersion = EditorGUILayout.IntField(G.configs.CurrentConfig.Json.CurrentResourceVersion, inputOptions);
+            EditorGUILayout.LabelField("  Bundle Version:", labelOptions);
+            G.configs.CurrentConfig.Json.CurrentBundleVersion = EditorGUILayout.IntField(G.configs.CurrentConfig.Json.CurrentBundleVersion, inputOptions);
+            GUILayout.Space(10);
+            //压缩选项
+            int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.configs.CompressionEnum, dropdownStyle, dropdownOptions2);
+            if (selectedCompressionIndex_new != selectedCompressionIndex)
             {
-                if (ShowTagsDropdown()) return;
-                GUILayout.FlexibleSpace();
-                EditorGUILayout.LabelField("Resource Version:", labelOptions);
-                G.configs.CurrentConfig.Json.CurrentResourceVersion = EditorGUILayout.IntField(G.configs.CurrentConfig.Json.CurrentResourceVersion, inputOptions);
-                EditorGUILayout.LabelField("  Bundle Version:", labelOptions);
-                G.configs.CurrentConfig.Json.CurrentBundleVersion = EditorGUILayout.IntField(G.configs.CurrentConfig.Json.CurrentBundleVersion, inputOptions);
-                GUILayout.Space(10);
-                //压缩选项
-                int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.configs.CompressionEnum, dropdownStyle, dropdownOptions2);
-                if (selectedCompressionIndex_new != selectedCompressionIndex)
-                {
-                    G.configs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue -= (int)G.configs.CompressionEnumMap[G.configs.CompressionEnum[selectedCompressionIndex]];
-                    G.configs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue += (int)G.configs.CompressionEnumMap[G.configs.CompressionEnum[selectedCompressionIndex_new]];
-                    selectedCompressionIndex = selectedCompressionIndex_new;
-                    return;
-                }
-				if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions))
-				{ ClickedApply(); return; }
+                G.configs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue -= (int)G.configs.CompressionEnumMap[G.configs.CompressionEnum[selectedCompressionIndex]];
+                G.configs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue += (int)G.configs.CompressionEnumMap[G.configs.CompressionEnum[selectedCompressionIndex_new]];
+                selectedCompressionIndex = selectedCompressionIndex_new;
+                return;
             }
+            if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions))
+            { ClickedApply(); return; }
+            EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
         }
 

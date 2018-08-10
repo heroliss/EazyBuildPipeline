@@ -5,21 +5,21 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace EazyBuildPipeline.UniformBuildManager.Editor
+namespace EazyBuildPipeline.PipelineTotalControl.Editor
 {
-    public class UniformBuildManagerWindow : EditorWindow, ISerializationCallbackReceiver
+    public class TotalControlWindow : EditorWindow, ISerializationCallbackReceiver
     {
         Configs.Configs configs;
-        readonly int settingPanelHeight = 150;
+        readonly int settingPanelHeight = 160;
  
         private PlayerSettingsPanel playerSettingsPanel;
         private SettingPanel settingPanel;
 
 
-        [MenuItem("Window/EazyBuildPipeline/UniformBuildManager")]
+        [MenuItem("Window/EazyBuildPipeline/TotalControl")]
         static void ShowWindow()
         {
-            GetWindow<UniformBuildManagerWindow>();
+            GetWindow<TotalControlWindow>();
         }
         private void Awake()
         {
@@ -43,15 +43,14 @@ namespace EazyBuildPipeline.UniformBuildManager.Editor
         }
         private void OnGUI()
         {
-            using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), GUIContent.none, EditorStyles.helpBox))
-            {
-                settingPanel.OnGUI();
-            }
+            GUILayout.BeginArea(new Rect(6, 6, position.width - 12, settingPanelHeight), GUIContent.none, EditorStyles.helpBox);
+            settingPanel.OnGUI();
+            GUILayout.EndArea();
+
             Rect panelRect = new Rect(6, 6 + settingPanelHeight + 3, position.width - 12, position.height - settingPanelHeight - 3 - 12);
-            using (new GUILayout.AreaScope(panelRect, GUIContent.none, EditorStyles.helpBox))
-            {
-                playerSettingsPanel.OnGUI();
-            }
+            GUILayout.BeginArea(panelRect, GUIContent.none, EditorStyles.helpBox);
+            playerSettingsPanel.OnGUI();
+            GUILayout.EndArea();
         }
         private void OnFocus()
         {

@@ -1,0 +1,88 @@
+{
+  "PlayerSettings": {
+    "General": {
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "qweqwe"
+            }
+          ]
+        }
+      ],
+      "CompanyName": "DefaultCompany",
+      "ProductName": "EazyBuildPipeline"
+    },
+    "IOS": {
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Current Script Defines",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "aaaaa"
+            }
+          ]
+        }
+      ],
+      "BundleID": "com.Company.ProductName",
+      "ClientVersion": "0.1",
+      "BuildNumber": "0",
+      "AutomaticallySign": true,
+      "TeamID": "",
+      "CameraUsageDesc": "",
+      "LocationUsageDesc": "",
+      "MicrophoneUsageDesc": "",
+      "BlueToothUsageDesc": "",
+      "TargetDevice_str": "iPhoneAndiPad",
+      "TargetSDK_str": "DeviceSDK",
+      "TargetMinimumIOSVersion": "8.0",
+      "StripEngineCode": true,
+      "ScriptCallOptimization_str": "SlowAndSafe",
+      "ProvisioningProfile": "",
+      "Architecture_str": "Universal",
+      "TargetDevice": 2,
+      "TargetSDK": 988,
+      "ScriptCallOptimization": 0,
+      "Architecture": 2
+    },
+    "Android": {
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Current Script Defines",
+          "Defines": []
+        }
+      ],
+      "PreserveFramebufferAlpha": false,
+      "BlitType_str": "Always",
+      "ProtectGraphicsMemory": false,
+      "ClientVersion": "0.1",
+      "BundleVersionCode": 1,
+      "MinimumAPILevel_str": "AndroidApiLevel16",
+      "TargetAPILevel_str": "AndroidApiLevelAuto",
+      "InstallLocation_str": "PreferExternal",
+      "ForceInternetPermission": false,
+      "ForceSDCardPermission": false,
+      "AndroidTVCompatibility": true,
+      "AndroidGame": true,
+      "StripEngineCode": true,
+      "DeviceFilter_str": "FAT",
+      "PackageName": "com.Company.ProductName",
+      "BlitType": 0,
+      "MinimumAPILevel": 16,
+      "TargetAPILevel": 0,
+      "InstallLocation": 1,
+      "InternetAccess": 0,
+      "WritePermission": 0,
+      "DeviceFilter": 0
+    }
+  },
+  "BuildSettings": {
+    "CompressionMethod": 0
+  }
+}

@@ -43,7 +43,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         public void Awake()
         {
-			InitStyles();
+            InitStyles();
             try
             {
                 LoadAllConfigs();
@@ -60,111 +60,112 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 creatingNewConfig = false;
             }
-            using (new GUILayout.AreaScope(rect, GUIContent.none))
+            GUILayout.BeginArea(rect, GUIContent.none);
+
+            //SettingPanel
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
+            string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
+            if (GUILayout.Button("...", miniButtonOptions))
             {
-                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
-                {
-                    GUILayout.FlexibleSpace();
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-                        string path = EditorGUILayout.DelayedTextField(G.configs.LocalConfig.Json.RootPath);
-                        if (GUILayout.Button("...", miniButtonOptions))
-                        {
-                            path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
-                        }
-						if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
-						{
-							ChangeRootPath(path);
-                            return;
-						}
-                    }
-                    GUILayout.FlexibleSpace();
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        if (ShowTagsDropdown()) return;
-                        GUILayout.FlexibleSpace();
-                        GUILayout.Space(10);
-                        if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions))
-                        { ClickedNew(); }
-                        if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonStyle, buttonOptions))
-                        { ClickedSave(); return; }
+                path = EditorUtility.OpenFolderPanel("打开根目录", G.configs.LocalConfig.Json.RootPath, null);
+            }
+            if (!string.IsNullOrEmpty(path) && path != G.configs.LocalConfig.Json.RootPath)
+            {
+                ChangeRootPath(path);
+                return;
+            }
+            EditorGUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
 
-                        if (creatingNewConfig)
-                        {
-                            ShowInputField();
-                        }
-                        else
-                        {
-                            ShowMapDropdown();
-                        }
+            EditorGUILayout.BeginHorizontal();
+            if(ShowTagsDropdown()) return;
+            GUILayout.FlexibleSpace();
+            GUILayout.Space(10);
+            if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions))
+            { ClickedNew(); return; }
+            if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonStyle, buttonOptions))
+            { ClickedSave(); return; }
 
-                        if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), buttonStyle, GUILayout.Height(25)))
-                        { ClickedShowConfigFile(); return; }
-                    }
-                    GUILayout.FlexibleSpace();
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        GUILayout.FlexibleSpace();
-                        EditorGUILayout.LabelField("Mode:", labelStyle, shortLabelOptions2);
-                        int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, G.PackageModeEnum, dropdownStyle, dropdownOptions);
-                        if (selectedPackageModeIndex != currentPackageModeIndex_new)
-                        {
-                            selectedPackageModeIndex = currentPackageModeIndex_new;
-                            G.configs.PackageMapConfig.Json.PackageMode = G.PackageModeEnum[selectedPackageModeIndex];
-                            G.g.packageTree.UpdateAllFileName();
-                            G.configs.Dirty = true;
-                            return;
-                        }
-                        GUILayout.Space(10);
-                        EditorGUILayout.LabelField("Lua:", labelStyle, shortLabelOptions);
-                        int currentLuaSourceIndex_new = EditorGUILayout.Popup(selectedLuaSourceIndex, G.LuaSourceEnum, dropdownStyle, dropdownOptions);
-                        if (selectedLuaSourceIndex != currentLuaSourceIndex_new)
-                        {
-                            selectedLuaSourceIndex = currentLuaSourceIndex_new;
-                            G.configs.PackageMapConfig.Json.LuaSource = G.LuaSourceEnum[selectedLuaSourceIndex];
-                            G.configs.Dirty = true;
-                            return;
-                        }
-                        GUILayout.Space(10);
-                        EditorGUILayout.LabelField("CompressLevel:", labelStyle, labelOptions);
-                        int compressionLevel_new = EditorGUILayout.IntPopup(G.configs.PackageMapConfig.Json.CompressionLevel, compressionLevelsEnumStr,
-                            compressionLevelEnum, dropdownStyle, miniDropdownOptions);
-                        if (compressionLevel_new != G.configs.PackageMapConfig.Json.CompressionLevel)
-                        {
-                            G.configs.PackageMapConfig.Json.CompressionLevel = compressionLevel_new;
-                            G.configs.Dirty = true;
-                            return;
-                        }
-                        GUILayout.Space(20);
-                        if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions))
-                        { ClickedRevert(); return; }
-                        if (GUILayout.Button(new GUIContent("Build"), buttonStyle, buttonOptions))
-                        { ClickedApply(); return; }
-                    }
-                    GUILayout.FlexibleSpace();
-                }
-                using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+            if (creatingNewConfig)
+            {
+                ShowInputField();
+            }
+            else
+            {
+                if (ShowMapDropdown()) return;
+            }
+
+            if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), buttonStyle, GUILayout.Height(25)))
+            { ClickedShowConfigFile(); return; }
+            EditorGUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.LabelField("Mode:", labelStyle, shortLabelOptions2);
+            int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, G.PackageModeEnum, dropdownStyle, dropdownOptions);
+            if (selectedPackageModeIndex != currentPackageModeIndex_new)
+            {
+                selectedPackageModeIndex = currentPackageModeIndex_new;
+                G.configs.PackageMapConfig.Json.PackageMode = G.PackageModeEnum[selectedPackageModeIndex];
+                G.g.packageTree.UpdateAllFileName();
+                G.configs.Dirty = true;
+                return;
+            }
+            GUILayout.Space(10);
+            EditorGUILayout.LabelField("Lua:", labelStyle, shortLabelOptions);
+            int currentLuaSourceIndex_new = EditorGUILayout.Popup(selectedLuaSourceIndex, G.LuaSourceEnum, dropdownStyle, dropdownOptions);
+            if (selectedLuaSourceIndex != currentLuaSourceIndex_new)
+            {
+                selectedLuaSourceIndex = currentLuaSourceIndex_new;
+                G.configs.PackageMapConfig.Json.LuaSource = G.LuaSourceEnum[selectedLuaSourceIndex];
+                G.configs.Dirty = true;
+                return;
+            }
+            GUILayout.Space(10);
+            EditorGUILayout.LabelField("CompressLevel:", labelStyle, labelOptions);
+            int compressionLevel_new = EditorGUILayout.IntPopup(G.configs.PackageMapConfig.Json.CompressionLevel, compressionLevelsEnumStr,
+                compressionLevelEnum, dropdownStyle, miniDropdownOptions);
+            if (compressionLevel_new != G.configs.PackageMapConfig.Json.CompressionLevel)
+            {
+                G.configs.PackageMapConfig.Json.CompressionLevel = compressionLevel_new;
+                G.configs.Dirty = true;
+                return;
+            }
+            GUILayout.Space(20);
+            if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions))
+            { ClickedRevert(); return; }
+            if (GUILayout.Button(new GUIContent("Build"), buttonStyle, buttonOptions))
+            { ClickedApply(); return; }
+            EditorGUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndVertical();
+
+            //VersionPanel
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+            EditorGUILayout.LabelField("Resource Version: " + G.g.bundleTree.BundleVersions.ResourceVersion, labelStyle, GUILayout.MaxWidth(150));
+            EditorGUILayout.LabelField("  Bundle Version: " + G.g.bundleTree.BundleVersions.BundleVersion, labelStyle, GUILayout.MaxWidth(150));
+            GUILayout.FlexibleSpace();
+            if (G.configs.PackageMapConfig.Json.PackageMode == "Addon")
+            {
+                EditorGUILayout.LabelField("Addon Version:", labelStyle, GUILayout.MaxWidth(110));
+                string addonVersion_new = EditorGUILayout.TextField(G.configs.CurrentConfig.Json.CurrentAddonVersion);
                 {
-                    EditorGUILayout.LabelField("Resource Version: " + G.g.bundleTree.BundleVersions.ResourceVersion, labelStyle, GUILayout.MaxWidth(150));
-                    EditorGUILayout.LabelField("  Bundle Version: " + G.g.bundleTree.BundleVersions.BundleVersion, labelStyle, GUILayout.MaxWidth(150));
-                    GUILayout.FlexibleSpace();
-                    if (G.configs.PackageMapConfig.Json.PackageMode == "Addon")
+                    if (!string.IsNullOrEmpty(addonVersion_new)) addonVersion_new = addonVersion_new.Trim();
+                    if (addonVersion_new != G.configs.CurrentConfig.Json.CurrentAddonVersion)
                     {
-                        EditorGUILayout.LabelField("Addon Version:", labelStyle, GUILayout.MaxWidth(110));
-                        string addonVersion_new = EditorGUILayout.TextField(G.configs.CurrentConfig.Json.CurrentAddonVersion);
-                        {
-                            if (!string.IsNullOrEmpty(addonVersion_new)) addonVersion_new = addonVersion_new.Trim();
-                            if (addonVersion_new != G.configs.CurrentConfig.Json.CurrentAddonVersion)
-                            {
-                                G.configs.CurrentConfig.Json.CurrentAddonVersion = addonVersion_new;
-                                G.g.packageTree.UpdateAllFileName();
-                                return;
-                            }
-                        }
+                        G.configs.CurrentConfig.Json.CurrentAddonVersion = addonVersion_new;
+                        G.g.packageTree.UpdateAllFileName();
+                        return;
                     }
                 }
             }
+            EditorGUILayout.EndHorizontal();
+
+            GUILayout.EndArea();
         }
 
         private bool ShowTagsDropdown()
@@ -227,7 +228,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
                     double startTime = EditorApplication.timeSinceStartup;
-                    
+
                     G.configs.Runner.ApplyAllPackages(G.g.bundleTree.BundleVersions.BundleVersion, G.g.bundleTree.BundleVersions.ResourceVersion);
 
                     TimeSpan time = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
@@ -296,7 +297,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 if (!EditorUtility.DisplayDialog("提示", "发现" + repeatedBundleList.Count + "个重复打包的Bundle，是否继续？", "继续", "返回"))
                 { G.g.bundleTree.FrameAndSelectItems(repeatedBundleList); return false; }
             }
-            
+
             //空项提示
             if (emptyItems.Count != 0)
             {
@@ -340,25 +341,25 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
         }
 
-		private void ChangeRootPath(string path)
-		{
-			bool ensure = true;
-			if (G.configs.Dirty)
-			{
+        private void ChangeRootPath(string path)
+        {
+            bool ensure = true;
+            if (G.configs.Dirty)
+            {
                 ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
-			}
-			if (ensure)
-			{
-				try
-				{
-					ChangeAllConfigsExceptRef(path);
-				}
-				catch (Exception e)
-				{
-					EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
-				}
-			}
-		}
+            }
+            if (ensure)
+            {
+                try
+                {
+                    ChangeAllConfigsExceptRef(path);
+                }
+                catch (Exception e)
+                {
+                    EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
+                }
+            }
+        }
 
         private void ChangeAllConfigsExceptRef(string rootPath)
         {
@@ -426,7 +427,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
             }
-            else if(length < G.configs.Common_TagEnumConfig.Tags.Count)
+            else if (length < G.configs.Common_TagEnumConfig.Tags.Count)
             {
                 string[] originCurrentTags = G.configs.CurrentConfig.Json.CurrentTags;
                 G.configs.CurrentConfig.Json.CurrentTags = new string[G.configs.Common_TagEnumConfig.Tags.Count];
@@ -598,7 +599,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             creatingNewConfig = true;
         }
 
-        private void ShowMapDropdown()
+        private bool ShowMapDropdown()
         {
             if (G.configs.Dirty)
             {
@@ -620,7 +621,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
             if (selectedMapIndex_new != selectedMapIndex)
             {
                 ChangeMap(selectedMapIndex_new);
+                return true;
             }
+            return false;
         }
 
         public void OnDestory()

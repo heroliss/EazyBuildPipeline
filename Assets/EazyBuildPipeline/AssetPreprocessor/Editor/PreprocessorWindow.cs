@@ -110,38 +110,32 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void OnGUI()
         {
-            using (new GUILayout.AreaScope(new Rect(6, 6, position.width - 12, settingPanelHeight), GUIContent.none, EditorStyles.helpBox))
+            GUILayout.BeginArea(new Rect(6, 6, position.width - 12, settingPanelHeight), GUIContent.none, EditorStyles.helpBox);
+			settingPanel.OnGUI();
+            GUILayout.EndArea();
+
+            GUILayout.BeginArea(new Rect(6, settingPanelHeight + 6 + 3, position.width - 12, position.height - settingPanelHeight - 12 - 3),
+                                GUIContent.none, EditorStyles.helpBox);
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            ShowTitle("", "Tags", new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold });
+            GUILayout.Space(10);
+            tagsPanel.OnGUI(position.width - 12);
+            foreach (var title1 in groupPanels.Keys)
             {
-				settingPanel.OnGUI();
-			}
-            using (new GUILayout.AreaScope(new Rect(6, settingPanelHeight + 6 + 3,
-                position.width - 12, position.height - settingPanelHeight - 12 - 3),
-                GUIContent.none, EditorStyles.helpBox))
-            {
-                using (var scrollScope = new GUILayout.ScrollViewScope(scrollPosition))
+                ShowTitle("", title1, new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold });
+                foreach (var title2 in groupPanels[title1].Keys)
                 {
-                    scrollPosition = scrollScope.scrollPosition;
-
-                    ShowTitle("", "Tags", new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold });
-                    GUILayout.Space(10);
-                    tagsPanel.OnGUI(position.width - 12);
-
-                    foreach (var title1 in groupPanels.Keys)
+                    ShowTitle(" ", title2, new GUIStyle(EditorStyles.label) { });
+                    foreach (var title3 in groupPanels[title1][title2].Keys)
                     {
-                        ShowTitle("", title1, new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold });
-                        foreach (var title2 in groupPanels[title1].Keys)
-                        {
-                            ShowTitle(" ", title2, new GUIStyle(EditorStyles.label) { });
-                            foreach (var title3 in groupPanels[title1][title2].Keys)
-                            {
-                                ShowTitle("   ", title3, new GUIStyle(EditorStyles.label) { });
-                                GUILayout.Space(10);
-                                groupPanels[title1][title2][title3].OnGUI(position.width - 12);
-                            }
-                        }
+                        ShowTitle("   ", title3, new GUIStyle(EditorStyles.label) { });
+                        GUILayout.Space(10);
+                        groupPanels[title1][title2][title3].OnGUI(position.width - 12);
                     }
                 }
             }
+            EditorGUILayout.EndScrollView();
+            GUILayout.EndArea();
         }
 
         private void ShowTitle(string prefix, string title, GUIStyle style)
