@@ -75,7 +75,13 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         public void OnGUI()
         {
-            selectedToggle = GUILayout.Toolbar(selectedToggle, toggles, toggleStyle, GUILayout.Height(30));
+            GUI.SetNextControlName("Toggle1");
+            int selectedToggle_new = GUILayout.Toolbar(selectedToggle, toggles, toggleStyle, GUILayout.Height(30));
+            if (selectedToggle_new != selectedToggle)
+            {
+                selectedToggle = selectedToggle_new;
+                GUI.FocusControl("Toggle1");
+            }
             switch (toggles[selectedToggle])
             {
                 case "General":
