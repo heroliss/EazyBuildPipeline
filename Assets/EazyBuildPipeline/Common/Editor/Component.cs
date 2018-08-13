@@ -33,7 +33,7 @@ public class EBPEditorGUILayout
     public static void EnumPopup(string label, Enum selected, Action action = null)
     {
         Enum selected_new = EditorGUILayout.EnumPopup(label, selected);
-        if (selected_new != selected)
+        if (!selected_new.Equals(selected))
         {
             selected = selected_new;
             if (action != null)
