@@ -75,6 +75,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         public void OnGUI()
         {
+            //这里当切换Panel时改变焦点，是用来解决当焦点在某个TextField上时输入框遗留显示的问题
             GUI.SetNextControlName("Toggle1");
             int selectedToggle_new = GUILayout.Toolbar(selectedToggle, toggles, toggleStyle, GUILayout.Height(30));
             if (selectedToggle_new != selectedToggle)
