@@ -95,109 +95,45 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
+        private void OnChangeValue()
+        {
+            G.configs.PlayerSettingsConfig.Dirty = true;
+        }
+
         private void AndroidPanel()
         {
             scrollPosition_Android = EditorGUILayout.BeginScrollView(scrollPosition_Android);
 
             EditorGUILayout.LabelField("Identification", EditorStyles.boldLabel);
-            string s = EditorGUILayout.TextField("Package Name", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PackageName);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PackageName != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PackageName = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Client Version", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ClientVersion);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ClientVersion != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ClientVersion = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            int n = EditorGUILayout.IntField("Bundle Version Code", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BundleVersionCode);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BundleVersionCode != n)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BundleVersionCode = n;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            var e = (AndroidSdkVersions)EditorGUILayout.EnumPopup("Minimum API Level", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.MinimumAPILevel);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.MinimumAPILevel != e)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.MinimumAPILevel = e;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            e = (AndroidSdkVersions)EditorGUILayout.EnumPopup("Target API Level", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.TargetAPILevel);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.TargetAPILevel != e)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.TargetAPILevel = e;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            EditorGUILayout.Separator();
+            EBPEditorGUILayout.TextField("Package Name", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PackageName, OnChangeValue);
+            EBPEditorGUILayout.TextField("Client Version", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ClientVersion, OnChangeValue);
+            EBPEditorGUILayout.IntField("Bundle Version Code", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BundleVersionCode, OnChangeValue);
+            EBPEditorGUILayout.EnumPopup("Minimum API Level", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.MinimumAPILevel, OnChangeValue);
+            EBPEditorGUILayout.EnumPopup("Target API Level", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.TargetAPILevel, OnChangeValue);
 
+            EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Configuration", EditorStyles.boldLabel);
-            var e2 = (AndroidTargetDevice)EditorGUILayout.EnumPopup("Device Filter", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.DeviceFilter);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.DeviceFilter != e2)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.DeviceFilter = e2;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            var e3 = (AndroidPreferredInstallLocation)EditorGUILayout.EnumPopup("Install Location", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InstallLocation);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InstallLocation != e3)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InstallLocation = e3;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            var e4 = (Configs.PlayerSettingsConfig.PlayerSettings.AndroidSettings.InternetAccessEnum)EditorGUILayout.EnumPopup("Internet Access", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InternetAccess);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InternetAccess != e4)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InternetAccess = e4;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            var e5 = (Configs.PlayerSettingsConfig.PlayerSettings.AndroidSettings.WritePermissionEnum)EditorGUILayout.EnumPopup("Write Permission", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.WritePermission);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.WritePermission != e5)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.WritePermission = e5;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.EnumPopup("Device Filter", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.DeviceFilter, OnChangeValue);
+            EBPEditorGUILayout.EnumPopup("Install Location", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InstallLocation, OnChangeValue);
+            EBPEditorGUILayout.EnumPopup("Internet Access", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.InternetAccess, OnChangeValue);
+            EBPEditorGUILayout.EnumPopup("Write Permission", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.WritePermission, OnChangeValue);
+            
             EditorGUILayout.Separator();
-            bool b = EditorGUILayout.Toggle("Android TV Compatibility", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidTVCompatibility);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidTVCompatibility != b)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidTVCompatibility = b;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            b = EditorGUILayout.Toggle("Android Game", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidGame);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidGame != b)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidGame = b;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.Toggle("Android TV Compatibility", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidTVCompatibility, OnChangeValue);
+            EBPEditorGUILayout.Toggle("Android Game", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidGame, OnChangeValue);
             //G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.AndroidGameSupprot
-            b = EditorGUILayout.Toggle("Strip Engine Code", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.StripEngineCode);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.StripEngineCode != b)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.StripEngineCode = b;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.Toggle("Strip Engine Code", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.StripEngineCode, OnChangeValue);
+            
             EditorGUILayout.Separator();
-
             EditorGUILayout.LabelField("Resolution", EditorStyles.boldLabel);
-            b = EditorGUILayout.Toggle("Preserve Framebuffer Alpha", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PreserveFramebufferAlpha);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PreserveFramebufferAlpha != b)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PreserveFramebufferAlpha = b;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            var e6 = (AndroidBlitType)EditorGUILayout.EnumPopup("Blit Type", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BlitType);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BlitType != e6)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BlitType = e6;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.Toggle("Preserve Framebuffer Alpha", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.PreserveFramebufferAlpha, OnChangeValue);
+            EBPEditorGUILayout.EnumPopup("Blit Type", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.BlitType, OnChangeValue);
+            
             EditorGUILayout.Separator();
-
             EditorGUILayout.LabelField("Rendering", EditorStyles.boldLabel);
-            G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ProtectGraphicsMemory = EditorGUILayout.Toggle("Protect Graphics Memory", G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ProtectGraphicsMemory);
-            EditorGUILayout.Separator();
+            EBPEditorGUILayout.Toggle("Protect Graphics Memory", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.Android.ProtectGraphicsMemory, OnChangeValue);
 
+            EditorGUILayout.Separator();
             EditorGUILayout.EndScrollView();
         }
 
@@ -205,105 +141,54 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         {
             scrollPosition_IOS = EditorGUILayout.BeginScrollView(scrollPosition_IOS);
 
-            string s = "";
             EditorGUILayout.LabelField("Identification", EditorStyles.boldLabel);
-            s = EditorGUILayout.TextField("Bundle ID", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BundleID);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BundleID != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BundleID = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Client Version", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ClientVersion);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ClientVersion != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ClientVersion = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Build Number", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BuildNumber);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BuildNumber != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BuildNumber = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            bool b = EditorGUILayout.Toggle("Automatically Sign", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.AutomaticallySign);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.AutomaticallySign != b)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.AutomaticallySign = b;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.TextField("Bundle ID", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BundleID, OnChangeValue);
+            EBPEditorGUILayout.TextField("Client Version", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ClientVersion, OnChangeValue);
+            EBPEditorGUILayout.TextField("Build Number", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BuildNumber, OnChangeValue);
+            EBPEditorGUILayout.Toggle("Automatically Sign", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.AutomaticallySign, OnChangeValue);
+
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("PostProcessing", EditorStyles.boldLabel);
-            s = EditorGUILayout.TextField("iOS Provisioning Profile", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ProvisioningProfile);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ProvisioningProfile != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ProvisioningProfile = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Team ID", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Blue Tooth Usage Desc", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BlueToothUsageDesc);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BlueToothUsageDesc != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BlueToothUsageDesc = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.TextField("iOS Provisioning Profile", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ProvisioningProfile, OnChangeValue);
+            EBPEditorGUILayout.TextField("Team ID", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TeamID, OnChangeValue);
+            EBPEditorGUILayout.TextField("Blue Tooth Usage Desc", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.BlueToothUsageDesc, OnChangeValue);
+
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Configuration", EditorStyles.boldLabel);
-            s = EditorGUILayout.TextField("Camera Usage Desc", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.CameraUsageDesc);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.CameraUsageDesc != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.CameraUsageDesc = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Location Usage Desc", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.LocationUsageDesc);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.LocationUsageDesc != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.LocationUsageDesc = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Microphone Usage Desc", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.MicrophoneUsageDesc);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.MicrophoneUsageDesc != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.MicrophoneUsageDesc = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.TextField("Camera Usage Desc", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.CameraUsageDesc, OnChangeValue);
+            EBPEditorGUILayout.TextField("Location Usage Desc", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.LocationUsageDesc, OnChangeValue);
+            EBPEditorGUILayout.TextField("Microphone Usage Desc", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.MicrophoneUsageDesc, OnChangeValue);
+
             EditorGUILayout.Separator();
-            var e = (iOSTargetDevice)EditorGUILayout.EnumPopup("Target Device", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetDevice);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetDevice != e)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetDevice = e;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Target minimum Version", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetMinimumIOSVersion);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetMinimumIOSVersion != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetMinimumIOSVersion = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            var e2 = (Configs.PlayerSettingsConfig.PlayerSettings.IOSSettings.ArchitectureEnum)EditorGUILayout.EnumPopup("Architecture", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.Architecture);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.Architecture != e2)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.Architecture = e2;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.EnumPopup("Target Device", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetDevice, OnChangeValue);
+            EBPEditorGUILayout.TextField("Target minimum Version", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.TargetMinimumIOSVersion, OnChangeValue);
+            EBPEditorGUILayout.EnumPopup("Architecture", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.Architecture, OnChangeValue);
+
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Optimization", EditorStyles.boldLabel);
-            b = EditorGUILayout.Toggle("Strip Engine Code", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.StripEngineCode);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.StripEngineCode != b)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.StripEngineCode = b;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            var e3 = (ScriptCallOptimizationLevel)EditorGUILayout.EnumPopup("Script Call Optimization", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptCallOptimization);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptCallOptimization != e3)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptCallOptimization = e3;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
+            EBPEditorGUILayout.Toggle("Strip Engine Code", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.StripEngineCode, OnChangeValue);
+            EBPEditorGUILayout.EnumPopup("Script Call Optimization", G.configs.PlayerSettingsConfig.Json.PlayerSettings.IOS.ScriptCallOptimization, OnChangeValue);
+            
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void GeneralPanel()
+        {
+            scrollPosition_General = EditorGUILayout.BeginScrollView(scrollPosition_General);
+
+            EditorGUILayout.LabelField("General Player Settings", EditorStyles.boldLabel);
+            EBPEditorGUILayout.TextField("Company Name", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.CompanyName, OnChangeValue);
+            EBPEditorGUILayout.TextField("Product Name", ref G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.ProductName, OnChangeValue);
+
+            EditorGUILayout.Separator();
+            EditorGUILayout.LabelField("Build Settings", EditorStyles.boldLabel);
+            EBPEditorGUILayout.EnumPopup("Compression Method", G.configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod, OnChangeValue);
+            
+            //以下为当前配置，不保存在配置文件中
+            EditorGUILayout.Separator();
+            EBPEditorGUILayout.Toggle("Development Build", ref G.configs.CurrentConfig.Json.DevelopmentBuild);
+            EBPEditorGUILayout.Toggle("Script Debugging", ref G.configs.CurrentConfig.Json.AllowDebugging);
+            EBPEditorGUILayout.Toggle("AutoConnect Profiler", ref G.configs.CurrentConfig.Json.ConnectWithProfiler);
 
             EditorGUILayout.EndScrollView();
         }
@@ -357,41 +242,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 default:
                     break;
             }
-        }
-
-        private void GeneralPanel()
-        {
-            scrollPosition_General = EditorGUILayout.BeginScrollView(scrollPosition_General);
-
-            EditorGUILayout.LabelField("General Player Settings", EditorStyles.boldLabel);
-            string s = EditorGUILayout.TextField("Company Name", G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.CompanyName);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.CompanyName != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.CompanyName = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            s = EditorGUILayout.TextField("Product Name", G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.ProductName);
-            if (G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.ProductName != s)
-            {
-                G.configs.PlayerSettingsConfig.Json.PlayerSettings.General.ProductName = s;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            EditorGUILayout.Separator();
-            EditorGUILayout.LabelField("Build Settings", EditorStyles.boldLabel);
-            var e = (Configs.PlayerSettingsConfig.BuildSettings.CompressionMethodEnum)EditorGUILayout.EnumPopup(
-                "Compression Method", G.configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod);
-            if (G.configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod != e)
-            {
-                G.configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod = e;
-                G.configs.PlayerSettingsConfig.Dirty = true;
-            }
-            //以下为当前配置，不保存在配置文件中
-            EditorGUILayout.Separator();
-            G.configs.CurrentConfig.Json.DevelopmentBuild = EditorGUILayout.Toggle("Development Build", G.configs.CurrentConfig.Json.DevelopmentBuild);
-            G.configs.CurrentConfig.Json.AllowDebugging = EditorGUILayout.Toggle("Script Debugging", G.configs.CurrentConfig.Json.AllowDebugging);
-            G.configs.CurrentConfig.Json.ConnectWithProfiler = EditorGUILayout.Toggle("AutoConnect Profiler", G.configs.CurrentConfig.Json.ConnectWithProfiler);
-
-            EditorGUILayout.EndScrollView();
         }
 
         private void ScriptDefineGroupPanel(List<Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup> scriptDefinesGroupList)
