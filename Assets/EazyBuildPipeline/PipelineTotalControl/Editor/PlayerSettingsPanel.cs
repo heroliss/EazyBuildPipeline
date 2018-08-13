@@ -16,9 +16,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         [SerializeField] GUIStyle scriptDefineTextStyle;
         [SerializeField] GUIStyle scriptDefineTextStyle_red;
         [SerializeField] GUIStyle toggleStyle;
-        [SerializeField] GUIStyle dropdownStyle;
-        [SerializeField] GUIStyle buttonStyle;
-        [SerializeField] GUIStyle labelStyle;
         [SerializeField] Vector2 scrollPosition_General,
             scrollPosition1_ScriptDefines_General,
             scrollPosition1_ScriptDefines_IOS,
@@ -27,8 +24,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             scrollPosition_Android;
 
         const int defaultHeight = 22;
-        GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(defaultHeight), GUILayout.MaxWidth(70) };
-        GUILayoutOption[] dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(defaultHeight), GUILayout.MaxWidth(80) };
 
         private void InitStyles()
         {
@@ -36,9 +31,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             scriptDefineTextStyle_red = new GUIStyle("RectangleToolVBar");
             scriptDefineTextStyle_red.normal.textColor = Color.red;
             toggleStyle = new GUIStyle(EditorStyles.toolbarButton) { fixedHeight = 0, wordWrap = true };
-            dropdownStyle = new GUIStyle("dropdown") { fixedHeight = 0, fixedWidth = 0 };
-            buttonStyle = new GUIStyle("Button") { fixedHeight = 0, fixedWidth = 0 };
-            labelStyle = new GUIStyle(EditorStyles.label) { fixedWidth = 0, fixedHeight = 0, alignment = TextAnchor.MiddleLeft, wordWrap = true };
         }
 
         public void Awake()
