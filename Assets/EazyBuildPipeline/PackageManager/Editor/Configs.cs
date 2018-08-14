@@ -161,7 +161,7 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
             {
                 DisplayDialog("加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.JsonPath
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + new LocalConfig().ToString());
                 return false;
             }
         }

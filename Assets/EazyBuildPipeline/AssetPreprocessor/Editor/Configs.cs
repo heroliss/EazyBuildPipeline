@@ -124,7 +124,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
             {
                 DisplayDialog("加载选项配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + OptionsEnumConfig.JsonPath
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + OptionsEnumConfig.ToString());
+                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + new OptionsEnumConfig().ToString());
                 return false;
             }
         }
@@ -178,7 +178,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
             {
                 DisplayDialog("加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.JsonPath
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + new LocalConfig().ToString());
                 return false;
             }
         }

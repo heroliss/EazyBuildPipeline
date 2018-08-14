@@ -84,7 +84,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor.Configs
         public bool LoadPlayerBuilderConfig()
         {
             PlayerBuilderConfigs = new PlayerBuilder.Editor.Configs.Configs();
-            PlayerBuilder.Editor.G.configs = PlayerBuilderConfigs;
+            PlayerBuilder.Editor.G.configs = PlayerBuilderConfigs; //这里需要将静态的configs与TotalControl中的configs同步
             return PlayerBuilderConfigs.LoadAllConfigs(LocalConfig.Json.RootPath);
         }
 
@@ -109,7 +109,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor.Configs
             {
                 DisplayDialog("加载本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + LocalConfig.JsonPath
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + LocalConfig.ToString());
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + new LocalConfig().ToString());
                 return false;
             }
             return true;

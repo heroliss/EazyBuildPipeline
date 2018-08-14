@@ -38,7 +38,7 @@ namespace EazyBuildPipeline.Common.Editor
             {
                 DisplayDialog("加载公共AssetsTags文件时发生错误：" + e.Message
                     + "\n加载路径：" + Common_AssetsTagsConfig.JsonPath
-                    + "\n请正确设置形如以下所示的配置文件：\n" + Common_AssetsTagsConfig.ToString());
+                    + "\n请正确设置形如以下所示的配置文件：\n" + new CommonAssetsTagsConfig().ToString());
                 return false;
             }
         }
@@ -55,7 +55,7 @@ namespace EazyBuildPipeline.Common.Editor
             {
                 DisplayDialog("加载公共枚举配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + Common_TagEnumConfig.JsonPath
-                    + "\n请正确设置形如以下所示的配置文件：\n" + Common_TagEnumConfig.ToString());
+                    + "\n请正确设置形如以下所示的配置文件：\n" + new CommonTagEnumConfig().ToString());
                 return false;
             }
         }
@@ -78,7 +78,7 @@ namespace EazyBuildPipeline.Common.Editor
             {
                 DisplayDialog("加载公共本地配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + Common_LocalConfig.JsonPath
-                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + Common_LocalConfig.ToString());
+                    + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + new CommonLocalConfig().ToString());
                 return false;
             }
         }
@@ -178,6 +178,9 @@ namespace EazyBuildPipeline.Common.Editor
         {
             File.WriteAllText(path ?? JsonPath, JsonConvert.SerializeObject(Json, Formatting.Indented));
         }
+        /// <summary>
+        /// 只返回完整的保存到文件的Json内容
+        /// </summary>
         public override string ToString()
         {
             return JsonConvert.SerializeObject(Json, Formatting.Indented);
