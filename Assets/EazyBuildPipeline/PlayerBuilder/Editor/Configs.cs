@@ -48,13 +48,12 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
 
         public bool LoadAllConfigs(string rootPath = null)
         {
+            bool success = true;
             if (!LoadCommonLocalConfig()) return false;
-            if (!LoadCommonTagEnumConfig()) return false;
-            if (!LoadCommonAssetsTagsConfig()) return false;
+            success &= LoadCommonTagEnumConfig();
+            success &= LoadCommonAssetsTagsConfig();
 
             if (!LoadLocalConfig(rootPath)) return false;
- 
-            bool success = true;
             success &= LoadCurrentConfig();
             success &= LoadCurrentPlayerSetting();
             return success;

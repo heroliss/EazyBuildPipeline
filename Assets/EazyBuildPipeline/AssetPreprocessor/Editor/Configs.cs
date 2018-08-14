@@ -56,16 +56,16 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor.Configs
 
         public bool LoadAllConfigs(string rootPath = null)
         {
+            bool success = true;
             if (!LoadCommonLocalConfig()) return false;
-            if (!LoadCommonTagEnumConfig()) return false;
-            if (!LoadCommonAssetsTagsConfig()) return false;
+            success &= LoadCommonTagEnumConfig();
+            success &= LoadCommonAssetsTagsConfig();
 
             if (!LoadLocalConfig(rootPath)) return false;
-            if (!LoadOptionsEnumConfig()) return false;
-
-            if (!LoadCurrentConfig()) return false;
-            if (!LoadCurrentSavedConfig()) return false;
-            return true;
+            success &= LoadOptionsEnumConfig();
+            success &= LoadCurrentConfig();
+            success &= LoadCurrentSavedConfig();
+            return success;
         }
 
         public bool LoadCurrentConfig()
