@@ -5,11 +5,11 @@ using UnityEditor;
 using System;
 using System.IO;
 
-namespace EazyBuildPipeline.PipelineTotalControl.Editor
+namespace EazyBuildPipeline.PlayerBuilder.Editor
 {
-    public class Runner
+    public class Runner : IRunner
     {
-        public Configs.Configs configs;
+        Configs.Configs configs;
         public Runner(Configs.Configs configs)
         {
             this.configs = configs;
@@ -30,18 +30,18 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             catch
             {
-                EditorUtility.DisplayDialog("Build Bundles", "没有此平台：" + targetStr, "确定");
+                configs.DisplayDialog("没有此平台：" + targetStr);
                 return false;
             }
             if (EditorUserBuildSettings.activeBuildTarget != target)
             {
-                EditorUtility.DisplayDialog("Build Bundles", string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target), "确定");
+                configs.DisplayDialog(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
                 return false;
             }
             return true;
         }
 
-        public void Apply(bool isPartOfPipeline)
+        public void Run(bool isPartOfPipeline)
         {
             //修改PlayerSettings
             EditorUtility.DisplayProgressBar("Applying PlayerSettings", "", 0);
@@ -59,11 +59,13 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             string tagsPath = Path.Combine(configs.LocalConfig.PlayersFolderPath, EBPUtility.GetTagStr(configs.Common_AssetsTagsConfig.Json));
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), configs.Common_AssetsTagsConfig.Json[0], true);
             string[] scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes);
-            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-            buildPlayerOptions.scenes = scenes;
-            buildPlayerOptions.locationPathName = tagsPath;
-            buildPlayerOptions.target = target;
-            buildPlayerOptions.options = buildOptions;
+            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = scenes,
+                locationPathName = tagsPath,
+                target = target,
+                options = buildOptions
+            };
 
             //开始
             configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;

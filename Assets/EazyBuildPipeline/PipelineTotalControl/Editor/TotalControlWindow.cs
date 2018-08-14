@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using EazyBuildPipeline.PlayerBuilder.Editor;
 
 namespace EazyBuildPipeline.PipelineTotalControl.Editor
 {
@@ -24,6 +25,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void Awake()
         {
             G.Init();
+            PlayerBuilder.Editor.G.Init();
 
             settingPanel = new SettingPanel();
             playerSettingsPanel = new PlayerSettingsPanel();
@@ -61,6 +63,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             playerSettingsPanel.OnDestory();
             settingPanel.OnDestory();
             G.Clear();
+            PlayerBuilder.Editor.G.Clear();
         }
 
         public void OnBeforeSerialize()
@@ -72,6 +75,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         {
             G.configs = configs;
             G.g = new G.GlobalReference();
+            PlayerBuilder.Editor.G.configs = G.configs.PlayerBuilderConfigs;
+            PlayerBuilder.Editor.G.g = new PlayerBuilder.Editor.G.GlobalReference();
         }        
     }
 }

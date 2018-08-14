@@ -9,9 +9,9 @@ using Newtonsoft.Json;
 
 namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
-    public class Runner
+    public class Runner : IRunner
     {
-        public Configs.Configs configs;
+        Configs.Configs configs;
         public Process process;
         public int RuningShellCount;
         public int applyingID;
@@ -127,7 +127,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             return true;
         }
 
-        public void ApplyOptions(bool isPartOfPipeline = false)
+        public void Run(bool isPartOfPipeline = false)
         {
             configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
             configs.CurrentConfig.Json.Applying = true;

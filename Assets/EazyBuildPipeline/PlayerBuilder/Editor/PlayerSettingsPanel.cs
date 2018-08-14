@@ -4,7 +4,7 @@ using System.IO;
 using System;
 using System.Collections.Generic;
 
-namespace EazyBuildPipeline.PipelineTotalControl.Editor
+namespace EazyBuildPipeline.PlayerBuilder.Editor
 {
     [Serializable]
     public class PlayerSettingsPanel
@@ -51,7 +51,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void LoadAllConfigs()
         {
-            //G.configs.LoadAllConfigs();
+            G.configs.LoadAllConfigs();
             InitSelectedIndex();
             ConfigToIndex();
         }

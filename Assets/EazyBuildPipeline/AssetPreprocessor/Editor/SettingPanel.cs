@@ -16,8 +16,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         [SerializeField] int selectedSavedConfigIndex = -1;
         [SerializeField] GUIStyle buttonStyle;
         [SerializeField] GUIStyle popupStyle;
-        GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
-        GUILayoutOption[] popupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
+        GUILayoutOption[] buttonOptions = { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
+        GUILayoutOption[] popupOptions = { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
         public void Awake()
         {
             InitStyles();
@@ -113,7 +113,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             {
                 try
                 {
-                    G.configs.Runner.ApplyOptions();
+                    G.configs.Runner.Run();
                 }
                 catch (Exception e)
                 {

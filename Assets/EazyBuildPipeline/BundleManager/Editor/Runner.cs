@@ -6,10 +6,9 @@ using System;
 
 namespace EazyBuildPipeline.BundleManager.Editor
 {
-    public class Runner
+    public class Runner : IRunner
     {
         Configs.Configs configs;
-
         public Runner(Configs.Configs configs)
         {
             this.configs = configs;
@@ -40,7 +39,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             return true;
         }
 
-        public void Apply(bool isPartOfPipeline = false)
+        public void Run(bool isPartOfPipeline = false)
         {
             //开始
             configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;

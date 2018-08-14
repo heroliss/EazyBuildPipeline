@@ -228,8 +228,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
                     double startTime = EditorApplication.timeSinceStartup;
-
-                    G.configs.Runner.ApplyAllPackages(G.g.bundleTree.BundleVersions.BundleVersion, G.g.bundleTree.BundleVersions.ResourceVersion);
+                    G.configs.Runner.BundleVersion = G.g.bundleTree.BundleVersions.BundleVersion;
+                    G.configs.Runner.ResourceVersion = G.g.bundleTree.BundleVersions.ResourceVersion;
+                    G.configs.Runner.Run();
 
                     TimeSpan time = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
                     if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),

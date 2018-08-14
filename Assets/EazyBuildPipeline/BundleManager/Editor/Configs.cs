@@ -209,7 +209,7 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
                         BuildAssetBundleOptions.ChunkBasedCompression;
                 }
             }
-            public string[] CurrentTags;
+            public string[] CurrentTags = new string[0];
             public string CurrentBundleMap;
             public int CurrentBuildAssetBundleOptionsValue;
             public int CurrentResourceVersion;

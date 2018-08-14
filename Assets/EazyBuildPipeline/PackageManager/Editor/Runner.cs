@@ -9,10 +9,12 @@ using UnityEngine;
 
 namespace EazyBuildPipeline.PackageManager.Editor
 {
-    public class Runner
+    public class Runner : IRunner
     {
         struct BundleVersionStruct { public string BundleName; public string Version; };
         struct DownloadFlagStruct { public int flag_; public string name_; public int location_; public bool hasDownloaded_; };
+
+        public int BundleVersion, ResourceVersion;
 
         Configs.Configs configs;
         public Runner(Configs.Configs configs)
@@ -88,7 +90,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             return true;
         }
 
-        public void ApplyAllPackages(int bundleVersion, int resourceVersion, bool isPartOfPipeline = false)
+        public void Run(bool isPartOfPipeline = false)
         {       
             //准备参数
             string bundlesFolderPath = configs.GetBundleFolderPath();
@@ -140,7 +142,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             switch (configs.PackageMapConfig.Json.PackageMode)
             {
                 case "Patch":
-                    mapFilePathInPackage += "_" + bundleVersion;
+                    mapFilePathInPackage += "_" + BundleVersion;
                     break;
 
                 case "Addon":
@@ -169,7 +171,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     {
                         flagList.Add(new DownloadFlagStruct()
                         {
-                            name_ = GetPackageFileName(package.PackageName, resourceVersion),
+                            name_ = GetPackageFileName(package.PackageName, ResourceVersion),
                             flag_ = G.NecesseryEnum.IndexOf(package.Necessery),
                             location_ = G.DeploymentLocationEnum.IndexOf(package.DeploymentLocation),
                             hasDownloaded_ = package.CopyToStreaming
@@ -192,10 +194,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
                             zipStream.SetLevel(configs.PackageMapConfig.Json.CompressionLevel);
 
                             //构建extra_info
-                            BuildExtraInfoInZipStream(extraInfoFilePathInPackage, resourceVersion, Path.GetFileNameWithoutExtension(miniPackagePath), zipStream);
+                            BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(miniPackagePath), zipStream);
 
                             //构建bundle_version
-                            BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, bundleVersion, bundlesCopyToStreaming, zipStream);
+                            BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, BundleVersion, bundlesCopyToStreaming, zipStream);
 
                             //构建map
                             BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
@@ -232,7 +234,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             for (int pi = 0; pi < packagesCount; pi++)
             {
                 var package = packageMap[pi];
-                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, GetPackageFileName(package.PackageName, resourceVersion)), FileMode.Create))
+                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, GetPackageFileName(package.PackageName, ResourceVersion)), FileMode.Create))
                 {
                     using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                     {
@@ -266,10 +268,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         }
 
                         //构建extra_info
-                        BuildExtraInfoInZipStream(extraInfoFilePathInPackage, resourceVersion, Path.GetFileNameWithoutExtension(GetPackageFileName(package.PackageName, resourceVersion)), zipStream);
+                        BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(GetPackageFileName(package.PackageName, ResourceVersion)), zipStream);
 
                         //构建bundle_version
-                        BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, bundleVersion, package.Bundles, zipStream);
+                        BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, BundleVersion, package.Bundles, zipStream);
 
                         //以下为每个包中Patch和Addon独有内容
                         switch (configs.PackageMapConfig.Json.PackageMode)
