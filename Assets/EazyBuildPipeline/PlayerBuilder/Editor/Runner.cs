@@ -16,6 +16,11 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
         }
         public bool Check()
         {
+            if (configs.Common_AssetsTagsConfig.Json.Length == 0)
+            {
+                configs.DisplayDialog("错误：Assets Tags为空");
+                return false;
+            }
             //验证根目录
             if (!Directory.Exists(configs.LocalConfig.PlayersFolderPath))
             {

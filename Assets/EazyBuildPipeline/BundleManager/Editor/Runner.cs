@@ -19,6 +19,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             if (configs.CurrentConfig.Json.CurrentTags.Length == 0)
             {
                 configs.DisplayDialog("错误：Tags为空");
+                return false;
             }
             var target = BuildTarget.NoTarget;
             string targetStr = configs.CurrentConfig.Json.CurrentTags[0];

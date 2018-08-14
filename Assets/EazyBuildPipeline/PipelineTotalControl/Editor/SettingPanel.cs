@@ -460,7 +460,9 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             {
                 G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentTags = G.configs.Common_AssetsTagsConfig.Json.ToArray();
                 G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentTags = G.configs.Common_AssetsTagsConfig.Json.ToArray();
+
                 G.configs.PlayerBuilderConfigs.CurrentConfig.Json.CurrentTags = G.configs.Common_AssetsTagsConfig.Json.ToArray();
+                G.configs.PlayerBuilderConfigs.Common_AssetsTagsConfig.Json = G.configs.Common_AssetsTagsConfig.Json.ToArray();
             }
             //重新加载配置并检查
             if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)

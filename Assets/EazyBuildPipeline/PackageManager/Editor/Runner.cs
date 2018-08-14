@@ -29,6 +29,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 configs.DisplayDialog("该配置内没有Package");
                 return false;
             }
+            if (configs.CurrentConfig.Json.CurrentTags.Length == 0)
+            {
+                configs.DisplayDialog("错误：Tags为空");
+                return false;
+            }
             //检查配置
             if (string.IsNullOrEmpty(configs.PackageMapConfig.Json.PackageMode))
             {

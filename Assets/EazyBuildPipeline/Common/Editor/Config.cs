@@ -156,6 +156,14 @@ namespace EazyBuildPipeline.Common.Editor
             {
                 Json = new string[] { "Example Tag1", "Example Tag2" };
             }
+            public override void Load(string path = null)
+            {
+                base.Load(path);
+                if (Json == null)
+                {
+                    Json = new string[0];
+                }
+            }
         }
 
         public void DisplayDialog(string text)
