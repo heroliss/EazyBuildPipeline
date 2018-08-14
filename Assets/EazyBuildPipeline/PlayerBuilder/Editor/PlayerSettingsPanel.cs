@@ -36,27 +36,16 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
         public void Awake()
         {
             InitStyles();
-            try
-            {
-                LoadAllConfigs();
-            }
-            catch (Exception e)
-            {
-                G.configs.DisplayDialog("加载配置文件时发生错误：" + e.Message);
-            }
+            //try
+            //{
+            //    LoadAllConfigs();
+            //}
+            //catch (Exception e)
+            //{
+            //    G.configs.DisplayDialog("加载配置文件时发生错误：" + e.Message);
+            //}
         }
         public void OnEnable()
-        {
-        }
-
-        private void LoadAllConfigs()
-        {
-            G.configs.LoadAllConfigs();
-            InitSelectedIndex();
-            ConfigToIndex();
-        }
-
-        private void InitSelectedIndex()
         {
         }
 
@@ -404,11 +393,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 define.RepeatList[i].RepeatList.Remove(define);
             }
             group.Defines.RemoveAt(index);
-        }
-
-        private void ConfigToIndex()
-        {
-            
         }
     }
 }

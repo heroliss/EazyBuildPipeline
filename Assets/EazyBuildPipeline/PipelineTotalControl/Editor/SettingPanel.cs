@@ -184,8 +184,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             bundleManagerSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.BundleManagerConfigs.LocalConfig.Local_BundleMapsFolderPath);
             packageManagerSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.PackageManagerConfigs.LocalConfig.Local_PackageMapsFolderPath);
             playerBuilderSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.configs.PlayerBuilderConfigs.LocalConfig.Local_PlayerSettingsFolderPath);
-
-            G.configs.PlayerBuilderConfigs.LoadCurrentPlayerSetting();
         }
 
         private void InitSelectedIndex()
@@ -454,7 +452,9 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             {
                 G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags.ToArray();
                 G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags.ToArray();
+                //PlayerBuilder用Common_AssetsTags作为其运行时的标签，而非CurrentConfig.Json.CurrentTags（暂时无用）
                 G.configs.PlayerBuilderConfigs.CurrentConfig.Json.CurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags.ToArray();
+                G.configs.PlayerBuilderConfigs.Common_AssetsTagsConfig.Json = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags.ToArray();
             }
             else
             {
@@ -480,7 +480,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             if (G.configs.PlayerBuilderConfigs.CurrentConfig.Json.IsPartOfPipeline)
             {
-                if (!G.configs.PlayerBuilderConfigs.LoadCurrentPlayerSetting()) return;
+                //PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载
+                //if (!G.configs.PlayerBuilderConfigs.LoadCurrentPlayerSetting()) return; 
                 if (!G.configs.PlayerBuilderConfigs.Runner.Check()) return;
             }
             bool ensure = EditorUtility.DisplayDialog("运行Pipeline", "确定开始运行管线？", "确定", "取消");

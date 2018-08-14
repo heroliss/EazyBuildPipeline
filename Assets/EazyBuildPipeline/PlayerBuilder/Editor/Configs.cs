@@ -56,6 +56,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
  
             bool success = true;
             success &= LoadCurrentConfig();
+            success &= LoadCurrentPlayerSetting();
             return success;
         }
 
