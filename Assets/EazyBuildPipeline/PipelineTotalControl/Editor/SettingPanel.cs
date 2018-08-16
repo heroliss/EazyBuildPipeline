@@ -616,6 +616,22 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         public void OnDestory()
         {
+            if (G.configs.PlayerBuilderConfigs.PlayerSettingsConfig.Dirty)
+            {
+                bool result = false;
+                try
+                {
+                    result = EditorUtility.DisplayDialog(
+                        "PlayerBuilder", "当前配置未保存，是否保存并覆盖 \" " +
+                        playerBuilderSavedConfigNames[playerBuilderSavedConfigSelectedIndex] + " \" ?", "保存并退出", "直接退出");
+                }
+                catch { }
+                if (result == true)
+                {
+                    SaveCurrentPlayerSetting();
+                }
+            }
+
             SetdownActions();
         }
 
@@ -697,7 +713,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             playerBuilderSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(PlayerBuilder.Editor.G.configs.LocalConfig.Local_PlayerSettingsFolderPath);
             //保存
             PlayerBuilder.Editor.G.configs.PlayerSettingsConfig.JsonPath = path;
-            SaveCurrentBuildSetting();
+            SaveCurrentPlayerSetting();
             //切换
             ChangePlayerSetting(playerBuilderSavedConfigNames.IndexOf(name));
         }
@@ -752,10 +768,10 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             if (!ensure) return;
 
-            SaveCurrentBuildSetting();
+            SaveCurrentPlayerSetting();
         }
 
-        private void SaveCurrentBuildSetting()
+        private void SaveCurrentPlayerSetting()
         {
             try
             {
