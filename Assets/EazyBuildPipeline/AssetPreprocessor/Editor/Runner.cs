@@ -41,7 +41,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 EditorUtility.DisplayProgressBar(titleMessage + s, applyingFile, (float)applyingID / totalApplyCount);
                 System.Threading.Thread.Sleep(50);
             }
-            EditorUtility.ClearProgressBar();
+            EditorUtility.DisplayProgressBar(titleMessage, "Finish!", 1);
         }
 
         string Arguments(params string[] arguments)
@@ -72,6 +72,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             RuningShellCount++;
             process.Start();
             process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
         }
 
         private void OnShellErrorDataReceived(object sender, DataReceivedEventArgs e)

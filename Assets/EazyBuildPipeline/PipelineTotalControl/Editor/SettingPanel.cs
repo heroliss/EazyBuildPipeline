@@ -12,6 +12,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
     public class SettingPanel
     {
         enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer, Finish }
+        [SerializeField] SVNManager SVNManager;
         [SerializeField] Step currentStep = Step.None;
         [SerializeField] double startTime;
         [SerializeField] bool creatingNewConfig;
@@ -50,6 +51,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         public void Awake()
         {
+            SVNManager = new SVNManager();
             try
             {
                 LoadAllConfigs();
@@ -63,7 +65,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         public void OnEnable()
         {
-            SetupActions();
+            SetupActions(); 
+            SVNManager.RunCheckProcess();
         }
         private void Action_AssetPreprocessor_OnChangeCurrentConfig()
         {
@@ -79,6 +82,18 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void SetupActions()
         {
+            SVNManager.InfoExitedAction += (x) => {
+                Debug.Log("InfoExited:" + x);
+                Debug.Log("Available:" + SVNManager.Available); 
+                Debug.Log("VersionState:" + SVNManager.VersionState);
+                Debug.Log("version(old-new):" + SVNManager.LastChangedVersion + "-" + SVNManager.RepositoryVersion);
+                Debug.Log("Info:" + SVNManager.SVNInfo); 
+                Debug.Log("InfoErr:" + SVNManager.InfoErrorMessage); };
+            SVNManager.DiffExitedAction += (x) => {
+                Debug.Log("DiffExited:" + x);
+                Debug.Log(SVNManager.LocalChangeState); 
+                Debug.Log("Diff:" + SVNManager.ChangedFiles); 
+                Debug.Log("DiffErr:" + SVNManager.DiffErrorMessage); };
             if (AssetPreprocessor.Editor.G.g != null)
             {
                 AssetPreprocessor.Editor.G.g.OnChangeCurrentConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
@@ -235,7 +250,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             //SVN Update     
             EditorGUILayout.BeginHorizontal();
             FrontIndicator(Step.SVNUpdate, false, assetPreprocessorWarnContent);
-            EditorGUILayout.BeginToggleGroup("SVN Update", false);
+            SVNManager.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup("SVN Update", SVNManager.IsPartOfPipeline) && SVNManager.Available;
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
@@ -505,6 +520,10 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                         currentStep = Step.SVNUpdate;
                         break;
                     case Step.SVNUpdate:
+                        if (SVNManager.IsPartOfPipeline)
+                        {
+                            SVNManager.RunUpdate();
+                        }
                         currentStep = Step.PreprocessAssets;
                         break;
                     case Step.PreprocessAssets:
@@ -597,7 +616,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void ChangeAllConfigsExceptRef(string rootPath)
         {
             Configs.Configs newConfigs = new Configs.Configs();
-            if (!newConfigs.LoadAllConfigs(rootPath)) return;
+            newConfigs.LoadAllConfigs(rootPath);
             G.configs = newConfigs;
             InitSelectedIndex();
             LoadSavedConfigs();
