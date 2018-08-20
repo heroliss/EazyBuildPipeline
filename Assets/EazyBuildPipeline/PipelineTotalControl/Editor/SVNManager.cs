@@ -30,8 +30,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         public string RepositoryVersion = "";
         public string LastChangedVersion = "";
         //Update
-        public string UpdateMessage = "";
-        public string UpdateErrorMessage = "";
+        public string message = "";
+        public string errorMessage = "";
 
         public SVNManager()
         {
@@ -40,39 +40,64 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         public void RunUpdate()
         {
             int progress = 0;
-            UpdateMessage = "";
-            UpdateErrorMessage = "";
+            message = "";
+            errorMessage = "";
             EditorUtility.DisplayProgressBar("SVN Update Starting...", "", 0);
-            Process p = ExcuteCommand("/bin/bash", Path.Combine(G.configs.LocalConfig.LocalRootPath, "SVNUpdate.sh"),
-                          OnUpdateReceived, OnUpdateErrorReceived, OnUpdateExited);
+            //Revert
+            Process p = ExcuteCommand("svn", "--non-interactive revert -R .",
+                                      OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
-                EditorUtility.DisplayProgressBar("SVN Update", UpdateMessage, (float)(progress++ % 1000) / 1000);
+                EditorUtility.DisplayProgressBar("SVN Revert(1/3)", message, (float)(progress++ % 1000) / 1000);
                 System.Threading.Thread.Sleep(50);
             }
             if (p.ExitCode != 0)
             {
-                throw new ApplicationException("SVN更新时发生错误：" + UpdateErrorMessage);
+                throw new ApplicationException("SVN Revert 时发生错误：" + errorMessage);
             }
-            EditorUtility.DisplayProgressBar("SVN Update", "Finish!", 1);
+            //Update
+            p = ExcuteCommand("svn", "--non-interactive update",
+                                      OnReceived, OnErrorReceived, OnExited);
+            while (!p.HasExited)
+            {
+                EditorUtility.DisplayProgressBar("SVN Update(2/3)", message, (float)(progress++ % 1000) / 1000);
+                System.Threading.Thread.Sleep(50);
+            }
+            if (p.ExitCode != 0)
+            {
+                throw new ApplicationException("SVN Update 时发生错误：" + errorMessage);
+            }
+            //Resolve
+            p = ExcuteCommand("svn", "--non-interactive resolve --accept theirs-conflict -R",
+                                                 OnReceived, OnErrorReceived, OnExited);
+            while (!p.HasExited)
+            {
+                EditorUtility.DisplayProgressBar("SVN Resolve(3/3)", message, (float)(progress++ % 1000) / 1000);
+                System.Threading.Thread.Sleep(50);
+            }
+            if (p.ExitCode != 0)
+            {
+                throw new ApplicationException("SVN Resolve 时发生错误：" + errorMessage);
+            }
+            EditorUtility.DisplayProgressBar("SVN", "Finish!", 1);
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
-        private void OnUpdateExited(object sender, EventArgs e)
+        private void OnExited(object sender, EventArgs e)
         {
         }
 
-        private void OnUpdateErrorReceived(object sender, DataReceivedEventArgs e)
+        private void OnErrorReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data.Trim() != "")
             {
-                UpdateErrorMessage += e.Data + "\n";
+                errorMessage += e.Data + "\n";
             }
         }
 
-        private void OnUpdateReceived(object sender, DataReceivedEventArgs e)
+        private void OnReceived(object sender, DataReceivedEventArgs e)
         {
-            UpdateMessage = e.Data;
+            message = e.Data;
         }
 
         public void RunCheckProcess()
