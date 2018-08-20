@@ -91,11 +91,13 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void SetupActions()
         {
-            SVNManager.InfoExitedAction += (success) => {
+            SVNManager.InfoExitedAction += (success) =>
+            {
                 SVNMessage = success ? "正在检查本地修改..." : "获取信息失败！";
                 G.g.MainWindow.Repaint();
             };
-            SVNManager.DiffExitedAction += (success) => {
+            SVNManager.DiffExitedAction += (success) =>
+            {
                 SVNMessage = success ? "检查本地修改完成！" : "检查本地修改失败！";
                 G.g.MainWindow.Repaint();
             };
@@ -182,7 +184,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 packageManagerSavedConfigSelectedIndex = packageManagerSavedConfigNames.IndexOf(G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentPackageMap.RemoveExtension());
                 playerBuilderSavedConfigSelectedIndex = playerBuilderSavedConfigNames.IndexOf(G.configs.PlayerBuilderConfigs.CurrentConfig.Json.CurrentPlayerSettingName.RemoveExtension());
 
-                
+
             }
             catch { }
             string compressionName = G.configs.BundleManagerConfigs.CompressionEnumMap.FirstOrDefault(x => x.Value == (G.configs.BundleManagerConfigs.CurrentConfig.Json.CompressionOption)).Key;
@@ -263,7 +265,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             FrontIndicator(Step.SVNUpdate, false, assetPreprocessorWarnContent);
             SVNManager.IsPartOfPipeline = GUILayout.Toggle(SVNManager.IsPartOfPipeline, "SVN Update", GUILayout.Width(200)) && SVNManager.Available;
             SVNInfo();
-            if(GUILayout.Button(refreshIcon, miniButtonOptions))
+            if (GUILayout.Button(refreshIcon, miniButtonOptions))
             {
                 SVNManager.RunCheckProcess();
             }
@@ -304,7 +306,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             GUILayout.Space(10);
             GUILayout.Label(G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline ?
-                "→ " + EBPUtility.GetTagStr(G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags) : EBPUtility.GetTagStr(G.configs.Common_AssetsTagsConfig.Json));
+                "→ " + EBPUtility.GetTagStr(G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags) :
+                (SVNManager.IsPartOfPipeline ? "Unknow" : EBPUtility.GetTagStr(G.configs.Common_AssetsTagsConfig.Json)));
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
@@ -521,7 +524,48 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void ClickedRunPipeline()
         {
-            //更换后续步骤的Tags改为将被AssetPreprocessor改变的Tags或当前的AssetsTags
+            ReloadAssetsTags();
+            if (ReloadConfigsAndCheck())
+            {
+                bool ensure = EditorUtility.DisplayDialog("运行Pipeline", "确定开始运行管线？", "确定", "取消");
+                if (ensure)
+                {
+                    //开始执行
+                    currentStep = Step.Start;
+                }
+            }
+        }
+
+        private bool ReloadConfigsAndCheck()
+        {
+            //重新加载配置并检查
+            if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
+            {
+                if (!G.configs.AssetPreprocessorConfigs.LoadCurrentSavedConfig()) return false;
+                if (!G.configs.AssetPreprocessorConfigs.Runner.Check()) return false;
+            }
+            if (G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
+            {
+                if (!G.configs.BundleManagerConfigs.LoadBundleBuildMap()) return false;
+                if (!G.configs.BundleManagerConfigs.Runner.Check()) return false;
+            }
+            if (G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
+            {
+                if (!G.configs.PackageManagerConfigs.LoadPackageMap()) return false;
+                if (!G.configs.PackageManagerConfigs.Runner.Check()) return false;
+            }
+            if (G.configs.PlayerBuilderConfigs.CurrentConfig.Json.IsPartOfPipeline)
+            {
+                //PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载
+                //if (!G.configs.PlayerBuilderConfigs.LoadCurrentPlayerSetting()) return; 
+                if (!G.configs.PlayerBuilderConfigs.Runner.Check()) return false;
+            }
+            return true;
+        }
+
+        private void ReloadAssetsTags()
+        {
+            //更换后续步骤的Tags为 将被AssetPreprocessor改变的Tags 或当 前的AssetsTags 或者 将被SVN更新改变的Tags
             if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
             {
                 G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags.ToArray();
@@ -529,6 +573,14 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 //PlayerBuilder用Common_AssetsTags作为其运行时的标签，而非CurrentConfig.Json.CurrentTags（暂时无用）
                 G.configs.PlayerBuilderConfigs.CurrentConfig.Json.CurrentTags = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags.ToArray();
                 G.configs.PlayerBuilderConfigs.Common_AssetsTagsConfig.Json = G.configs.AssetPreprocessorConfigs.CurrentSavedConfig.Json.Tags.ToArray();
+            }
+            else if (SVNManager.IsPartOfPipeline)
+            {
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentTags = new[] { "UnKnow" };
+                G.configs.PackageManagerConfigs.CurrentConfig.Json.CurrentTags = new[] { "UnKnow" };
+
+                G.configs.PlayerBuilderConfigs.CurrentConfig.Json.CurrentTags = new[] { "UnKnow" };
+                G.configs.PlayerBuilderConfigs.Common_AssetsTagsConfig.Json = new[] { "UnKnow" };
             }
             else
             {
@@ -538,33 +590,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 G.configs.PlayerBuilderConfigs.CurrentConfig.Json.CurrentTags = G.configs.Common_AssetsTagsConfig.Json.ToArray();
                 G.configs.PlayerBuilderConfigs.Common_AssetsTagsConfig.Json = G.configs.Common_AssetsTagsConfig.Json.ToArray();
             }
-            //重新加载配置并检查
-            if (G.configs.AssetPreprocessorConfigs.CurrentConfig.Json.IsPartOfPipeline)
-            {
-                if (!G.configs.AssetPreprocessorConfigs.LoadCurrentSavedConfig()) return;
-                if (!G.configs.AssetPreprocessorConfigs.Runner.Check()) return;
-            }
-            if (G.configs.BundleManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
-            {
-                if (!G.configs.BundleManagerConfigs.LoadBundleBuildMap()) return;
-                if (!G.configs.BundleManagerConfigs.Runner.Check()) return;
-            }
-            if (G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
-            {
-                if (!G.configs.PackageManagerConfigs.LoadPackageMap()) return;
-                if (!G.configs.PackageManagerConfigs.Runner.Check()) return;
-            }
-            if (G.configs.PlayerBuilderConfigs.CurrentConfig.Json.IsPartOfPipeline)
-            {
-                //PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载
-                //if (!G.configs.PlayerBuilderConfigs.LoadCurrentPlayerSetting()) return; 
-                if (!G.configs.PlayerBuilderConfigs.Runner.Check()) return;
-            }
-            bool ensure = EditorUtility.DisplayDialog("运行Pipeline", "确定开始运行管线？", "确定", "取消");
-            if (!ensure) return;
-
-            //开始执行
-            currentStep = Step.Start;
         }
 
         private void RunCurrentSetp()
@@ -659,7 +684,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 G.g.MainWindow.Repaint();
             }
         }
-        
+
         private void ChangeRootPath(string path)
         {
             try
