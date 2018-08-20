@@ -86,7 +86,15 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             DiffErrorMessage = "";
             RepositoryVersion = "";
             LastChangedVersion = "";
-            ExcuteCommand("svn", "info", OnInfoReceived, OnInfoErrorReceived, OnInfoExited);
+            try
+            {
+                ExcuteCommand("svn", "info", OnInfoReceived, OnInfoErrorReceived, OnInfoExited);
+            }
+            catch(Exception err)
+            {
+                InfoErrorMessage = err.Message;
+                InfoExitedAction(false);
+            }
         }
 
         private void OnInfoExited(object sender, EventArgs e)
@@ -96,9 +104,16 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             if (Available)
             {
                 ExtractVersionsAndSetVersionState();
-
-                ExcuteCommand("/bin/bash", Path.Combine(G.configs.LocalConfig.LocalRootPath, "SVNDiff.sh"),
-                   OnDiffReceived, OnDiffErrorReceived, OnDiffExited);
+                try
+                {
+                    ExcuteCommand("/bin/bash", Path.Combine(G.configs.LocalConfig.LocalRootPath, "SVNDiff.sh"),
+                       OnDiffReceived, OnDiffErrorReceived, OnDiffExited);
+                }
+                catch(Exception err)
+                {
+                    InfoErrorMessage = err.Message;
+                    DiffExitedAction(false);
+                }
             }
             else
             {

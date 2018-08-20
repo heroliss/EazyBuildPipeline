@@ -13,6 +13,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
     {
         enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer, Finish }
         [SerializeField] SVNManager SVNManager;
+        [SerializeField] string SVNMessage;
         [SerializeField] Step currentStep = Step.None;
         [SerializeField] double startTime;
         [SerializeField] bool creatingNewConfig;
@@ -31,6 +32,12 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         [SerializeField] Texture2D settingIcon;
         [SerializeField] Texture2D warnIcon;
         [SerializeField] Texture2D fingerIcon;
+        [SerializeField] Texture2D disableIcon;
+        [SerializeField] Texture2D needUpdateIcon;
+        [SerializeField] Texture2D okIcon;
+        [SerializeField] Texture2D refreshIcon;
+        [SerializeField] Texture2D unknowIcon;
+        [SerializeField] Texture2D changeIcon;
 
         [SerializeField] GUIContent settingGUIContent;
         [SerializeField] GUIContent assetPreprocessorContent;
@@ -48,6 +55,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         GUILayoutOption[] labelOptions = { GUILayout.MinWidth(20), GUILayout.MaxWidth(110) };
         GUILayoutOption[] miniButtonOptions = { GUILayout.MaxHeight(18), GUILayout.MaxWidth(22) };
         GUILayoutOption[] inputOptions = { GUILayout.Width(50) };
+        GUILayoutOption[] iconOptions = { GUILayout.Width(20), GUILayout.Height(20) };
 
         public void Awake()
         {
@@ -65,7 +73,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         public void OnEnable()
         {
-            SetupActions(); 
+            SetupActions();
+            SVNMessage = "正在获取SVN信息...";
             SVNManager.RunCheckProcess();
         }
         private void Action_AssetPreprocessor_OnChangeCurrentConfig()
@@ -82,18 +91,14 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void SetupActions()
         {
-            SVNManager.InfoExitedAction += (x) => {
-                Debug.Log("InfoExited:" + x);
-                Debug.Log("Available:" + SVNManager.Available); 
-                Debug.Log("VersionState:" + SVNManager.VersionState);
-                Debug.Log("version(old-new):" + SVNManager.LastChangedVersion + "-" + SVNManager.RepositoryVersion);
-                Debug.Log("Info:" + SVNManager.SVNInfo); 
-                Debug.Log("InfoErr:" + SVNManager.InfoErrorMessage); };
-            SVNManager.DiffExitedAction += (x) => {
-                Debug.Log("DiffExited:" + x);
-                Debug.Log(SVNManager.LocalChangeState); 
-                Debug.Log("Diff:" + SVNManager.ChangedFiles); 
-                Debug.Log("DiffErr:" + SVNManager.DiffErrorMessage); };
+            SVNManager.InfoExitedAction += (success) => {
+                SVNMessage = success ? "正在检查本地修改..." : "获取信息失败！";
+                G.g.MainWindow.Repaint();
+            };
+            SVNManager.DiffExitedAction += (success) => {
+                SVNMessage = success ? "检查本地修改完成！" : "检查本地修改失败！";
+                G.g.MainWindow.Repaint();
+            };
             if (AssetPreprocessor.Editor.G.g != null)
             {
                 AssetPreprocessor.Editor.G.g.OnChangeCurrentConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
@@ -153,8 +158,14 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             try
             {
                 warnIcon = EditorGUIUtility.FindTexture("console.warnicon.sml");
-                settingIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(G.configs.Common_LocalConfig.SettingIconPath);
-                fingerIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(G.configs.Common_LocalConfig.FingerIconPath);
+                settingIcon = G.configs.GetIcon("SettingIcon.png");
+                fingerIcon = G.configs.GetIcon("FingerIcon.png");
+                disableIcon = G.configs.GetIcon("DisableIcon.png");
+                needUpdateIcon = G.configs.GetIcon("NeedUpdateIcon.png");
+                okIcon = G.configs.GetIcon("OKIcon.png");
+                refreshIcon = G.configs.GetIcon("RefreshIcon.png");
+                unknowIcon = G.configs.GetIcon("UnknowIcon.png");
+                changeIcon = G.configs.GetIcon("ChangeIcon.png");
             }
             catch (Exception e)
             {
@@ -250,10 +261,13 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             //SVN Update     
             EditorGUILayout.BeginHorizontal();
             FrontIndicator(Step.SVNUpdate, false, assetPreprocessorWarnContent);
-            SVNManager.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup("SVN Update", SVNManager.IsPartOfPipeline) && SVNManager.Available;
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndToggleGroup();
+            SVNManager.IsPartOfPipeline = GUILayout.Toggle(SVNManager.IsPartOfPipeline, "SVN Update", GUILayout.Width(200)) && SVNManager.Available;
+            SVNInfo();
+            if(GUILayout.Button(refreshIcon, miniButtonOptions))
+            {
+                SVNManager.RunCheckProcess();
+            }
+            GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
 
             GUILayout.FlexibleSpace();
@@ -437,15 +451,60 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             EditorGUILayout.EndScrollView();
         }
 
+        private void SVNInfo()
+        {
+            GUILayout.BeginHorizontal(GUILayout.Width(155));
+            if (SVNManager.Available)
+            {
+                switch (SVNManager.VersionState)
+                {
+                    case SVNManager.VersionStateEnum.Unknow:
+                        GUILayout.Label(new GUIContent(unknowIcon, "错误信息:\n" + SVNManager.InfoErrorMessage), iconOptions);
+                        break;
+                    case SVNManager.VersionStateEnum.Obsolete:
+                        GUILayout.Label(new GUIContent(needUpdateIcon, "详细信息:\n" + SVNManager.SVNInfo), iconOptions);
+                        SVNMessage = "需要更新";
+                        break;
+                    case SVNManager.VersionStateEnum.Latest:
+                        GUILayout.Label(new GUIContent(okIcon, "详细信息:\n" + SVNManager.SVNInfo), iconOptions);
+                        SVNMessage = "已最新";
+                        break;
+                    default:
+                        break;
+                }
+                switch (SVNManager.LocalChangeState)
+                {
+                    case SVNManager.ChangeStateEnum.Unknow:
+                        GUILayout.Label(new GUIContent(unknowIcon, "错误信息:\n" + SVNManager.DiffErrorMessage), iconOptions);
+                        break;
+                    case SVNManager.ChangeStateEnum.Changed:
+                        GUILayout.Label(new GUIContent(changeIcon, "被修改的文件：\n" + SVNManager.ChangedFiles), iconOptions);
+                        SVNMessage = "本地文件被修改";
+                        break;
+                    case SVNManager.ChangeStateEnum.NoChange:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                GUILayout.Label(new GUIContent(disableIcon, "错误信息:\n" + SVNManager.InfoErrorMessage), iconOptions);
+                SVNMessage = "SVN不可用";
+            }
+            GUILayout.Label(SVNMessage);
+            GUILayout.EndHorizontal();
+        }
+
         private void FrontIndicator(Step step, bool applying, GUIContent warnContent)
         {
             if (currentStep == step)
             {
-                GUILayout.Label(fingerIcon, GUILayout.Width(20), GUILayout.Height(20));
+                GUILayout.Label(fingerIcon, iconOptions);
             }
             else
             {
-                GUILayout.Label(applying ? warnContent : GUIContent.none, GUILayout.Width(20), GUILayout.Height(20));
+                GUILayout.Label(applying ? warnContent : GUIContent.none, iconOptions);
             }
         }
 

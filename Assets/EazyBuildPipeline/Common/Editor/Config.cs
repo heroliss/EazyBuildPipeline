@@ -83,6 +83,11 @@ namespace EazyBuildPipeline.Common.Editor
             }
         }
 
+        public Texture2D GetIcon(string iconFileName)
+        {
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(Path.Combine(Common_LocalConfig.IconsFolderPath, iconFileName));
+        }
+
         [Serializable]
         public class CommonLocalConfig : EBPConfig<CommonLocalConfig.JsonClass>
         {
@@ -92,22 +97,14 @@ namespace EazyBuildPipeline.Common.Editor
             }
             public string TagEnumConfigPath { get { return Path.Combine(LocalRootPath, Json.TagEnumConfigRelativePath); } }
             public string AssetsTagsConfigPath { get { return Path.Combine(LocalRootPath, Json.AssetsTagsConfigRelativePath); } }
-            public string BundleIconPath { get { return Path.Combine(LocalRootPath, Json.BundleIconRelativePath); } }
-            public string BundleIcon_SceneConfigPath { get { return Path.Combine(LocalRootPath, Json.BundleIcon_SceneRelativePath); } }
-            public string PackageIconPath { get { return Path.Combine(LocalRootPath, Json.PackageIconRelativePath); } }
-            public string SettingIconPath { get { return Path.Combine(LocalRootPath, Json.SettingIconRelativePath); } }
-            public string FingerIconPath { get { return Path.Combine(LocalRootPath, Json.FingerIconRelativePath); } }
+            public string IconsFolderPath { get { return Path.Combine(LocalRootPath, Json.IconsFolderRelativePath); } }
             public string LocalRootPath;
             [Serializable]
             public class JsonClass
             {
                 public string TagEnumConfigRelativePath;
                 public string AssetsTagsConfigRelativePath;
-                public string BundleIconRelativePath;
-                public string BundleIcon_SceneRelativePath;
-                public string PackageIconRelativePath;
-                public string SettingIconRelativePath;
-                public string FingerIconRelativePath;
+                public string IconsFolderRelativePath;
             }
         }
 

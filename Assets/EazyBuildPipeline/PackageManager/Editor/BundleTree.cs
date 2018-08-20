@@ -39,8 +39,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             try
             {
                 folderIcon = EditorGUIUtility.FindTexture("Folder Icon");
-                bundleIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(G.configs.Common_LocalConfig.BundleIconPath);
-                bundleIcon_Scene = AssetDatabase.LoadAssetAtPath<Texture2D>(G.configs.Common_LocalConfig.BundleIcon_SceneConfigPath);
+                bundleIcon = G.configs.GetIcon("BundleIcon.png");
+                bundleIcon_Scene = G.configs.GetIcon("BundleIcon_Scene.png");
             }
             catch (Exception e)
             {
