@@ -77,6 +77,10 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             SetupActions();
             RunSVNCheckProcess();
         }
+        public void OnProjectChange()
+        {
+            RunSVNCheckProcess();
+        }
         private void RunSVNCheckProcess()
         {
             SVNMessage = "正在获取SVN信息...";
@@ -521,7 +525,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             else
             {
-                GUILayout.Label(new GUIContent(disableIcon, "错误信息:\n" + SVNManager.InfoErrorMessage), iconOptions);
+                GUILayout.Label(new GUIContent(disableIcon, "SVN不可用！\n错误信息:\n" + SVNManager.InfoErrorMessage), iconOptions);
             }
             GUILayout.Label(SVNMessage);
             GUILayout.EndHorizontal();

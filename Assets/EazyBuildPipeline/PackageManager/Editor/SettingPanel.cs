@@ -31,7 +31,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         GUILayoutOption[] shortLabelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
         GUILayoutOption[] shortLabelOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(40) };
 
-        [SerializeField] string[] savedConfigNames;
+        [SerializeField] string[] savedConfigNames = new string[0];
         [SerializeField] bool creatingNewConfig;
 
         private void InitStyles()
@@ -598,6 +598,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private void ClickedNew()
         {
             creatingNewConfig = true;
+            ShowInputField();
         }
 
         private bool ShowMapDropdown()

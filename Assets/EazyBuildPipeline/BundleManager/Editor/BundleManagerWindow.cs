@@ -26,7 +26,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             settingPanel = new SettingPanel();
             settingPanel.Awake();
 
-            mainTab = new AssetBundleManagement2.AssetBundleMainWindow();
+            G.g.mainTab = mainTab = new AssetBundleManagement2.AssetBundleMainWindow();
         }
         private void OnEnable()
         {

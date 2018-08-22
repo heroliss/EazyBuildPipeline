@@ -58,6 +58,12 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         {
             settingPanel.OnFocus();
         }
+
+        private void OnProjectChange()
+        {
+            settingPanel.OnProjectChange();
+        }
+
         private void OnDestroy()
         {
             playerSettingsPanel.OnDestory();
@@ -77,6 +83,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             G.g = new G.GlobalReference();
             PlayerBuilder.Editor.G.configs = G.configs.PlayerBuilderConfigs;
             PlayerBuilder.Editor.G.g = new PlayerBuilder.Editor.G.GlobalReference();
-        }        
+        }
     }
 }

@@ -48,7 +48,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                                       OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
-                EditorUtility.DisplayProgressBar("SVN Revert(1/3)", message, (float)(progress++ % 1000) / 1000);
+                EditorUtility.DisplayProgressBar("SVN Revert", message, (float)(progress++ % 1000) / 1000);
                 System.Threading.Thread.Sleep(50);
             }
             if (p.ExitCode != 0)
@@ -60,7 +60,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                                       OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
-                EditorUtility.DisplayProgressBar("SVN Update(2/3)", message, (float)(progress++ % 1000) / 1000);
+                EditorUtility.DisplayProgressBar("SVN Update", message, (float)(progress++ % 600) / 600);
                 System.Threading.Thread.Sleep(50);
             }
             if (p.ExitCode != 0)
@@ -72,7 +72,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                                                  OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
-                EditorUtility.DisplayProgressBar("SVN Resolve(3/3)", message, (float)(progress++ % 1000) / 1000);
+                EditorUtility.DisplayProgressBar("SVN Resolve", message, (float)(progress++ % 600) / 600);
                 System.Threading.Thread.Sleep(50);
             }
             if (p.ExitCode != 0)
