@@ -175,9 +175,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             //以下为当前配置，不保存在配置文件中
             EditorGUILayout.Separator();
             EBPEditorGUILayout.Toggle("Development Build", ref G.configs.CurrentConfig.Json.DevelopmentBuild);
-            EBPEditorGUILayout.Toggle("Script Debugging", ref G.configs.CurrentConfig.Json.AllowDebugging);
+            EditorGUI.BeginDisabledGroup(!G.configs.CurrentConfig.Json.DevelopmentBuild);
             EBPEditorGUILayout.Toggle("AutoConnect Profiler", ref G.configs.CurrentConfig.Json.ConnectWithProfiler);
-
+            EBPEditorGUILayout.Toggle("Script Debugging", ref G.configs.CurrentConfig.Json.AllowDebugging);
+            EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndScrollView();
         }
 
@@ -246,6 +247,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     group.Active = b;
                     G.configs.PlayerSettingsConfig.Dirty = true;
                 }
+
+                EditorGUI.BeginDisabledGroup(!group.Active);
+
                 string newDefineStr = GUILayout.TextField(group.GroupName, "flow overlay header upper left", GUILayout.MinWidth(100), GUILayout.MaxWidth(2000));
                 if(group.GroupName != newDefineStr)
                 {
@@ -301,6 +305,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         define.Active = b;
                         G.configs.PlayerSettingsConfig.Dirty = true;
                     }
+                    EditorGUI.BeginDisabledGroup(!define.Active);
                     newDefineStr = GUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle ,GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
                     if(define.Define != newDefineStr)
                     {
@@ -346,9 +351,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         group.Defines[j + 1] = t;
                         G.configs.PlayerSettingsConfig.Dirty = true;
                     }
-
+                    EditorGUI.EndDisabledGroup();
                     EditorGUILayout.EndHorizontal();
                 }
+                EditorGUI.EndDisabledGroup();
                 EditorGUILayout.EndVertical();
             }
         }

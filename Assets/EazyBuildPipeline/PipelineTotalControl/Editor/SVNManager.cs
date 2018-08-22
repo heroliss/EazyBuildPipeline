@@ -43,8 +43,9 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             message = "";
             errorMessage = "";
             EditorUtility.DisplayProgressBar("SVN Update Starting...", "", 0);
+            Process p;
             //Revert
-            Process p = ExcuteCommand("svn", "--non-interactive revert -R .",
+            p = ExcuteCommand("svn", "--non-interactive revert -R .",
                                       OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
