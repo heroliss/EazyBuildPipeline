@@ -12,7 +12,15 @@ namespace EazyBuildPipeline.PackageManager.Editor
     public class Runner : IRunner
     {
         struct BundleVersionStruct { public string BundleName; public string Version; };
-        struct DownloadFlagStruct { public int flag_; public string name_; public int location_; public bool hasDownloaded_; };
+        struct DownloadFlagStruct 
+        { 
+            public int flag_; 
+            public string name_; 
+            public string ClientVersion;
+            public string ResourceVersion;
+            public int location_; 
+            public bool hasDownloaded_; 
+        };
 
         public int BundleVersion, ResourceVersion;
 
@@ -170,28 +178,28 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     Directory.CreateDirectory(streamingPath);
 
                     //构建download_flag.json
+                    string miniPackageName = "";  //TODO: 如何设定小包名？
                     EditorUtility.DisplayProgressBar("正在StreamingAssets中构建文件", "download_flag.json", progress); progress += 0.01f;
                     List<DownloadFlagStruct> flagList = new List<DownloadFlagStruct>();
                     foreach (var package in packageMap)
                     {
+                        miniPackageName = GetPackageFileName(package.PackageName, ResourceVersion) + ".1"; //TODO:buildNum如何加进去?
                         flagList.Add(new DownloadFlagStruct()
                         {
-                            name_ = GetPackageFileName(package.PackageName, ResourceVersion),
+                            name_ = miniPackageName,
                             flag_ = G.NecesseryEnum.IndexOf(package.Necessery),
                             location_ = G.DeploymentLocationEnum.IndexOf(package.DeploymentLocation),
-                            hasDownloaded_ = package.CopyToStreaming
+                            hasDownloaded_ = false,//package.CopyToStreaming, //TODO:这里真的永为false？？ 
+                            ClientVersion = configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:buildNum如何加进去?
+                            ResourceVersion = BundleVersion.ToString()
                         });
                     }
                     string downloadFlagContent = JsonConvert.SerializeObject(flagList, Formatting.Indented);
                     File.WriteAllText(Path.Combine(streamingPath, "download_flag.json"), downloadFlagContent);
 
-                    //构建小包
-                    string miniPackagePath = Path.Combine(streamingPath, string.Join("_", new string[]{
-                        configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
-                        configs.PackageMapConfig.Json.PackageMode.ToLower(),
-                        configs.CurrentConfig.Json.CurrentAddonVersion,
-                        "default"})) + configs.LocalConfig.PackageExtension;
-                    EditorUtility.DisplayProgressBar("正在向StreamingAssets中构建miniPackage", Path.GetFileName(miniPackagePath), progress); progress += 0.01f;
+                    //构建小包 
+                    string miniPackagePath = Path.Combine(streamingPath, miniPackageName); //TODO:小包命名如何搞？GetPackageFileName(package.PackageName, ResourceVersion)
+                    EditorUtility.DisplayProgressBar("正在向StreamingAssets中构建miniPackage", miniPackagePath, progress); progress += 0.01f;
                     using (FileStream zipFileStream = new FileStream(miniPackagePath, FileMode.Create))
                     {
                         using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
@@ -199,7 +207,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                             zipStream.SetLevel(configs.PackageMapConfig.Json.CompressionLevel);
 
                             //构建extra_info
-                            BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(miniPackagePath), zipStream);
+                            BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(miniPackageName), zipStream);
 
                             //构建bundle_version
                             BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, BundleVersion, bundlesCopyToStreaming, zipStream);
@@ -311,6 +319,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)
         {
+            AddDirectoryToZipStream(zipStream, "Assets/StreamingAssets/Lua", "Lua/Lua", buffer, "*.lua"); //TODO: 重复的Lua库，但目前不可缺少
             switch (configs.PackageMapConfig.Json.LuaSource)
             {
                 case "None":
@@ -344,7 +353,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             List<BundleVersionStruct> bundleVersionList = new List<BundleVersionStruct>();
             foreach (var item in bundles)
             {
-                bundleVersionList.Add(new BundleVersionStruct() { BundleName = item, Version = bundleVersionStr });
+                bundleVersionList.Add(new BundleVersionStruct { BundleName = item, Version = bundleVersionStr });
             }
             string bundleVersionContent = JsonConvert.SerializeObject(bundleVersionList, Formatting.Indented);
             AddBytesToZipStream(zipStream, bundleVersionFilePath, System.Text.Encoding.Default.GetBytes(bundleVersionContent));
@@ -352,7 +361,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void BuildExtraInfoInZipStream(string extraInfoFilePath, int resourceVersion, string fileNameWithoutExtension, ZipOutputStream zipStream)
         {
-            string extraInfoContent = JsonConvert.SerializeObject(new Dictionary<string, string>() {
+            string extraInfoContent = JsonConvert.SerializeObject(new Dictionary<string, string> {
                             { "brief_desc", fileNameWithoutExtension },
                             { "res_version", resourceVersion.ToString() }
                         }, Formatting.Indented);
@@ -422,17 +431,17 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
                         configs.CurrentConfig.Json.CurrentAddonVersion,
                         "default", displayName,
-                        configs.LocalConfig.PackageExtension);
+                        configs.LocalConfig.Json.PackageExtension);
                     break;
                 case "Patch":
                     fileName = string.Format("{0}_patch_{1}_{2}{3}",
                       configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
                       resourceVersion,
                       displayName,
-                      configs.LocalConfig.PackageExtension);
+                      configs.LocalConfig.Json.PackageExtension);
                     break;
                 default:
-                    fileName = displayName + configs.LocalConfig.PackageExtension;
+                    fileName = displayName + configs.LocalConfig.Json.PackageExtension;
                     break;
             }
             return fileName;

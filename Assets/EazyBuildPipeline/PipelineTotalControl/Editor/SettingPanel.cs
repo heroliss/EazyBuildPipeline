@@ -382,8 +382,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.configs.BundleManagerConfigs.CompressionEnum, dropdownOptions2);
             if (selectedCompressionIndex_new != selectedCompressionIndex)
             {
-                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue -= (int)G.configs.BundleManagerConfigs.CompressionEnumMap[G.configs.BundleManagerConfigs.CompressionEnum[selectedCompressionIndex]];
-                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue += (int)G.configs.BundleManagerConfigs.CompressionEnumMap[G.configs.BundleManagerConfigs.CompressionEnum[selectedCompressionIndex_new]];
+                G.configs.BundleManagerConfigs.CurrentConfig.Json.CompressionOption = G.configs.BundleManagerConfigs.CompressionEnumMap[G.configs.BundleManagerConfigs.CompressionEnum[selectedCompressionIndex_new]];
                 selectedCompressionIndex = selectedCompressionIndex_new;
                 return;
             }

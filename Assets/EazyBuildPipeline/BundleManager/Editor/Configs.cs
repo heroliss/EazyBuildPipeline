@@ -195,6 +195,7 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
         {
             Json = new JsonClass();
         }
+
         [Serializable]
         public class JsonClass
         {
@@ -208,6 +209,11 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
                         BuildAssetBundleOptions.None :
                         BuildAssetBundleOptions.UncompressedAssetBundle :
                         BuildAssetBundleOptions.ChunkBasedCompression;
+                }
+                set
+                {
+                    CurrentBuildAssetBundleOptionsValue -= (int)CompressionOption;
+                    CurrentBuildAssetBundleOptionsValue += (int)value;
                 }
             }
             public string[] CurrentTags = new string[0];

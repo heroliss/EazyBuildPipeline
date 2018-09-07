@@ -3,5 +3,7 @@
   "RootPath": "/Users/eazydev/qqqqq",
   "PackageConfigRelativePath": "BundlePackages/_Config/PackageConfig.json",
   "BundleFolderRelativePath": "AssetBundles",
-  "PackageFolderRelativePath": "BundlePackages"
+  "PackageFolderRelativePath": "BundlePackages",
+  "PackageExtension": ".jpg",
+  "CheckBundle": true
 }

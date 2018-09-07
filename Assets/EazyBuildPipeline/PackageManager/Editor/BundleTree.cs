@@ -318,7 +318,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
 				{
 					EditorUtility.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
-					    loadFileProgressCount,G.configs.LocalConfig.CheckBundle), filePath,
+					    loadFileProgressCount,G.configs.LocalConfig.Json.CheckBundle), filePath,
 					    (float)loadFileProgressCount % 100000 / 100000);
                     lastTime = EditorApplication.timeSinceStartup;
 				}
@@ -345,7 +345,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 					folderItem.AddChild(fileItem);
 					bundleDic.Add(fileItem.relativePath, fileItem);
 					//检查manifest对应文件是否存在
-					if (G.configs.LocalConfig.CheckBundle)
+					if (G.configs.LocalConfig.Json.CheckBundle)
 					{
 						fileItem.verify = File.Exists(bundlePath);
 						if (fileItem.verify == false)

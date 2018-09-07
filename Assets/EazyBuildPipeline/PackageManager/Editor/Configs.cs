@@ -238,9 +238,7 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
         public string PackageConfigPath { get { return Path.Combine(Json.RootPath, Json.PackageConfigRelativePath); } }
         public string BundleFolderPath { get { return Path.Combine(Json.RootPath, Json.BundleFolderRelativePath); } }
         public string PackageFolderPath { get { return Path.Combine(Json.RootPath, Json.PackageFolderRelativePath); } }
-        //其他配置
-        public string PackageExtension;
-        public bool CheckBundle;
+
         [Serializable]
         public class JsonClass
         {
@@ -249,6 +247,9 @@ namespace EazyBuildPipeline.PackageManager.Editor.Configs
             public string PackageConfigRelativePath;
             public string BundleFolderRelativePath;
             public string PackageFolderRelativePath;
+            //其他配置
+            public string PackageExtension;        
+            public bool CheckBundle;
         }
     }
     
