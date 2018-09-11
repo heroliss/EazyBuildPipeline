@@ -178,18 +178,33 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     Directory.CreateDirectory(streamingPath);
 
                     //构建download_flag.json
-                    string miniPackageName = "";  //TODO: 如何设定小包名？
                     EditorUtility.DisplayProgressBar("正在StreamingAssets中构建文件", "download_flag.json", progress); progress += 0.01f;
                     List<DownloadFlagStruct> flagList = new List<DownloadFlagStruct>();
+                    //单独加一个小包的配置信息
+                    string miniPackageName = string.Join("_", new string[]{
+                        configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
+                        configs.PackageMapConfig.Json.PackageMode.ToLower(),
+                        configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:buildNum如何加进去?
+                        "default"}) + configs.LocalConfig.Json.PackageExtension;
+                    flagList.Add(new DownloadFlagStruct()
+                    {
+                        name_ = miniPackageName,
+                        flag_ = G.NecesseryEnum.IndexOf("Immediate"),
+                        location_ = G.DeploymentLocationEnum.IndexOf("Built-in"),
+                        hasDownloaded_ = false,
+                        ClientVersion = configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:buildNum如何加进去?
+                        ResourceVersion = BundleVersion.ToString()
+                    });
+
+                    //所有package的配置信息
                     foreach (var package in packageMap)
                     {
-                        miniPackageName = GetPackageFileName(package.PackageName, ResourceVersion) + ".1"; //TODO:buildNum如何加进去?
                         flagList.Add(new DownloadFlagStruct()
                         {
-                            name_ = miniPackageName,
+                            name_ = GetPackageFileName(package.PackageName, ResourceVersion),
                             flag_ = G.NecesseryEnum.IndexOf(package.Necessery),
                             location_ = G.DeploymentLocationEnum.IndexOf(package.DeploymentLocation),
-                            hasDownloaded_ = false,//package.CopyToStreaming, //TODO:这里真的永为false？？ 
+                            hasDownloaded_ = package.CopyToStreaming, //TODO:这里真的永为false？？ 
                             ClientVersion = configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:buildNum如何加进去?
                             ResourceVersion = BundleVersion.ToString()
                         });
@@ -206,8 +221,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         {
                             zipStream.SetLevel(configs.PackageMapConfig.Json.CompressionLevel);
 
-                            //构建extra_info
-                            BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(miniPackageName), zipStream);
+                            //构建extra_info   //TODO:无用的配置文件，可删
+                            //BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(miniPackageName), zipStream);
 
                             //构建bundle_version
                             BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, BundleVersion, bundlesCopyToStreaming, zipStream);
@@ -281,7 +296,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         }
 
                         //构建extra_info
-                        BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(GetPackageFileName(package.PackageName, ResourceVersion)), zipStream);
+                        //BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(GetPackageFileName(package.PackageName, ResourceVersion)), zipStream);
 
                         //构建bundle_version
                         BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, BundleVersion, package.Bundles, zipStream);
@@ -319,7 +334,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)
         {
-            AddDirectoryToZipStream(zipStream, "Assets/StreamingAssets/Lua", "Lua/Lua", buffer, "*.lua"); //TODO: 重复的Lua库，但目前不可缺少
+            //AddDirectoryToZipStream(zipStream, "Assets/StreamingAssets/Lua", "Lua/Lua", buffer, "*.lua"); //TODO: 重复的Lua库，可删
             switch (configs.PackageMapConfig.Json.LuaSource)
             {
                 case "None":
@@ -427,10 +442,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
             switch (configs.PackageMapConfig.Json.PackageMode)
             {
                 case "Addon":
-                    fileName = string.Format("{0}_addon_{1}_{2}_{3}{4}",
+                    fileName = string.Format("{0}_addon_{1}_{2}{3}",
                         configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
-                        configs.CurrentConfig.Json.CurrentAddonVersion,
-                        "default", displayName,
+                        configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:如何处理这个BuildNumber?
+                        displayName,
                         configs.LocalConfig.Json.PackageExtension);
                     break;
                 case "Patch":

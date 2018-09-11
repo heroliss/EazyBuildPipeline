@@ -56,10 +56,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
             OverrideCurrentSavedConfigName = null;
         }
 
-        public static string[] NecesseryEnum = new string[] { "Immediate", "Delayed" };
-        public static string[] DeploymentLocationEnum = new string[] { "Built-in", "Server" };
-        public static string[] PackageModeEnum = new string[] { "Addon", "Patch" };
-        public static string[] LuaSourceEnum = new string[] { "None", "Origin", "ByteCode", "Encrypted" };
+        public static string[] NecesseryEnum = { "Immediate", "Delayed" };
+        public static string[] DeploymentLocationEnum = { "Built-in", "Server" };
+        public static string[] PackageModeEnum = { "Addon", "Patch" };
+        public static string[] LuaSourceEnum = { "None", "Origin", "ByteCode", "Encrypted" };
     }
 }
 namespace EazyBuildPipeline.PackageManager.Editor.Configs
