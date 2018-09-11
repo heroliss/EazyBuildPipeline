@@ -1,5 +1,8 @@
-﻿public interface IRunner
+﻿namespace EazyBuildPipeline
 {
-    void Run(bool isPartOfPipeline = false);
-    bool Check();
+    public interface IRunner
+    {
+        void Run(bool isPartOfPipeline = false);
+        bool Check();
+    }
 }

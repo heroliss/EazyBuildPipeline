@@ -82,6 +82,17 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             EditorUtility.DisplayProgressBar("SVN", "Finish!", 1);
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            //后处理过程：重新创建Wrap和Lua文件
+            ClearAndGenerateWrapAndLua();
+        }
+
+        private void ClearAndGenerateWrapAndLua()
+        {
+            EditorUtility.DisplayProgressBar("Clear and Generate Wrap Files...", "", 1);
+            ToLuaMenu.ClearWrapFilesAndCreate();
+            EditorUtility.DisplayProgressBar("Clear and Generate Lua Files...", "", 1);
+            LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { });
+            EditorUtility.DisplayProgressBar("Clear and Generate Wrap and Lua Files Finished!", "", 1);
         }
 
         private void OnExited(object sender, EventArgs e)
