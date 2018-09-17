@@ -32,7 +32,7 @@ namespace EazyBuildPipeline
             }
         }
 
-        public static void EnumPopup(string label, Enum selected, Action action = null)
+        public static void EnumPopup(string label, Enum selected, Action action = null)//TODO:如何能传递属性进来??
         {
             Enum selected_new = EditorGUILayout.EnumPopup(label, selected);
             if (!selected_new.Equals(selected))

@@ -66,8 +66,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
             GUILayout.FlexibleSpace();
             EditorGUILayout.LabelField("Resource Version:", labelOptions);
             G.configs.CurrentConfig.Json.CurrentResourceVersion = EditorGUILayout.IntField(G.configs.CurrentConfig.Json.CurrentResourceVersion, inputOptions);
-            EditorGUILayout.LabelField("  Bundle Version:", labelOptions);
-            G.configs.CurrentConfig.Json.CurrentBundleVersion = EditorGUILayout.IntField(G.configs.CurrentConfig.Json.CurrentBundleVersion, inputOptions);
             GUILayout.Space(10);
             //压缩选项
             int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.configs.CompressionEnum, dropdownStyle, dropdownOptions2);
@@ -111,12 +109,11 @@ namespace EazyBuildPipeline.BundleManager.Editor
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), G.configs.CurrentConfig.Json.CurrentTags[0], true);
             int optionsValue = G.configs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue;
             int resourceVersion = G.configs.CurrentConfig.Json.CurrentResourceVersion;
-            int bundleVersion = G.configs.CurrentConfig.Json.CurrentBundleVersion;
             string tagPath = Path.Combine(G.configs.LocalConfig.BundlesFolderPath, EBPUtility.GetTagStr(G.configs.CurrentConfig.Json.CurrentTags));
 
             bool ensure = EditorUtility.DisplayDialog("Build Bundles", string.Format("确定应用当前配置？\n\n" +
-                "目标平台: {0}\n 输出路径: {1} \n Resources Version: {2} \n Bundle Version: {3}\n 参数: {4}",
-                target, tagPath, resourceVersion, bundleVersion, optionsValue), "确定", "取消");
+                "目标平台: {0}\n 输出路径: {1} \n Resources Version: {2} \n 参数: {3}",
+                target, tagPath, resourceVersion, optionsValue), "确定", "取消");
             //开始应用          
             if (ensure)
             {

@@ -128,6 +128,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor.Configs
         public class JsonClass
         {
             public string RootPath;
+            public bool EnableCheckDiff;
         }
     }
 }

@@ -60,7 +60,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         public void Awake()
         {
-            SVNManager = new SVNManager();
+            SVNManager = new SVNManager { EnableCheckDiff = G.configs.LocalConfig.Json.EnableCheckDiff };
             try
             {
                 LoadAllConfigs();
@@ -103,6 +103,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             SVNManager.InfoExitedAction += (success) =>
             {
                 SVNMessage = success ? "正在检查本地修改..." : "SVN不可用！";
+                if (!G.configs.LocalConfig.Json.EnableCheckDiff)
+                    SVNManager.DiffExitedAction(true);
                 needRepaint = true; //由于非主线程中不能使用 G.g.MainWindow.Repaint(); 所以只能出此下策，用变量标记需要刷新，然后在Update中刷新界面
             };
             SVNManager.DiffExitedAction += (success) =>
@@ -112,7 +114,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     switch (SVNManager.VersionState)
                     {
                         case SVNManager.VersionStateEnum.Unknow:
-                            SVNMessage = "获取版本信息失败!";
+                            SVNMessage = "SVN不可用!";
                             break;
                         case SVNManager.VersionStateEnum.Obsolete:
                             SVNMessage = "需要更新!";
@@ -121,14 +123,17 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                             SVNMessage = "已最新";
                             break;
                     }
-                    switch (SVNManager.LocalChangeState)
+                    if (G.configs.LocalConfig.Json.EnableCheckDiff)
                     {
-                        case SVNManager.ChangeStateEnum.Unknow:
-                            SVNMessage = "检查本地修改失败！";
-                            break;
-                        case SVNManager.ChangeStateEnum.Changed:
-                            SVNMessage = "本地文件有改动！";
-                            break;
+                        switch (SVNManager.LocalChangeState)
+                        {
+                            case SVNManager.ChangeStateEnum.Unknow:
+                                SVNMessage = "检查本地修改失败！";
+                                break;
+                            case SVNManager.ChangeStateEnum.Changed:
+                                SVNMessage = "本地文件有改动！";
+                                break;
+                        }
                     }
                 }
                 needRepaint = true;
@@ -394,13 +399,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion = n;
             }
 
-            EditorGUILayout.LabelField("  Bundle Version:", labelMidRight, labelOptions);
-            n = EditorGUILayout.IntField(G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion, inputOptions);
-            if (G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion != n)
-            {
-                G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion = n;
-            }
-
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
@@ -507,19 +505,22 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     default:
                         break;
                 }
-                switch (SVNManager.LocalChangeState)
+                if (G.configs.LocalConfig.Json.EnableCheckDiff)
                 {
-                    case SVNManager.ChangeStateEnum.Unknow:
-                        GUILayout.Label(new GUIContent(unknowIcon, "本地文件改动情况未知！\n错误信息:\n" + SVNManager.DiffErrorMessage), iconOptions);
-                        break;
-                    case SVNManager.ChangeStateEnum.Changed:
-                        GUILayout.Label(new GUIContent(changeIcon, "本地文件有改动！\n有改动的文件：\n" + SVNManager.ChangedFiles), iconOptions);
-                        break;
-                    case SVNManager.ChangeStateEnum.NoChange:
-                        GUILayout.Label(new GUIContent(okIcon, "本地文件无改动"), iconOptions);
-                        break;
-                    default:
-                        break;
+                    switch (SVNManager.LocalChangeState)
+                    {
+                        case SVNManager.ChangeStateEnum.Unknow:
+                            GUILayout.Label(new GUIContent(unknowIcon, "本地文件改动情况未知！\n错误信息:\n" + SVNManager.DiffErrorMessage), iconOptions);
+                            break;
+                        case SVNManager.ChangeStateEnum.Changed:
+                            GUILayout.Label(new GUIContent(changeIcon, "本地文件有改动！\n有改动的文件：\n" + SVNManager.ChangedFiles), iconOptions);
+                            break;
+                        case SVNManager.ChangeStateEnum.NoChange:
+                            GUILayout.Label(new GUIContent(okIcon, "本地文件无改动"), iconOptions);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
             else
@@ -671,7 +672,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     case Step.BuildPackages:
                         if (G.configs.PackageManagerConfigs.CurrentConfig.Json.IsPartOfPipeline)
                         {
-                            G.configs.PackageManagerConfigs.Runner.BundleVersion = G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentBundleVersion;
                             G.configs.PackageManagerConfigs.Runner.ResourceVersion = G.configs.BundleManagerConfigs.CurrentConfig.Json.CurrentResourceVersion;
                             G.configs.PackageManagerConfigs.Runner.Run(true);
                         }

@@ -13,6 +13,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
     public class SVNManager
     {
         public bool IsPartOfPipeline = false;
+        public bool EnableCheckDiff = false;
         public enum VersionStateEnum { Unknow, Obsolete, Latest }
         public enum ChangeStateEnum { Unknow, Changed, NoChange }
         //SVNInfo
@@ -141,15 +142,18 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             if (Available)
             {
                 ExtractVersionsAndSetVersionState();
-                try
+                if (EnableCheckDiff)
                 {
-                    ExcuteCommand("/bin/bash", Path.Combine(G.configs.LocalConfig.LocalRootPath, "SVNDiff.sh"),
-                       OnDiffReceived, OnDiffErrorReceived, OnDiffExited);
-                }
-                catch(Exception err)
-                {
-                    InfoErrorMessage = err.Message;
-                    DiffExitedAction(false);
+                    try
+                    {
+                        ExcuteCommand("/bin/bash", Path.Combine(G.configs.LocalConfig.LocalRootPath, "SVNDiff.sh"),
+                           OnDiffReceived, OnDiffErrorReceived, OnDiffExited);
+                    }
+                    catch (Exception err)
+                    {
+                        InfoErrorMessage = err.Message;
+                        DiffExitedAction(false);
+                    }
                 }
             }
             else

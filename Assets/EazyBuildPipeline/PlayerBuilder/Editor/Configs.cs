@@ -262,6 +262,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
             public GeneralSettings General = new GeneralSettings();
             public IOSSettings IOS = new IOSSettings();
             public AndroidSettings Android = new AndroidSettings();
+
             [Serializable]
             public class GeneralSettings
             {
@@ -269,6 +270,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
                 public string CompanyName;
                 public string ProductName;
             }
+
             [Serializable]
             public class IOSSettings
             {
@@ -281,7 +283,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
                 public string CameraUsageDesc;
                 public string LocationUsageDesc;
                 public string MicrophoneUsageDesc;
-                public string BlueToothUsageDesc;
+                //public string BlueToothUsageDesc; //TODO:这个是否应该归类到后处理中?
                 public string TargetDevice_str;
                 public iOSTargetDevice TargetDevice
                 {
@@ -310,7 +312,19 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
                     get { return Architecture_str.ToEnum<ArchitectureEnum>(); }
                     set { Architecture_str = value.ToString(); }
                 }
+                //For iOSPostprocessor
+                public string ThirdFrameWorkPath;
+                public string ExportIpaPath;
+                public bool IsBuildArchive;
+                public string BlueToothUsageDesc;
+                public string PhotoUsageDesc;
+                public string PhotoUsageAddDesc;
+                public string TaskPath;
+                //For BuglyInit
+                public string BuglyAppID;
+                public string BuglyAppKey;
             }
+
             [Serializable]
             public class AndroidSettings
             {
@@ -347,14 +361,14 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
                 public InternetAccessEnum InternetAccess
                 {
                     get { return ForceInternetPermission ? InternetAccessEnum.Require : InternetAccessEnum.Auto; }
-                    set { ForceInternetPermission = (value == InternetAccessEnum.Auto) ? false : true;  }
+                    set { ForceInternetPermission = (value == InternetAccessEnum.Require);  }
                 }
                 public bool ForceInternetPermission;
                 public enum WritePermissionEnum { Internal, External_SDCard }
                 public WritePermissionEnum WritePermission
                 {
                     get { return ForceSDCardPermission ? WritePermissionEnum.External_SDCard : WritePermissionEnum.Internal; }
-                    set { ForceSDCardPermission = (value == WritePermissionEnum.Internal) ? false : true; }
+                    set { ForceSDCardPermission = (value == WritePermissionEnum.External_SDCard); }
                 }
                 public bool ForceSDCardPermission;
                 public bool AndroidTVCompatibility;
@@ -370,6 +384,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
 
                 public string PackageName;
             }
+
             [Serializable]
             public class ScriptDefine
             {
@@ -378,6 +393,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor.Configs
                 [NonSerialized]
                 public List<ScriptDefine> RepeatList = new List<ScriptDefine>();
             }
+
             [Serializable]
             public class ScriptDefinesGroup
             {

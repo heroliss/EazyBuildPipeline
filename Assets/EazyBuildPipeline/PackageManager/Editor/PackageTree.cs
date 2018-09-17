@@ -190,7 +190,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             foreach (var package in Packages)
             {
-                 package.fileName = G.configs.Runner.GetPackageFileName(package.displayName, G.g.bundleTree.BundleVersions.ResourceVersion);
+                 package.fileName = G.configs.Runner.GetPackageFileName(package.displayName, G.g.bundleTree.Versions.ResourceVersion);
             }
         }
 

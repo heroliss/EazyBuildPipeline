@@ -220,7 +220,6 @@ namespace EazyBuildPipeline.BundleManager.Editor.Configs
             public string CurrentBundleMap;
             public int CurrentBuildAssetBundleOptionsValue;
             public int CurrentResourceVersion;
-            public int CurrentBundleVersion;
             public bool Applying;
             public bool IsPartOfPipeline;
         }

@@ -293,7 +293,9 @@
       "Assets/ABOriginalResources/Audio/SkillSound/Boss/Rumen01/qunshizhuiluo.wav",
       "Assets/ABOriginalResources/Audio/SkillSound/Boss/Rumen01/shenyuanhuhuan.wav",
       "Assets/ABOriginalResources/Audio/SkillSound/Boss/Rumen01/xiaoxingyunshizidan.wav",
-      "Assets/ABOriginalResources/Audio/SkillSound/Boss/Rumen01/Introduce_Boss_Rumen.wav"
+      "Assets/ABOriginalResources/Audio/SkillSound/Boss/Rumen01/Introduce_Boss_Rumen.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Boss/Rumen01/baoliehuoqiu.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Boss/Rumen01/linghunchongji.wav"
     ],
     "addressableNames": null
   },
@@ -2263,6 +2265,22 @@
     "assetBundleVariant": null,
     "assetNames": [
       "Assets/ABOriginalResources/Audio/UISound/UI_zhuanpan02.wav"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/audio/uisound/ui_nanduqiehuan_wav",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Audio/UISound/UI_nanduqiehuan.wav"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/audio/uisound/ui_beibaocailiaodianji_wav",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Audio/UISound/UI_beibaocailiaodianji.wav"
     ],
     "addressableNames": null
   },
@@ -4976,7 +4994,8 @@
       "Assets/ABOriginalResources/Png/Items/Consumable/pintu_maowang10.png",
       "Assets/ABOriginalResources/Png/Items/Consumable/pintu_maowang11.png",
       "Assets/ABOriginalResources/Png/Items/Consumable/pintu_xinniang17.png",
-      "Assets/ABOriginalResources/Png/Items/Consumable/pintu_xinniang18.png"
+      "Assets/ABOriginalResources/Png/Items/Consumable/pintu_xinniang18.png",
+      "Assets/ABOriginalResources/Png/Items/Consumable/fuhuoshi.png"
     ],
     "addressableNames": null
   },
@@ -7487,6 +7506,38 @@
     "addressableNames": null
   },
   {
+    "assetBundleName": "aboriginalresources/wowprefabs/avatar/hero/prefab_hero_lunarchild01_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Avatar/Hero/Prefab_Hero_LunarChild01.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/avatar/hero/prefab_hero_lunarchild01_low_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Avatar/Hero/Prefab_Hero_LunarChild01_Low.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/avatar/hero/prefab_hero_westernsheriff01_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Avatar/Hero/Prefab_Hero_WesternSheriff01.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/avatar/hero/prefab_hero_westernsheriff01_low_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Avatar/Hero/Prefab_Hero_WesternSheriff01_Low.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
     "assetBundleName": "aboriginalresources/wowprefabs/avatar/monster/prefab_monster_angelsheep01_prefab",
     "assetBundleVariant": null,
     "assetNames": [
@@ -8715,6 +8766,24 @@
     "addressableNames": null
   },
   {
+    "assetBundleName": "aboriginalresources/wowprefabs/avatarperformance/herodrunby/lunarchild01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/AvatarPerformance/HeroDrunby/LunarChild01/LunarChild01_drunby.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/AvatarPerformance/HeroDrunby/LunarChild01/Show_Hero_LunarChild01.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/avatarperformance/herodrunby/westernsheriff01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/AvatarPerformance/HeroDrunby/WesternSheriff01/Show_Hero_WesternSheriff01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/AvatarPerformance/HeroDrunby/WesternSheriff01/WesternSheriff01_drunby.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
     "assetBundleName": "aboriginalresources/wowprefabs/avatarperformance/herorelax/skill_hero_archer01_relaxaction_prefab",
     "assetBundleVariant": null,
     "assetNames": [
@@ -8959,6 +9028,22 @@
     "assetBundleVariant": null,
     "assetNames": [
       "Assets/ABOriginalResources/WowPrefabs/AvatarPerformance/HeroRelax/Skill_Hero_Meidusha01_relaxAction.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/avatarperformance/herorelax/skill_hero_lunarchild01_relaxaction_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/AvatarPerformance/HeroRelax/Skill_Hero_LunarChild01_relaxAction.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/avatarperformance/herorelax/skill_hero_westernsheriff01_relaxaction_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/AvatarPerformance/HeroRelax/Skill_Hero_WesternSheriff01_relaxAction.prefab"
     ],
     "addressableNames": null
   },
@@ -10696,7 +10781,21 @@
     "assetBundleName": "aboriginalresources/wowprefabs/skill/boss/dark",
     "assetBundleVariant": null,
     "assetNames": [
-      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Skill_Boss_Dark_pugong01.prefab"
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Skill_Boss_Dark_pugong01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Skill_Boss_Dark_pugong02.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Skill_Boss_Dark_nuqidun.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Skill_Boss_Dark_nengliangpao.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Skill_Boss_Dark_fangzhulieyan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Effect_Boss_Dark_pugong_zidan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Effect_Boss_Dark_nuqidun_shifang.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Effect_Boss_Dark_nengliangpao_xuli.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Effect_Boss_Dark_nengliangpao.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Effect_Boss_Dark_fangzhulieyan_zidan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Effect_Boss_Dark_fangzhulieyan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Bullet_Boss_Dark_pugong02.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Bullet_Boss_Dark_pugong01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Buff_Boss_Dark_pugong_baodian.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Dark/Buff_Boss_Dark_nuqidun.prefab"
     ],
     "addressableNames": null
   },
@@ -11505,6 +11604,55 @@
       "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/Meidusha01/Skill_Hero_Meidusha01_shihuazhiyan.prefab",
       "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/Meidusha01/Skill_Hero_Meidusha01_shihuazhiyan_L.prefab",
       "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/Meidusha01/Skill_Hero_Meidusha01_shihuazhiyan_R.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/skill/hero/lunarchild01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Buff_LunarChild01_xingchenzhuiluo_zidan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Buff_LunarChild01_yueshi_fashe.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Bullet_Hero_LunarChild01_banyue01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Bullet_Hero_LunarChild01_liuxingyunluo01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Bullet_Hero_LunarChild01_manyue01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Bullet_Hero_LunarChild01_pugong01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Bullet_Hero_LunarChild01_xingchenzhuiluo01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Bullet_Hero_LunarChild01_xinyue01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Bullet_Hero_LunarChild01_yueshenjingu01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Effect_LunarChild01_Low_yueshenjingu.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_banyue01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_liuxingyunluo01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_manyue01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_pugong_L.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_pugong_R.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_pugong01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_xingchenzhuiluo01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_xinyue01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_yueshenjingu_L.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_yueshenjingu_R.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/LunarChild01/Skill_Hero_LunarChild01_yueshenjingu01.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/skill/hero/westernsheriff01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Bullet_Hero_WesternSheriff01_jisusheji01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Bullet_Hero_WesternSheriff01_pugong01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Bullet_Hero_WesternSheriff01_shanguangshoulei01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Bullet_Hero_WesternSheriff01_zhimingbiaoji01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Bullet_Hero_WesternSheriff01_zhimingjuji01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_jisusheji01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_pugong_L.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_pugong_R.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_pugong01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_shanguangshoulei01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_zhimingbiaoji_L.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_zhimingbiaoji_R.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_zhimingbiaoji01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Hero/WesternSheriff01/Skill_Hero_WesternSheriff01_zhimingjuji01.prefab"
     ],
     "addressableNames": null
   },
@@ -12691,6 +12839,17 @@
     "assetNames": [
       "Assets/ABOriginalResources/WowPrefabs/Skills/Summon/WoodSeed/Bullet_Boss_WoodSeed_yuansukuosan.prefab",
       "Assets/ABOriginalResources/WowPrefabs/Skills/Summon/WoodSeed/Skill_Boss_WoodSeed_yuansukuosan.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/skill/summon/healingcrystal",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Summon/HealingCrystal/Buff_Summon_HealingCrystal_banxue.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Summon/HealingCrystal/Buff_Summon_HealingCrystal_chongnengshexian_baodian.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Summon/HealingCrystal/Effect_Summon_HealingCrystal_chongnengshexian.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Summon/HealingCrystal/Skill_Summon_HealingCrystal_chongnengshexian.prefab"
     ],
     "addressableNames": null
   },
@@ -14090,7 +14249,9 @@
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HeroInfoPanel_New.prefab",
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HeroItem.prefab",
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HeroCommentItem.prefab",
-      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HeroStrategyPanel.prefab"
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HeroStrategyPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HolyPlatePage.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HolyPlatePanel.prefab"
     ],
     "addressableNames": null
   },
@@ -14892,6 +15053,41 @@
     "assetBundleVariant": null,
     "assetNames": [
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/WorldBoss/WorldBossRankPanel.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/ui/windows/racechallenge",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengeBattleRecordPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengeBuyTicketPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengeMainPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengePreparePanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengeRewardPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengeRulePanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengeSelectHeroPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengeSelectHeroScene.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallenge/RaceChallengeBattleEndPanel.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/ui/windows/racechallengebattleui",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/RaceChallengeBattleUI/RaceChallengeBattleUI.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/ui/windows/ultimatetestpanel",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/UltimateTestPanel/Mission.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/UltimateTestPanel/UltimateEndBattlePanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/UltimateTestPanel/UltimateTestBossScene.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/UltimateTestPanel/UltimateTestPanel.prefab"
     ],
     "addressableNames": null
   },
@@ -27713,7 +27909,6 @@
     "assetBundleVariant": null,
     "assetNames": [
       "Assets/EazygameGraphics/Resources/Opaque/(Legacy)/Dynamic_Crystal.shader",
-      "Assets/EazygameGraphics/Resources/Opaque/(Legacy)/Dynamic_Lv0.shader",
       "Assets/EazygameGraphics/Resources/Opaque/(Legacy)/Dynamic_Lv1.shader",
       "Assets/EazygameGraphics/Resources/Opaque/(Legacy)/Dynamic_Lv1_Rim.shader",
       "Assets/EazygameGraphics/Resources/Opaque/(Legacy)/Dynamic_Lv2.shader",

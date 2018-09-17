@@ -12,17 +12,15 @@ namespace EazyBuildPipeline.PackageManager.Editor
     public class Runner : IRunner
     {
         struct BundleVersionStruct { public string BundleName; public string Version; };
-        struct DownloadFlagStruct 
+        struct PackageManifestStruct 
         { 
             public int flag_; 
-            public string name_; 
-            public string ClientVersion;
-            public string ResourceVersion;
+            public string name_;
             public int location_; 
             public bool hasDownloaded_; 
         };
 
-        public int BundleVersion, ResourceVersion;
+        public int ResourceVersion;
 
         Configs.Configs configs;
         public Runner(Configs.Configs configs)
@@ -115,12 +113,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
             int count = 0;
             int total = 0;
             float progress = 0;
-            var packageMap = configs.PackageMapConfig.Json.Packages;
-            foreach (var package in packageMap)
+            var packages = configs.PackageMapConfig.Json.Packages;
+            foreach (var package in packages)
             {
                 total += package.Bundles.Count;
             }
-            int packagesCount = packageMap.Count;
+            int packagesCount = packages.Count;
             
             //TODO:构建map改进方法
             //if (Configs.g.bundleTree.BundleBuildMap == null)
@@ -145,7 +143,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
             Directory.CreateDirectory(packagesFolderPath);
             //设置路径
             string bundlesRootPathInPackage = "AssetBundles/" + configs.CurrentConfig.Json.CurrentTags[0].ToLower() + "/AssetBundles/";
-            string extraInfoFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.Json.CurrentTags[0].ToLower() + "/extra_info";
             string bundleVersionFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.Json.CurrentTags[0].ToLower() + "/bundle_version";
             string mapFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.Json.CurrentTags[0].ToLower() + "/maps/map";
             string streamingPath = Path.Combine("Assets/StreamingAssets/AssetBundles", configs.CurrentConfig.Json.CurrentTags[0]);
@@ -155,20 +152,24 @@ namespace EazyBuildPipeline.PackageManager.Editor
             switch (configs.PackageMapConfig.Json.PackageMode)
             {
                 case "Patch":
-                    mapFilePathInPackage += "_" + BundleVersion;
+                    mapFilePathInPackage += "_" + ResourceVersion;
                     break;
 
                 case "Addon":
                     EditorUtility.DisplayProgressBar("正在获取需要拷贝到Streaming中的Bundles信息", "", progress); progress += 0.01f;
                     //得到需要拷贝到Streaming中的Bundles
                     List<string> bundlesCopyToStreaming = new List<string>();
-                    foreach (var package in packageMap)
+                    //List<string> bundlesCopyToStreaming_all = new List<string>();
+
+                    foreach (var package in packages)
                     {
                         if (package.CopyToStreaming)
                         {
                             bundlesCopyToStreaming = bundlesCopyToStreaming.Union(package.Bundles).ToList();
                         }
+                        //bundlesCopyToStreaming_all = bundlesCopyToStreaming_all.Union(package.Bundles).ToList();
                     }
+
                     //重建StreamingAssets/AssetBundles/[Platform]目录
                     EditorUtility.DisplayProgressBar("正在重建StreamingAssets目录:", "Assets/StreamingAssets/AssetBundles", progress); progress += 0.01f;
                     if (Directory.Exists("Assets/StreamingAssets/AssetBundles"))
@@ -177,55 +178,48 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                     Directory.CreateDirectory(streamingPath);
 
-                    //构建download_flag.json
-                    EditorUtility.DisplayProgressBar("正在StreamingAssets中构建文件", "download_flag.json", progress); progress += 0.01f;
-                    List<DownloadFlagStruct> flagList = new List<DownloadFlagStruct>();
-                    //单独加一个小包的配置信息
-                    string miniPackageName = string.Join("_", new string[]{
+                    //构建PackageManifest.json
+                    EditorUtility.DisplayProgressBar("正在StreamingAssets中构建文件", "PackageManifest.json", progress); progress += 0.01f;
+                    List<PackageManifestStruct> packageManifest = new List<PackageManifestStruct>();
+                    //单独加一个核心包的配置信息
+                    string corePackageName = string.Join("_", new string[]{
                         configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
                         configs.PackageMapConfig.Json.PackageMode.ToLower(),
-                        configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:buildNum如何加进去?
-                        "default"}) + configs.LocalConfig.Json.PackageExtension;
-                    flagList.Add(new DownloadFlagStruct()
+                        configs.CurrentConfig.Json.CurrentAddonVersion,
+                        "Core"}) + configs.LocalConfig.Json.PackageExtension;
+                    packageManifest.Add(new PackageManifestStruct
                     {
-                        name_ = miniPackageName,
+                        name_ = corePackageName,
                         flag_ = G.NecesseryEnum.IndexOf("Immediate"),
                         location_ = G.DeploymentLocationEnum.IndexOf("Built-in"),
-                        hasDownloaded_ = false,
-                        ClientVersion = configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:buildNum如何加进去?
-                        ResourceVersion = BundleVersion.ToString()
+                        hasDownloaded_ = false
                     });
 
                     //所有package的配置信息
-                    foreach (var package in packageMap)
+                    foreach (var package in packages)
                     {
-                        flagList.Add(new DownloadFlagStruct()
+                        packageManifest.Add(new PackageManifestStruct
                         {
                             name_ = GetPackageFileName(package.PackageName, ResourceVersion),
                             flag_ = G.NecesseryEnum.IndexOf(package.Necessery),
                             location_ = G.DeploymentLocationEnum.IndexOf(package.DeploymentLocation),
-                            hasDownloaded_ = package.CopyToStreaming, //TODO:这里真的永为false？？ 
-                            ClientVersion = configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:buildNum如何加进去?
-                            ResourceVersion = BundleVersion.ToString()
+                            hasDownloaded_ = package.CopyToStreaming
                         });
                     }
-                    string downloadFlagContent = JsonConvert.SerializeObject(flagList, Formatting.Indented);
-                    File.WriteAllText(Path.Combine(streamingPath, "download_flag.json"), downloadFlagContent);
+                    string packageManifestContent = JsonConvert.SerializeObject(packageManifest, Formatting.Indented);
+                    File.WriteAllText(Path.Combine(streamingPath, "PackageManifest.json"), packageManifestContent);
 
-                    //构建小包 
-                    string miniPackagePath = Path.Combine(streamingPath, miniPackageName); //TODO:小包命名如何搞？GetPackageFileName(package.PackageName, ResourceVersion)
-                    EditorUtility.DisplayProgressBar("正在向StreamingAssets中构建miniPackage", miniPackagePath, progress); progress += 0.01f;
-                    using (FileStream zipFileStream = new FileStream(miniPackagePath, FileMode.Create))
+                    //构建核心包
+                    string corePackagePath = Path.Combine(streamingPath, corePackageName);
+                    EditorUtility.DisplayProgressBar("正在向StreamingAssets中构建CorePackage", corePackagePath, progress); progress += 0.01f;
+                    using (FileStream zipFileStream = new FileStream(corePackagePath, FileMode.Create))
                     {
                         using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                         {
                             zipStream.SetLevel(configs.PackageMapConfig.Json.CompressionLevel);
 
-                            //构建extra_info   //TODO:无用的配置文件，可删
-                            //BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(miniPackageName), zipStream);
-
                             //构建bundle_version
-                            BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, BundleVersion, bundlesCopyToStreaming, zipStream);
+                            BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, ResourceVersion, bundlesCopyToStreaming, zipStream);
 
                             //构建map
                             BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
@@ -261,7 +255,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             float restProgress = 1 - progress;
             for (int pi = 0; pi < packagesCount; pi++)
             {
-                var package = packageMap[pi];
+                var package = packages[pi];
                 using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, GetPackageFileName(package.PackageName, ResourceVersion)), FileMode.Create))
                 {
                     using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
@@ -294,12 +288,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         {
                             zipStream.PutNextEntry(new ZipEntry(package.EmptyFolders[i] + "/") { });
                         }
-
-                        //构建extra_info
-                        //BuildExtraInfoInZipStream(extraInfoFilePathInPackage, ResourceVersion, Path.GetFileNameWithoutExtension(GetPackageFileName(package.PackageName, ResourceVersion)), zipStream);
-
+                        
                         //构建bundle_version
-                        BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, BundleVersion, package.Bundles, zipStream);
+                        BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, ResourceVersion, package.Bundles, zipStream);
 
                         //以下为每个包中Patch和Addon独有内容
                         switch (configs.PackageMapConfig.Json.PackageMode)

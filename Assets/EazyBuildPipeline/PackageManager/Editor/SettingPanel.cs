@@ -146,8 +146,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
             //VersionPanel
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-            EditorGUILayout.LabelField("Resource Version: " + G.g.bundleTree.BundleVersions.ResourceVersion, labelStyle, GUILayout.MaxWidth(150));
-            EditorGUILayout.LabelField("  Bundle Version: " + G.g.bundleTree.BundleVersions.BundleVersion, labelStyle, GUILayout.MaxWidth(150));
+            EditorGUILayout.LabelField("Resource Version: " + G.g.bundleTree.Versions.ResourceVersion, labelStyle, GUILayout.MaxWidth(150));
             GUILayout.FlexibleSpace();
             if (G.configs.PackageMapConfig.Json.PackageMode == "Addon")
             {
@@ -228,8 +227,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
                     double startTime = EditorApplication.timeSinceStartup;
-                    G.configs.Runner.BundleVersion = G.g.bundleTree.BundleVersions.BundleVersion;
-                    G.configs.Runner.ResourceVersion = G.g.bundleTree.BundleVersions.ResourceVersion;
+                    G.configs.Runner.ResourceVersion = G.g.bundleTree.Versions.ResourceVersion;
                     G.configs.Runner.Run();
 
                     TimeSpan time = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);

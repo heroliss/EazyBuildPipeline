@@ -51,7 +51,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), configs.CurrentConfig.Json.CurrentTags[0], true);
             int optionsValue = configs.CurrentConfig.Json.CurrentBuildAssetBundleOptionsValue;
             int resourceVersion = configs.CurrentConfig.Json.CurrentResourceVersion;
-            int bundleVersion = configs.CurrentConfig.Json.CurrentBundleVersion;
             string tagPath = Path.Combine(configs.LocalConfig.BundlesFolderPath, EBPUtility.GetTagStr(configs.CurrentConfig.Json.CurrentTags));
 
             //创建目录
@@ -77,8 +76,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             EditorUtility.DisplayProgressBar("Build Bundles", "Creating Info Files...", 0.95f);
             File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(configs.BundleBuildMapConfig.Json, Formatting.Indented));
             File.WriteAllText(Path.Combine(infoPath, "Versions.json"), JsonConvert.SerializeObject(new Dictionary<string, int> {
-                    { "ResourceVersion", resourceVersion },
-                    { "BundleVersion", bundleVersion } }, Formatting.Indented));
+                { "ResourceVersion", resourceVersion } }, Formatting.Indented));
             //创建Map文件
             //此处保留旧map文件的生成方式
             AssetBundleManagement.ABExtractItemBuilder.BuildMapperFile(AssetBundleManagement.ABExtractItemBuilder.BuildAssetMapper(configs.BundleBuildMapConfig.Json), Path.Combine(infoPath, "map"));

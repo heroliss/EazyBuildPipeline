@@ -11,8 +11,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
 {
     public class BundleTree : TreeView
 	{
-        public struct BundleVersionsStruct { public int ResourceVersion; public int BundleVersion; }
-        public BundleVersionsStruct BundleVersions;
+        public struct VersionsStruct { public int ResourceVersion; }
+        public VersionsStruct Versions;
         public AssetBundleBuild[] BundleBuildMap;
         public Texture2D folderIcon, bundleIcon, bundleIcon_Scene;
         public class BundleTreeItemDictionary : SerializableDictionary<string, BundleTreeItem> { }
@@ -277,11 +277,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             try
             {
-                BundleVersions = new BundleVersionsStruct() { BundleVersion = -1, ResourceVersion = -1 };
+                Versions = new VersionsStruct() { ResourceVersion = -1 };
                 BundleBuildMap = null;
                 string versionPath = Path.Combine(G.configs.GetBundleInfoFolderPath(), "Versions.json");
                 string buildMapPath = Path.Combine(G.configs.GetBundleInfoFolderPath(), "BuildMap.json");
-                BundleVersions = JsonConvert.DeserializeObject<BundleVersionsStruct>(File.ReadAllText(versionPath));
+                Versions = JsonConvert.DeserializeObject<VersionsStruct>(File.ReadAllText(versionPath));
                 BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
             }
             catch //(Exception e)
