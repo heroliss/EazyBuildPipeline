@@ -1,0 +1,102 @@
+{
+  "PlayerSettings": {
+    "General": {
+      "ScriptDefines": [],
+      "CompanyName": "EazyGame",
+      "ProductName": "t102R"
+    },
+    "IOS": {
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Current Script Defines",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "SUBBUNDLEVERSION"
+            },
+            {
+              "Active": true,
+              "Define": "DATA_TRANSMISSION_ENCRYPTION"
+            }
+          ]
+        }
+      ],
+      "BundleID": "com.eazygame.ppp",
+      "ClientVersion": "1.2.6",
+      "BuildNumber": "1",
+      "AutomaticallySign": false,
+      "TeamID": "64QESVY428",
+      "CameraUsageDesc": "aaaaaaaaaaaaaa",
+      "LocationUsageDesc": "bbbbbbbbbbbb",
+      "MicrophoneUsageDesc": "cccccccccccccc",
+      "TargetDevice_str": "iPhoneOnly",
+      "TargetSDK_str": "DeviceSDK",
+      "TargetMinimumIOSVersion": "8.1",
+      "StripEngineCode": false,
+      "ScriptCallOptimization_str": "SlowAndSafe",
+      "ProvisioningProfile": "b96fe178-0522-4116-9ca1-c7fed2b877a7",
+      "Architecture_str": "Universal",
+      "ThirdFrameWorkPath": "/Users/eazydev/qqqqq/FrameWork",
+      "ExportIpaPath": "",
+      "IsBuildArchive": false,
+      "BlueToothUsageDesc": "dddddddddddd",
+      "PhotoUsageDesc": "eeeeeeeeeeeeee",
+      "PhotoUsageAddDesc": "fffffffffffffffffffff",
+      "TaskPath": "",
+      "BuglyAppID": "",
+      "BuglyAppKey": "",
+      "TargetDevice": 0,
+      "TargetSDK": 988,
+      "ScriptCallOptimization": 0,
+      "Architecture": 2
+    },
+    "Android": {
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Current Script Defines",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "SUBBUNDLEVERSION"
+            },
+            {
+              "Active": true,
+              "Define": "G_WRAPFILE_HANDLE_TOLUA_EXCEPTIONS"
+            },
+            {
+              "Active": true,
+              "Define": "DATA_TRANSMISSION_ENCRYPTION"
+            }
+          ]
+        }
+      ],
+      "PreserveFramebufferAlpha": false,
+      "BlitType_str": "Never",
+      "ProtectGraphicsMemory": false,
+      "ClientVersion": "1.2.6",
+      "BundleVersionCode": 1,
+      "MinimumAPILevel_str": "AndroidApiLevel16",
+      "TargetAPILevel_str": "AndroidApiLevelAuto",
+      "InstallLocation_str": "Auto",
+      "ForceInternetPermission": true,
+      "ForceSDCardPermission": true,
+      "AndroidTVCompatibility": true,
+      "AndroidGame": true,
+      "StripEngineCode": false,
+      "DeviceFilter_str": "ARMv7",
+      "PackageName": "com.eazygame.projectnormalcrh052601t102r",
+      "BlitType": 1,
+      "MinimumAPILevel": 16,
+      "TargetAPILevel": 0,
+      "InstallLocation": 0,
+      "InternetAccess": 1,
+      "WritePermission": 1,
+      "DeviceFilter": 3
+    }
+  },
+  "BuildSettings": {
+    "CompressionMethod": 0
+  }
+}

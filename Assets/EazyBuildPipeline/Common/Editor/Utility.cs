@@ -25,6 +25,10 @@ namespace EazyBuildPipeline
         /// <returns></returns>
         public static string[] FindFilesRelativePathWithoutExtension(string rootPath, string searchPattern = "*.json")
         {
+            if (!Directory.Exists(rootPath))
+            {
+                return new string[0];
+            }
             List<string> filePaths = new List<string>();
             List<string> fileNames = new List<string>();
             RecursiveFindFiles(rootPath, filePaths, searchPattern);

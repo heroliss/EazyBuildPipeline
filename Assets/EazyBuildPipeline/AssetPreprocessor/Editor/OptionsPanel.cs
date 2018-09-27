@@ -28,7 +28,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         public void OnEnable()
         {
             InitOptions();
-            G.g.OnChangeCurrentConfig += Reset;
+            G.g.OnChangeCurrentUserConfig += Reset;
         }
 
         public void Reset()
@@ -110,20 +110,20 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void UpdateCurrentConfig()
         {
-            var group = G.configs.CurrentSavedConfig.Json.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
+            var group = G.Module.UserConfig.Json.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
             if (group == null)
             {
-                group = new Configs.CurrentSavedConfig.Group
+                group = new Configs.UserConfig.Group
                 {
                     FullGroupName = Group.FullGroupName
                 };
-                G.configs.CurrentSavedConfig.Json.Groups.Add(group);
+                G.Module.UserConfig.Json.Groups.Add(group);
             }
             if (Group.MultiSelect)
             {
                 if (Options.Count == 0)
                 {
-                    G.configs.CurrentSavedConfig.Json.Groups.Remove(group);
+                    G.Module.UserConfig.Json.Groups.Remove(group);
                 }
                 else
                 {
@@ -161,7 +161,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 {
                     Options[key] = false;
                 }
-                var group = G.configs.CurrentSavedConfig.Json.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
+                var group = G.Module.UserConfig.Json.Groups.Find(x => x.FullGroupName == Group.FullGroupName);
                 //if (group.Options != null)
                 {
                     if (Group.MultiSelect)

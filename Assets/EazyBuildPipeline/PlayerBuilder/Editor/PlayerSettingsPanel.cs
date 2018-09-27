@@ -36,14 +36,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
         public void Awake()
         {
             InitStyles();
-            //try
-            //{
-            //    LoadAllConfigs();
-            //}
-            //catch (Exception e)
-            //{
-            //    G.configs.DisplayDialog("加载配置文件时发生错误：" + e.Message);
-            //}
         }
         public void OnEnable()
         {
@@ -85,27 +77,27 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
         private void OnValueChanged()
         {
-            G.configs.PlayerSettingsConfig.Dirty = true;
+            G.Module.UserConfig.IsDirty = true;
         }
 
         private void AndroidPanel()
         {
-            var ps = G.configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = G.Module.UserConfig.Json.PlayerSettings;
             scrollPosition_Android = EditorGUILayout.BeginScrollView(scrollPosition_Android);
 
             EditorGUILayout.LabelField("Identification", EditorStyles.boldLabel);
             EBPEditorGUILayout.TextField("Package Name", ref ps.Android.PackageName, OnValueChanged);
             EBPEditorGUILayout.TextField("Client Version", ref ps.Android.ClientVersion, OnValueChanged);
             EBPEditorGUILayout.IntField("Bundle Version Code", ref ps.Android.BundleVersionCode, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Minimum API Level", ps.Android.MinimumAPILevel, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Target API Level", ps.Android.TargetAPILevel, OnValueChanged);
+            ps.Android.MinimumAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Minimum API Level", ps.Android.MinimumAPILevel, OnValueChanged);
+            ps.Android.TargetAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Target API Level", ps.Android.TargetAPILevel, OnValueChanged);
 
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Configuration", EditorStyles.boldLabel);
-            EBPEditorGUILayout.EnumPopup("Device Filter", ps.Android.DeviceFilter, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Install Location", ps.Android.InstallLocation, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Internet Access", ps.Android.InternetAccess, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Write Permission", ps.Android.WritePermission, OnValueChanged);
+            ps.Android.DeviceFilter = (AndroidTargetDevice)EBPEditorGUILayout.EnumPopup("Device Filter", ps.Android.DeviceFilter, OnValueChanged);
+            ps.Android.InstallLocation = (AndroidPreferredInstallLocation)EBPEditorGUILayout.EnumPopup("Install Location", ps.Android.InstallLocation, OnValueChanged);
+            ps.Android.InternetAccess = (Configs.UserConfig.PlayerSettings.AndroidSettings.InternetAccessEnum)EBPEditorGUILayout.EnumPopup("Internet Access", ps.Android.InternetAccess, OnValueChanged);
+            ps.Android.WritePermission = (Configs.UserConfig.PlayerSettings.AndroidSettings.WritePermissionEnum)EBPEditorGUILayout.EnumPopup("Write Permission", ps.Android.WritePermission, OnValueChanged);
 
             EditorGUILayout.Separator();
             EBPEditorGUILayout.Toggle("Android TV Compatibility", ref ps.Android.AndroidTVCompatibility, OnValueChanged);
@@ -116,7 +108,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Resolution", EditorStyles.boldLabel);
             EBPEditorGUILayout.Toggle("Preserve Framebuffer Alpha", ref ps.Android.PreserveFramebufferAlpha, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Blit Type", ps.Android.BlitType, OnValueChanged);
+            ps.Android.BlitType = (AndroidBlitType)EBPEditorGUILayout.EnumPopup("Blit Type", ps.Android.BlitType, OnValueChanged);
 
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Rendering", EditorStyles.boldLabel);
@@ -128,7 +120,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
         private void IOSPanel()
         {
-            var ps = G.configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = G.Module.UserConfig.Json.PlayerSettings;
             scrollPosition_IOS = EditorGUILayout.BeginScrollView(scrollPosition_IOS);
 
             EditorGUILayout.LabelField("Identity", EditorStyles.boldLabel);
@@ -146,15 +138,15 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Deployment Info", EditorStyles.boldLabel);
-            EBPEditorGUILayout.EnumPopup("Target Device", ps.IOS.TargetDevice, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Target SDK", ps.IOS.TargetSDK, OnValueChanged);
+            ps.IOS.TargetDevice = (iOSTargetDevice)EBPEditorGUILayout.EnumPopup("Target Device", ps.IOS.TargetDevice, OnValueChanged);
+            ps.IOS.TargetSDK = (iOSSdkVersion)EBPEditorGUILayout.EnumPopup("Target SDK", ps.IOS.TargetSDK, OnValueChanged);
             EBPEditorGUILayout.TextField("Target minimum Version", ref ps.IOS.TargetMinimumIOSVersion, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Architecture", ps.IOS.Architecture, OnValueChanged);
+            ps.IOS.Architecture = (Configs.UserConfig.PlayerSettings.IOSSettings.ArchitectureEnum)EBPEditorGUILayout.EnumPopup("Architecture", ps.IOS.Architecture, OnValueChanged);
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Optimization", EditorStyles.boldLabel);
             EBPEditorGUILayout.Toggle("Strip Engine Code", ref ps.IOS.StripEngineCode, OnValueChanged);
-            EBPEditorGUILayout.EnumPopup("Script Call Optimization", ps.IOS.ScriptCallOptimization, OnValueChanged);
+            ps.IOS.ScriptCallOptimization = (ScriptCallOptimizationLevel)EBPEditorGUILayout.EnumPopup("Script Call Optimization", ps.IOS.ScriptCallOptimization, OnValueChanged);
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Description", EditorStyles.boldLabel);
@@ -181,7 +173,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
         private void GeneralPanel()
         {
-            var ps = G.configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = G.Module.UserConfig.Json.PlayerSettings;
             scrollPosition_General = EditorGUILayout.BeginScrollView(scrollPosition_General);
 
             EditorGUILayout.LabelField("General Player Settings", EditorStyles.boldLabel);
@@ -190,21 +182,21 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Build Settings", EditorStyles.boldLabel);
-            EBPEditorGUILayout.EnumPopup("Compression Method", G.configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod, OnValueChanged);
+            G.Module.UserConfig.Json.BuildSettings.CompressionMethod =(Configs.UserConfig.BuildSettings.CompressionMethodEnum)EBPEditorGUILayout.EnumPopup("Compression Method", G.Module.UserConfig.Json.BuildSettings.CompressionMethod, OnValueChanged);
             
             //以下为当前配置，不保存在配置文件中
             EditorGUILayout.Separator();
-            EBPEditorGUILayout.Toggle("Development Build", ref G.configs.CurrentConfig.Json.DevelopmentBuild);
-            EditorGUI.BeginDisabledGroup(!G.configs.CurrentConfig.Json.DevelopmentBuild);
-            EBPEditorGUILayout.Toggle("AutoConnect Profiler", ref G.configs.CurrentConfig.Json.ConnectWithProfiler);
-            EBPEditorGUILayout.Toggle("Script Debugging", ref G.configs.CurrentConfig.Json.AllowDebugging);
+            EBPEditorGUILayout.Toggle("Development Build", ref G.Module.ModuleStateConfig.Json.DevelopmentBuild);
+            EditorGUI.BeginDisabledGroup(!G.Module.ModuleStateConfig.Json.DevelopmentBuild);
+            EBPEditorGUILayout.Toggle("AutoConnect Profiler", ref G.Module.ModuleStateConfig.Json.ConnectWithProfiler);
+            EBPEditorGUILayout.Toggle("Script Debugging", ref G.Module.ModuleStateConfig.Json.AllowDebugging);
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndScrollView();
         }
 
         private void ScriptDefinesPanel()
         {
-            var ps = G.configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = G.Module.UserConfig.Json.PlayerSettings;
             EditorGUILayout.BeginHorizontal();
             selectedPlatformToggle = GUILayout.Toolbar(selectedPlatformToggle, platformToggles, GUILayout.Height(30), GUILayout.MaxWidth(300));
             string platform = platformToggles[selectedPlatformToggle];
@@ -214,21 +206,21 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 switch (platform)
                 {
                     case "General":
-                        ps.General.ScriptDefines.Add(new Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
+                        ps.General.ScriptDefines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
                         break;
                     case "iOS":
-                        ps.IOS.ScriptDefines.Add(new Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
+                        ps.IOS.ScriptDefines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
                         break;
                     case "Android":
-                        ps.Android.ScriptDefines.Add(new Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
+                        ps.Android.ScriptDefines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
                         break;
                 }
-                G.configs.PlayerSettingsConfig.Dirty = true;
+                G.Module.UserConfig.IsDirty = true;
             }
             if (GUILayout.Button("Apply All Defines", GUILayout.Height(30)))
             {
-                G.configs.Runner.ApplyScriptDefines(BuildTargetGroup.iOS);
-                G.configs.Runner.ApplyScriptDefines(BuildTargetGroup.Android);
+                G.Runner.ApplyScriptDefines(BuildTargetGroup.iOS);
+                G.Runner.ApplyScriptDefines(BuildTargetGroup.Android);
             }
             EditorGUILayout.EndHorizontal();
 
@@ -254,9 +246,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             }
         }
 
-        private void ScriptDefineGroupPanel(List<Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup> scriptDefinesGroupList)
+        private void ScriptDefineGroupPanel(List<Configs.UserConfig.PlayerSettings.ScriptDefinesGroup> scriptDefinesGroupList)
         {
-            var ps = G.configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = G.Module.UserConfig.Json.PlayerSettings;
 
             for (int i = 0; i < scriptDefinesGroupList.Count; i++)
             {
@@ -268,7 +260,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 if(group.Active != b)
                 {
                     group.Active = b;
-                    G.configs.PlayerSettingsConfig.Dirty = true;
+                    G.Module.UserConfig.IsDirty = true;
                 }
 
                 EditorGUI.BeginDisabledGroup(!group.Active);
@@ -277,15 +269,15 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 if(group.GroupName != newDefineStr)
                 {
                     group.GroupName = newDefineStr;
-                    G.configs.PlayerSettingsConfig.Dirty = true;
+                    G.Module.UserConfig.IsDirty = true;
                 }
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("+"))
                 {
                     if (!group.Defines.Exists(x => x.Define == ""))
                     {
-                        group.Defines.Add(new Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefine() { Active = true, Define = "" });
-                        G.configs.PlayerSettingsConfig.Dirty = true;
+                        group.Defines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefine() { Active = true, Define = "" });
+                        G.Module.UserConfig.IsDirty = true;
                     }
                 }
                 if (GUILayout.Button("-"))
@@ -293,12 +285,12 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     bool ensure = true;
                     if (group.Defines.Count > 0)
                     {
-                        ensure = EditorUtility.DisplayDialog(G.configs.ModuleName, "确定要删除宏定义组“" + group.GroupName + "”及其所有内容？", "确定", "取消");
+                        ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定要删除宏定义组“" + group.GroupName + "”及其所有内容？", "确定", "取消");
                     }
                     if (ensure)
                     {
                         RemoveGroup(scriptDefinesGroupList, i);
-                        G.configs.PlayerSettingsConfig.Dirty = true;
+                        G.Module.UserConfig.IsDirty = true;
                     }
                 }
                 EditorGUILayout.Space();
@@ -307,14 +299,14 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     var t = scriptDefinesGroupList[i];
                     scriptDefinesGroupList[i] = scriptDefinesGroupList[i - 1];
                     scriptDefinesGroupList[i - 1] = t;
-                    G.configs.PlayerSettingsConfig.Dirty = true;
+                    G.Module.UserConfig.IsDirty = true;
                 }
                 if (GUILayout.Button("▼") && i < scriptDefinesGroupList.Count - 1)
                 {
                     var t = scriptDefinesGroupList[i];
                     scriptDefinesGroupList[i] = scriptDefinesGroupList[i + 1];
                     scriptDefinesGroupList[i + 1] = t;
-                    G.configs.PlayerSettingsConfig.Dirty = true;
+                    G.Module.UserConfig.IsDirty = true;
                 }
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space();
@@ -326,7 +318,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     if (define.Active != b)
                     {
                         define.Active = b;
-                        G.configs.PlayerSettingsConfig.Dirty = true;
+                        G.Module.UserConfig.IsDirty = true;
                     }
                     EditorGUI.BeginDisabledGroup(!define.Active);
                     newDefineStr = GUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle ,GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
@@ -343,7 +335,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                             UpdateRepeatList(ps.IOS.ScriptDefines, define);
                             UpdateRepeatList(ps.Android.ScriptDefines, define);
                         }
-                        G.configs.PlayerSettingsConfig.Dirty = true;
+                        G.Module.UserConfig.IsDirty = true;
                     }
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("-"))
@@ -351,12 +343,12 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         bool ensure = true;
                         if (define.Define != "")
                         {
-                            ensure = EditorUtility.DisplayDialog(G.configs.ModuleName, "确定要删除宏定义“" + define.Define + "”?", "确定", "取消");
+                            ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定要删除宏定义“" + define.Define + "”?", "确定", "取消");
                         }
                         if (ensure)
                         {
                             RemoveDefine(group, j);
-                            G.configs.PlayerSettingsConfig.Dirty = true;
+                            G.Module.UserConfig.IsDirty = true;
                         }
                     }
                     EditorGUILayout.Space();
@@ -365,14 +357,14 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         var t = group.Defines[j];
                         group.Defines[j] = group.Defines[j - 1];
                         group.Defines[j - 1] = t;
-                        G.configs.PlayerSettingsConfig.Dirty = true;
+                        G.Module.UserConfig.IsDirty = true;
                     }
                     if (GUILayout.Button("▽") && j < group.Defines.Count - 1)
                     {
                         var t = group.Defines[j];
                         group.Defines[j] = group.Defines[j + 1];
                         group.Defines[j + 1] = t;
-                        G.configs.PlayerSettingsConfig.Dirty = true;
+                        G.Module.UserConfig.IsDirty = true;
                     }
                     EditorGUI.EndDisabledGroup();
                     EditorGUILayout.EndHorizontal();
@@ -382,7 +374,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             }
         }
 
-        private static void UpdateRepeatList(List<Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup> groupList, Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefine currentDefine)
+        private static void UpdateRepeatList(List<Configs.UserConfig.PlayerSettings.ScriptDefinesGroup> groupList, Configs.UserConfig.PlayerSettings.ScriptDefine currentDefine)
         {
             foreach (var group in groupList)
             {
@@ -404,7 +396,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             }
         }
 
-        private static void RemoveGroup(List<Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup> groupList, int index)
+        private static void RemoveGroup(List<Configs.UserConfig.PlayerSettings.ScriptDefinesGroup> groupList, int index)
         {
             var group = groupList[index];
             while(group.Defines.Count > 0)
@@ -414,7 +406,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             groupList.RemoveAt(index);
         }
 
-        private static void RemoveDefine(Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup group, int index)
+        private static void RemoveDefine(Configs.UserConfig.PlayerSettings.ScriptDefinesGroup group, int index)
         {
             var define = group.Defines[index];
             for (int i = 0; i < define.RepeatList.Count; i++)

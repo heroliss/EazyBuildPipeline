@@ -6,12 +6,15 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using EazyBuildPipeline.AssetPreprocessor.Editor;
+using EazyBuildPipeline.AssetPreprocessor.Configs;
 
-namespace EazyBuildPipeline.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor
 {
-    public class Runner : IRunner
+    public partial class Runner : EBPRunner<Module,
+        ModuleConfig, ModuleConfig.JsonClass,
+        ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
-        Configs.Configs configs;
         public Process process;
         public int RuningShellCount;
         public int applyingID;
@@ -24,9 +27,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         public string applyingFile;
         public string errorMessage;
 
-        public Runner(Configs.Configs configs)
+        public Runner(Module module) : base(module)
         {
-            this.configs = configs;
         }
 
         private void RunShell_ShowProgress_WaitForExit(string arguments, string startMessage, string titleMessage)
@@ -118,24 +120,20 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             }
         }
 
-        public bool Check()
+        public override bool Check()
         {
-            if (!Directory.Exists(configs.LocalConfig.PreStoredAssetsFolderPath))
+            if (!Directory.Exists(Module.ModuleConfig.PreStoredAssetsFolderPath))
             {
-                configs.DisplayDialog("不能应用配置，找不到目录:" + configs.LocalConfig.PreStoredAssetsFolderPath);
+                Module.DisplayDialog("不能应用配置，找不到目录:" + Module.ModuleConfig.PreStoredAssetsFolderPath);
                 return false;
             }
             return true;
         }
 
-        public void Run(bool isPartOfPipeline = false)
+        protected override void RunProcess()
         {
-            configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
-            configs.CurrentConfig.Json.Applying = true;
-            configs.CurrentConfig.Save();
-
-            string tags = JsonConvert.SerializeObject(new string[] { "Applying" }.Concat(configs.CurrentSavedConfig.Json.Tags));
-            File.WriteAllText(configs.Common_AssetsTagsConfig.JsonPath, tags);
+            CommonModule.CommonConfig.Json.CurrentAssetTag = new string[] { "Applying" }.Concat(Module.UserConfig.Json.Tags).ToArray();
+            CommonModule.CommonConfig.Save();
 
             string platform = "";//TODO：这里能否使用EditorUserBuildSettings.activeBuildTarget？
 #if UNITY_ANDROID
@@ -144,10 +142,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             platform = "iPhone";
 #endif
             //TODO:这里能否再优化一下结构？
-            string copyFileArgs = Path.Combine(configs.LocalConfig.Local_ShellsFolderPath, "CopyFile.sh") + " " + configs.LocalConfig.LogsFolderPath + " Assets " + configs.LocalConfig.PreStoredAssetsFolderPath;
-            string changeMetaArgs = Path.Combine(configs.LocalConfig.Local_ShellsFolderPath, "ModifyMeta.sh") + " " + configs.LocalConfig.LogsFolderPath + " Assets " + platform;
+            string copyFileArgs = Path.Combine(Module.ModuleConfig.ShellsFolderPath, "CopyFile.sh") + " " + Module.ModuleConfig.LogsFolderPath + " Assets " + Module.ModuleConfig.PreStoredAssetsFolderPath;
+            string changeMetaArgs = Path.Combine(Module.ModuleConfig.ShellsFolderPath, "ModifyMeta.sh") + " " + Module.ModuleConfig.LogsFolderPath + " Assets " + platform;
             int changeMetaArgsLength = changeMetaArgs.Length;
-            foreach (var group in configs.CurrentSavedConfig.Json.Groups)
+            foreach (var group in Module.UserConfig.Json.Groups)
             {
                 switch (group.FullGroupName)
                 {
@@ -194,13 +192,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 RunShell_ShowProgress_WaitForExit(changeMetaArgs, "正在查找.meta文件...", "第2步(共2步) 修改meta文件");
             }
 
-            tags = JsonConvert.SerializeObject(configs.CurrentSavedConfig.Json.Tags);
-            File.WriteAllText(configs.Common_AssetsTagsConfig.JsonPath, tags);
-
-            configs.CurrentConfig.Json.Applying = false;
-            configs.CurrentConfig.Save();
-
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            CommonModule.CommonConfig.Json.CurrentAssetTag = Module.UserConfig.Json.Tags;
+            CommonModule.CommonConfig.Save();
         }
     }
 }

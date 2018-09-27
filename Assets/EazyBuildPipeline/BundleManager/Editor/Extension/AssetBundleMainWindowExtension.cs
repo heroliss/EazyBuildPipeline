@@ -38,14 +38,14 @@ namespace AssetBundleManagement2
 
         public void AutoSaveBuildMap(string path)
         {
-            if (EazyBuildPipeline.BundleManager.Editor.G.g != null)
+            if (EazyBuildPipeline.BundleManager.G.g != null)
             {
-                var buildMap = EazyBuildPipeline.BundleManager.Editor.G.g.mainTab.GetBuildMap_extension();
+                var buildMap = EazyBuildPipeline.BundleManager.G.g.mainTab.GetBuildMap_extension();
                 System.IO.File.WriteAllText(System.IO.Path.Combine(
-                    EazyBuildPipeline.BundleManager.Editor.G.configs.LocalConfig.Local_BundleMapsFolderPath,
+                    EazyBuildPipeline.BundleManager.G.Module.ModuleConfig.UserConfigsFolderPath,
                     System.IO.Path.GetFileName(path) + ".json"),
                     Newtonsoft.Json.JsonConvert.SerializeObject(buildMap, Newtonsoft.Json.Formatting.Indented));
-                EazyBuildPipeline.BundleManager.Editor.G.g.OnChangeConfigList();
+                EazyBuildPipeline.BundleManager.G.g.OnChangeConfigList();
             }
             //            buildTab_.UpdateBuildMap(path);
             if (AssetBundleModel.IsBundleMapDirty)

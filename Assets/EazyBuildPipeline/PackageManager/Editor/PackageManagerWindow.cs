@@ -9,7 +9,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
     {
         #region 成员变量
         private Styles styles;
-        private Configs.Configs configs;
+        private Module module;
         private SettingPanel settingPanel;
         private Rect m_splitterRect;
         private Rect upFixedRect;
@@ -144,14 +144,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         public void OnBeforeSerialize()
         {
-            configs = G.configs;
-            configs.PackageMapConfig.Json.Packages = settingPanel.GetPackageMap();
+            module = G.Module;
+            module.UserConfig.Json.Packages = settingPanel.GetPackageMap();
             styles = G.g.styles;
         }
 
         public void OnAfterDeserialize()
         {
-            G.configs = configs;
+            G.Module = module;
             G.g = new G.GlobalReference();
             G.g.styles = styles;
         }

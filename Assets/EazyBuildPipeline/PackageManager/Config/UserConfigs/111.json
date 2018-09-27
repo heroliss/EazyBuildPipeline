@@ -1,0 +1,16 @@
+{
+  "Packages": [
+    {
+      "PackageName": "New Package",
+      "Color": "6D7DFF",
+      "Bundles": [],
+      "EmptyFolders": [],
+      "Necessery": "Immediate",
+      "DeploymentLocation": "Built-in",
+      "CopyToStreaming": true
+    }
+  ],
+  "PackageMode": "Addon",
+  "LuaSource": "Origin",
+  "CompressionLevel": 2
+}

@@ -8,7 +8,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     public class PreprocessorWindow : EditorWindow, ISerializationCallbackReceiver
     {
-        Configs.Configs configs;
+        Module module; //仅用于提供给Unity自动序列化
         [Serializable] public class GroupDictionary1 : SerializableDictionary<string, GroupPanel> { }
         [Serializable] public class GroupDictionary2 : SerializableDictionary<string, GroupDictionary1> { }
         [Serializable] public class GroupDictionary3 : SerializableDictionary<string, GroupDictionary2> { }
@@ -37,7 +37,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             G.Init();
 
-            G.configs.LoadAllConfigs();
+            G.Module.LoadAllConfigs();
 
             settingPanel = new SettingPanel();
             tagsPanel = new TagsPanel();
@@ -76,7 +76,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         private void CreateOptionGroupPanels()
         {
             groupPanels = new GroupDictionary3();
-            foreach (var group in G.configs.OptionsEnumConfig.Json)
+            foreach (var group in G.Module.OptionsEnumConfig.Json)
             {
                 if (group.Platform != null && group.Platform.Length != 0 && !group.Platform.Contains(currentPlatform.ToLower()))
                 {
@@ -156,7 +156,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             if (tagsPanel.Dirty)
             {
-                G.configs.Dirty = true;
+                G.Module.IsDirty = true;
                 return;
             }
             foreach (var t1 in groupPanels.Values)
@@ -167,23 +167,23 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     {
                         if (t3.Dirty)
                         {
-                            G.configs.Dirty = true;
+                            G.Module.IsDirty = true;
                             return;
                         }
                     }
                 }
             }
-            G.configs.Dirty = false;
+            G.Module.IsDirty = false;
         }
 
         public void OnBeforeSerialize()
         {
-            configs = G.configs;
+            module = G.Module;
         }
 
         public void OnAfterDeserialize()
         {
-            G.configs = configs;
+            G.Module = module;
             G.g = new G.GlobalReference();
         }
     }

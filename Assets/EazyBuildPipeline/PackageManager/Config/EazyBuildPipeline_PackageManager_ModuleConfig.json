@@ -1,0 +1,8 @@
+{
+  "BundleWorkFolderRelativePath": "AssetBundles",
+  "WorkRelativePath": "BundlePackages",
+  "StateConfigRelativePath": "_Config/State.json",
+  "UserConfigsFolderRelativePath": "UserConfigs",
+  "PackageExtension": ".jpg",
+  "CheckBundle": true
+}

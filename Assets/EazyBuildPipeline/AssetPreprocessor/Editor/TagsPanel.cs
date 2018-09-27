@@ -26,7 +26,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         }
         public void OnEnable()
         {
-            G.g.OnChangeCurrentConfig += Reset;
+            G.g.OnChangeCurrentUserConfig += Reset;
         }
         
         public void Reset()
@@ -49,10 +49,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             {
                 GUILayout.Space(headSpace);
             }
-            int[] selectedTagIndexs_new = new int[G.configs.Common_TagEnumConfig.Tags.Count];
+            int[] selectedTagIndexs_new = new int[CommonModule.CommonConfig.Json.TagEnum.Count];
 
             int i = 0;
-            foreach (var tagGroup in G.configs.Common_TagEnumConfig.Tags.Values)
+            foreach (var tagGroup in CommonModule.CommonConfig.Json.TagEnum.Values)
             {
                 selectedTagIndexs_new[i] = EditorGUILayout.Popup(selectedTagIndexs[i], tagGroup,
                     dropDownStyle, GUILayout.Height(25), GUILayout.MaxWidth(OptionWidth));
@@ -83,9 +83,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             for (int i = 0; i < selectedTagIndexs.Length; i++)
             {
                 int j = selectedTagIndexs[i];
-                tags.Add(j == -1 ? "" : G.configs.Common_TagEnumConfig.Tags.Values.ToArray()[i][j]);
+                tags.Add(j == -1 ? "" : CommonModule.CommonConfig.Json.TagEnum.Values.ToArray()[i][j]);
             }
-            G.configs.CurrentSavedConfig.Json.Tags = tags.ToArray();
+            G.Module.UserConfig.Json.Tags = tags.ToArray();
         }
 
         private void UpdateDirty()
@@ -103,20 +103,20 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void PullCurrentTags()
         {
-            selectedTagIndexs = Enumerable.Repeat(-1, G.configs.Common_TagEnumConfig.Tags.Count).ToArray();
-            if (G.configs.Common_TagEnumConfig.Tags.Count >= G.configs.CurrentSavedConfig.Json.Tags.Length)
+            selectedTagIndexs = Enumerable.Repeat(-1, CommonModule.CommonConfig.Json.TagEnum.Count).ToArray();
+            if (CommonModule.CommonConfig.Json.TagEnum.Count >= G.Module.UserConfig.Json.Tags.Length)
             {
-                for (int i = 0; i < G.configs.CurrentSavedConfig.Json.Tags.Length; i++)
+                for (int i = 0; i < G.Module.UserConfig.Json.Tags.Length; i++)
                 {
-                    selectedTagIndexs[i] = GetIndex(G.configs.Common_TagEnumConfig.Tags.Values.ToArray()[i], G.configs.CurrentSavedConfig.Json.Tags[i], i);
+                    selectedTagIndexs[i] = GetIndex(CommonModule.CommonConfig.Json.TagEnum.Values.ToArray()[i], G.Module.UserConfig.Json.Tags[i], i);
                 }
             }
-            else if (G.configs.Common_TagEnumConfig.Tags.Count < G.configs.CurrentSavedConfig.Json.Tags.Length)
+            else if (CommonModule.CommonConfig.Json.TagEnum.Count < G.Module.UserConfig.Json.Tags.Length)
             {
                 EditorUtility.DisplayDialog("Preprocessor", "全局标签枚举类型少于欲加载的标签配置类型", "确定");
-                for (int i = 0; i < G.configs.Common_TagEnumConfig.Tags.Count; i++)
+                for (int i = 0; i < CommonModule.CommonConfig.Json.TagEnum.Count; i++)
                 {
-                    selectedTagIndexs[i] = GetIndex(G.configs.Common_TagEnumConfig.Tags.Values.ToArray()[i], G.configs.CurrentSavedConfig.Json.Tags[i], i);
+                    selectedTagIndexs[i] = GetIndex(CommonModule.CommonConfig.Json.TagEnum.Values.ToArray()[i], G.Module.UserConfig.Json.Tags[i], i);
                 }
             }
         }
@@ -130,10 +130,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     return i;
                 }
             }
-            EditorUtility.DisplayDialog("错误", string.Format("加载保存的配置文件时发生错误：\n欲加载的类型“{0}”"
+            EditorUtility.DisplayDialog("错误", string.Format("加载用户配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, G.configs.Common_TagEnumConfig.JsonPath, G.configs.CurrentSavedConfig.JsonPath), "确定");
+                  s, count, G.Module.UserConfig.JsonPath, CommonModule.CommonConfig.JsonPath), "确定");
             return -1;
         }
     }

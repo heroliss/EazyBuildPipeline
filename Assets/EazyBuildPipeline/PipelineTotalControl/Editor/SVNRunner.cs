@@ -9,8 +9,7 @@ using Newtonsoft.Json;
 
 namespace EazyBuildPipeline.PipelineTotalControl.Editor
 {
-    [Serializable]
-    public class SVNManager
+    public class SVNManager 
     {
         public bool IsPartOfPipeline = false;
         public bool EnableCheckDiff = false;
@@ -34,11 +33,16 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         public string message = "";
         public string errorMessage = "";
 
-        public SVNManager()
+        public void Run()
         {
+            PreProcess();
+            RunProcess();
+            PostProcess();
+
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
-        public void RunUpdate()
+        public void RunProcess()
         {
             int progress = 0;
             message = "";
@@ -83,17 +87,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             EditorUtility.DisplayProgressBar("SVN", "Finish!", 1);
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            //后处理过程：重新创建Wrap和Lua文件
-            ClearAndGenerateWrapAndLua();
-        }
-
-        private void ClearAndGenerateWrapAndLua()
-        {
-            EditorUtility.DisplayProgressBar("Clear and Generate Wrap Files...", "", 1);
-            ToLuaMenu.ClearWrapFilesAndCreate();
-            EditorUtility.DisplayProgressBar("Clear and Generate Lua Files...", "", 1);
-            LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { });
-            EditorUtility.DisplayProgressBar("Clear and Generate Wrap and Lua Files Finished!", "", 1);
         }
 
         private void OnExited(object sender, EventArgs e)
@@ -146,7 +139,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 {
                     try
                     {
-                        ExcuteCommand("/bin/bash", Path.Combine(G.configs.LocalConfig.LocalRootPath, "SVNDiff.sh"),
+                        ExcuteCommand("/bin/bash", Path.Combine(G.Module.ModuleConfig.ModuleRootPath, "SVNDiff.sh"),
                            OnDiffReceived, OnDiffErrorReceived, OnDiffExited);
                     }
                     catch (Exception err)
@@ -260,6 +253,25 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             process.BeginErrorReadLine();
 
             return process;
+        }
+
+        public bool Check()
+        {
+            return true;
+        }
+
+        public void PreProcess()
+        {
+        }
+
+        public void PostProcess()
+        {
+            //后处理过程：重新创建Wrap和Lua文件
+            EditorUtility.DisplayProgressBar("Clear and Generate Wrap Files...", "", 1);
+            ToLuaMenu.ClearWrapFilesAndCreate();
+            EditorUtility.DisplayProgressBar("Clear and Generate Lua Files...", "", 1);
+            LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { });
+            EditorUtility.DisplayProgressBar("Clear and Generate Wrap and Lua Files Finished!", "", 1);
         }
     }
 }

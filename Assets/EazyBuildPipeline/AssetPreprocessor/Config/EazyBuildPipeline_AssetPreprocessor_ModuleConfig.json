@@ -1,0 +1,10 @@
+{
+  "OptionsEnumConfigRelativePath": "OptionsEnumConfig.json",
+  "ShellsFolderRelativePath": "Shells",
+  "UserConfigsFolderRelativePath": "UserConfigs",
+
+  "WorkRelativePath": "PreStoredAssets",
+  "PreStoredAssetsFolderRelativePath": "Assets",
+  "StateConfigRelativePath": "_Config/State.json",
+  "LogsFolderRelativePath": "_Logs"
+}

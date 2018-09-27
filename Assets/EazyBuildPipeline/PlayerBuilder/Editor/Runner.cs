@@ -4,49 +4,51 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.IO;
+using EazyBuildPipeline.PlayerBuilder.Editor;
+using EazyBuildPipeline.PlayerBuilder.Configs;
 
-namespace EazyBuildPipeline.PlayerBuilder.Editor
+namespace EazyBuildPipeline.PlayerBuilder
 {
-    public class Runner : IRunner
+    public partial class Runner : EBPRunner<Module,
+        ModuleConfig, ModuleConfig.JsonClass,
+        ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
-        Configs.Configs configs;
-        public Runner(Configs.Configs configs)
+        public Runner(Module module) : base(module)
         {
-            this.configs = configs;
         }
-        public bool Check()
+        public override bool Check()
         {
-            if (configs.Common_AssetsTagsConfig.Json.Length == 0)
+            if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
             {
-                configs.DisplayDialog("错误：Assets Tags为空");
+                Module.DisplayDialog("错误：Assets Tags为空");
                 return false;
             }
             //验证根目录
-            if (!Directory.Exists(configs.LocalConfig.PlayersFolderPath))
+            if (!Directory.Exists(Module.ModuleConfig.WorkPath))
             {
-                configs.DisplayDialog("目录不存在：" + configs.LocalConfig.PlayersFolderPath);
+                Module.DisplayDialog("目录不存在：" + Module.ModuleConfig.WorkPath);
                 return false;
             }
             var target = BuildTarget.NoTarget;
-            string targetStr = configs.Common_AssetsTagsConfig.Json[0];
+            string targetStr = Module.ModuleStateConfig.Json.CurrentTag[0];
             try
             {
-                target = (BuildTarget)Enum.Parse(typeof(BuildTarget), configs.Common_AssetsTagsConfig.Json[0], true);
+                target = (BuildTarget)Enum.Parse(typeof(BuildTarget),targetStr, true);
             }
             catch
             {
-                configs.DisplayDialog("没有此平台：" + targetStr);
+                Module.DisplayDialog("没有此平台：" + targetStr);
                 return false;
             }
             if (EditorUserBuildSettings.activeBuildTarget != target)
             {
-                configs.DisplayDialog(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
+                Module.DisplayDialog(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
                 return false;
             }
             return true;
         }
 
-        public void Run(bool isPartOfPipeline)
+        protected override void RunProcess()
         {
             //修改PlayerSettings
             EditorUtility.DisplayProgressBar("Applying PlayerSettings", "", 0);
@@ -55,14 +57,14 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             //准备BuildOptions
             EditorUtility.DisplayProgressBar("Preparing BuildOptions", "", 0);
             BuildOptions buildOptions =
-                (configs.CurrentConfig.Json.DevelopmentBuild ? BuildOptions.Development : BuildOptions.None) |
-                (configs.CurrentConfig.Json.ConnectWithProfiler ? BuildOptions.ConnectWithProfiler : BuildOptions.None) |
-                (configs.CurrentConfig.Json.AllowDebugging ? BuildOptions.AllowDebugging : BuildOptions.None) |
-                (configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod == Configs.PlayerSettingsConfig.BuildSettings.CompressionMethodEnum.LZ4 ? BuildOptions.CompressWithLz4 : BuildOptions.None) |
-                (configs.PlayerSettingsConfig.Json.BuildSettings.CompressionMethod == Configs.PlayerSettingsConfig.BuildSettings.CompressionMethodEnum.LZ4HC ? BuildOptions.CompressWithLz4HC : BuildOptions.None);
+                (Module.ModuleStateConfig.Json.DevelopmentBuild ? BuildOptions.Development : BuildOptions.None) |
+                (Module.ModuleStateConfig.Json.ConnectWithProfiler ? BuildOptions.ConnectWithProfiler : BuildOptions.None) |
+                (Module.ModuleStateConfig.Json.AllowDebugging ? BuildOptions.AllowDebugging : BuildOptions.None) |
+                (Module.UserConfig.Json.BuildSettings.CompressionMethod == UserConfig.BuildSettings.CompressionMethodEnum.LZ4 ? BuildOptions.CompressWithLz4 : BuildOptions.None) |
+                (Module.UserConfig.Json.BuildSettings.CompressionMethod == UserConfig.BuildSettings.CompressionMethodEnum.LZ4HC ? BuildOptions.CompressWithLz4HC : BuildOptions.None);
 
-            string tagsPath = Path.Combine(configs.LocalConfig.PlayersFolderPath, EBPUtility.GetTagStr(configs.Common_AssetsTagsConfig.Json));
-            BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), configs.Common_AssetsTagsConfig.Json[0], true);
+            string tagsPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
+            BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), Module.ModuleStateConfig.Json.CurrentTag[0], true);
             string[] scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes);
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
             {
@@ -72,10 +74,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 options = buildOptions
             };
 
-            //开始
-            configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
-            configs.CurrentConfig.Json.Applying = true;
-            configs.CurrentConfig.Save();
             //重建目录
             EditorUtility.DisplayProgressBar("正在重建目录", tagsPath, 0);
             if (Directory.Exists(tagsPath))
@@ -90,13 +88,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             {
                 throw new ApplicationException("BuildPlayer时发生错误：" + report);
             }
-            //结束
-            configs.CurrentConfig.Json.Applying = false;
-            configs.CurrentConfig.Save();
         }
         public void FetchPlayerSettings()
         {
-            var ps = configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = Module.UserConfig.Json.PlayerSettings;
 
             FetchAllScriptDefines();
 
@@ -117,7 +112,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             ps.IOS.TargetDevice = PlayerSettings.iOS.targetDevice;
             ps.IOS.TargetSDK = PlayerSettings.iOS.sdkVersion;
             ps.IOS.TargetMinimumIOSVersion = PlayerSettings.iOS.targetOSVersionString;
-            ps.IOS.Architecture = (Configs.PlayerSettingsConfig.PlayerSettings.IOSSettings.ArchitectureEnum)PlayerSettings.GetArchitecture(BuildTargetGroup.iOS);
+            ps.IOS.Architecture = (UserConfig.PlayerSettings.IOSSettings.ArchitectureEnum)PlayerSettings.GetArchitecture(BuildTargetGroup.iOS);
             ps.IOS.StripEngineCode = PlayerSettings.stripEngineCode;
             ps.IOS.ScriptCallOptimization = PlayerSettings.iOS.scriptCallOptimization;
 
@@ -143,7 +138,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
         public void ApplyIOSPostProcessSettings()
         {
-            var ps = configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = Module.UserConfig.Json.PlayerSettings;
 
             iOSBuildPostProcessor.ProductName = ps.General.ProductName; //重复
             iOSBuildPostProcessor.ProvisioningProfile = ps.IOS.ProvisioningProfile; //重复
@@ -156,13 +151,13 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             iOSBuildPostProcessor.PhotoUsageDesc = ps.IOS.PhotoUsageDesc;
             iOSBuildPostProcessor.PhotoUsageAddDesc = ps.IOS.PhotoUsageAddDesc;
             //iOSBuildPostProcessor.BuglyAppKey = ps.IOS.BuglyAppKey; //不需要
-            BuglyInit.BuglyAppIDForIOS = ps.IOS.BuglyAppID;
-            BuglyInit.BuglyAppKeyForIOS = ps.IOS.BuglyAppKey;
+            BuglyInit.BuglyAppID = ps.IOS.BuglyAppID;
+            BuglyInit.BuglyAppKey = ps.IOS.BuglyAppKey;
         }
 
         public void ApplyPlayerSettings()
         {
-            var ps = configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = Module.UserConfig.Json.PlayerSettings;
             var activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
             var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(activeBuildTarget);
             ApplyScriptDefines(buildTargetGroup);
@@ -216,29 +211,29 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
         public void FetchAllScriptDefines()
         {
-            var ps = configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = Module.UserConfig.Json.PlayerSettings;
 
             ps.IOS.ScriptDefines.Add(FetchScriptDefineGroup(BuildTargetGroup.iOS));
             ps.Android.ScriptDefines.Add(FetchScriptDefineGroup(BuildTargetGroup.Android));
         }
 
-        public Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup FetchScriptDefineGroup(BuildTargetGroup buildTargetGroup)
+        public UserConfig.PlayerSettings.ScriptDefinesGroup FetchScriptDefineGroup(BuildTargetGroup buildTargetGroup)
         {
-            var definesGroup = new Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup()
+            var definesGroup = new UserConfig.PlayerSettings.ScriptDefinesGroup()
             {
                 Active = true,
                 GroupName = "Current Script Defines",
             };
             foreach (var item in PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';'))
             {
-                definesGroup.Defines.Add(new Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefine() { Active = true, Define = item });
+                definesGroup.Defines.Add(new UserConfig.PlayerSettings.ScriptDefine() { Active = true, Define = item });
             }
             return definesGroup;
         }
 
         public void ApplyScriptDefines(BuildTargetGroup buildTargetGroup)
         {
-            var ps = configs.PlayerSettingsConfig.Json.PlayerSettings;
+            var ps = Module.UserConfig.Json.PlayerSettings;
 
             switch (buildTargetGroup)
             {
@@ -257,7 +252,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             }
         }
 
-        private string GetScriptDefinesStr(List<Configs.PlayerSettingsConfig.PlayerSettings.ScriptDefinesGroup> scriptDefines)
+        private string GetScriptDefinesStr(List<UserConfig.PlayerSettings.ScriptDefinesGroup> scriptDefines)
         {
             string s = "";
             foreach (var definesGroup in scriptDefines)

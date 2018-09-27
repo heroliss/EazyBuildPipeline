@@ -6,10 +6,14 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using EazyBuildPipeline.PackageManager.Editor;
+using EazyBuildPipeline.PackageManager.Configs;
 
-namespace EazyBuildPipeline.PackageManager.Editor
+namespace EazyBuildPipeline.PackageManager
 {
-    public class Runner : IRunner
+    public partial class Runner : EBPRunner<Module,
+        ModuleConfig, ModuleConfig.JsonClass,
+        ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
         struct BundleVersionStruct { public string BundleName; public string Version; };
         struct PackageManifestStruct 
@@ -22,71 +26,69 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         public int ResourceVersion;
 
-        Configs.Configs configs;
-        public Runner(Configs.Configs configs)
+        public Runner(Module module) : base(module)
         {
-            this.configs = configs;
         }
 
-        public bool Check()
+        public override bool Check()
         {
-            if (configs.PackageMapConfig.Json.Packages.Count == 0)
+            if (Module.UserConfig.Json.Packages.Count == 0)
             {
-                configs.DisplayDialog("该配置内没有Package");
+                Module.DisplayDialog("该配置内没有Package");
                 return false;
             }
-            if (configs.CurrentConfig.Json.CurrentTags.Length == 0)
+            if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
             {
-                configs.DisplayDialog("错误：Tags为空");
+                Module.DisplayDialog("错误：Tags为空");
                 return false;
             }
             //检查配置
-            if (string.IsNullOrEmpty(configs.PackageMapConfig.Json.PackageMode))
+            if (string.IsNullOrEmpty(Module.UserConfig.Json.PackageMode))
             {
-                configs.DisplayDialog("请设置打包模式");
+                Module.DisplayDialog("请设置打包模式");
                 return false;
             }
-            if (string.IsNullOrEmpty(configs.PackageMapConfig.Json.LuaSource))
+            if (string.IsNullOrEmpty(Module.UserConfig.Json.LuaSource))
             {
-                configs.DisplayDialog("请设置Lua源");
+                Module.DisplayDialog("请设置Lua源");
                 return false;
             }
-            if (configs.PackageMapConfig.Json.CompressionLevel == -1)
+            if (Module.UserConfig.Json.CompressionLevel == -1)
             {
-                configs.DisplayDialog("请设置压缩等级");
+                Module.DisplayDialog("请设置压缩等级");
                 return false;
             }
-            if (G.LuaSourceEnum.IndexOf(configs.PackageMapConfig.Json.LuaSource) == -1)
+            if (G.LuaSourceEnum.IndexOf(Module.UserConfig.Json.LuaSource) == -1)
             {
-                configs.DisplayDialog("不能识别Lua源：" + configs.PackageMapConfig.Json.LuaSource);
+                Module.DisplayDialog("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
                 return false;
             }
 
-            switch (configs.PackageMapConfig.Json.PackageMode)
+            switch (Module.UserConfig.Json.PackageMode)
             {
                 case "Addon":
-                    if (string.IsNullOrEmpty(configs.CurrentConfig.Json.CurrentAddonVersion))
+                    if (string.IsNullOrEmpty(Module.ModuleStateConfig.Json.CurrentAddonVersion))
                     {
-                        configs.DisplayDialog("请设置Addon Version");
+                        Module.DisplayDialog("请设置Addon Version");
                         return false;
                     }
                     char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
-                    int index = configs.CurrentConfig.Json.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
+                    int index = Module.ModuleStateConfig.Json.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
                     if (index >= 0)
                     {
-                        configs.DisplayDialog("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
+                        Module.DisplayDialog("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
                         return false;
                     }
-                    foreach (var package in configs.PackageMapConfig.Json.Packages)
+                    foreach (var package in Module.UserConfig.Json.Packages)
                     {
                         if (string.IsNullOrEmpty(package.Necessery))
                         {
-                            configs.DisplayDialog("请设置Necessery");
+                            Module.DisplayDialog("请设置Necessery");
                             return false;
                         }
                         if (string.IsNullOrEmpty(package.DeploymentLocation))
                         {
-                            configs.DisplayDialog("请设置Location");
+                            Module.DisplayDialog("请设置Location");
                             return false;
                         }
                         //不能识别Location和Necessery的情况不可能发生，因为该值由枚举中获得
@@ -95,25 +97,25 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 case "Patch":
                     break;
                 default:
-                    configs.DisplayDialog("不能识别模式：" + configs.PackageMapConfig.Json.PackageMode);
+                    Module.DisplayDialog("不能识别模式：" + Module.UserConfig.Json.PackageMode);
                     return false;
             }
             return true;
         }
 
-        public void Run(bool isPartOfPipeline = false)
-        {       
+        protected override void RunProcess()
+        {
             //准备参数
-            string bundlesFolderPath = configs.GetBundleFolderPath();
+            string bundlesFolderPath = Module.GetBundleFolderPath();
             if (!Directory.Exists(bundlesFolderPath))
             {
                 throw new ApplicationException("Bundles目录不存：" + bundlesFolderPath);
             }
-            string packagesFolderPath = Path.Combine(configs.LocalConfig.PackageFolderPath, EBPUtility.GetTagStr(configs.CurrentConfig.Json.CurrentTags));
+            string packagesFolderPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
             int count = 0;
             int total = 0;
             float progress = 0;
-            var packages = configs.PackageMapConfig.Json.Packages;
+            var packages = Module.UserConfig.Json.Packages;
             foreach (var package in packages)
             {
                 total += package.Bundles.Count;
@@ -128,11 +130,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //string mapContent = JsonConvert.SerializeObject(BuildAsset2BundleMap(Configs.g.bundleTree.BundleBuildMap), Formatting.Indented);
            
             //开始
-            configs.CurrentConfig.Json.IsPartOfPipeline = isPartOfPipeline;
-            configs.CurrentConfig.Json.Applying = true;
-            configs.CurrentConfig.Save();
             double lastTime = EditorApplication.timeSinceStartup;
-
 
             //重建目录
             EditorUtility.DisplayProgressBar("正在重建Package目录", packagesFolderPath, progress); progress += 0.01f;
@@ -142,14 +140,15 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
             Directory.CreateDirectory(packagesFolderPath);
             //设置路径
-            string bundlesRootPathInPackage = "AssetBundles/" + configs.CurrentConfig.Json.CurrentTags[0].ToLower() + "/AssetBundles/";
-            string bundleVersionFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.Json.CurrentTags[0].ToLower() + "/bundle_version";
-            string mapFilePathInPackage = "AssetBundles/" + configs.CurrentConfig.Json.CurrentTags[0].ToLower() + "/maps/map";
-            string streamingPath = Path.Combine("Assets/StreamingAssets/AssetBundles", configs.CurrentConfig.Json.CurrentTags[0]);
+            string platform = Module.ModuleStateConfig.Json.CurrentTag[0].ToLower();
+            string bundlesRootPathInPackage = "AssetBundles/" + platform + "/AssetBundles/";
+            string bundleVersionFilePathInPackage = "AssetBundles/" + platform + "/bundle_version";
+            string mapFilePathInPackage = "AssetBundles/" + platform + "/maps/map";
+            string streamingPath = Path.Combine("Assets/StreamingAssets/AssetBundles", Module.ModuleStateConfig.Json.CurrentTag[0]);
             byte[] buffer = new byte[20971520]; //20M缓存,不够会自动扩大
 
             //以下为整体上Addon和Patch的不同
-            switch (configs.PackageMapConfig.Json.PackageMode)
+            switch (Module.UserConfig.Json.PackageMode)
             {
                 case "Patch":
                     mapFilePathInPackage += "_" + ResourceVersion;
@@ -183,10 +182,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     List<PackageManifestStruct> packageManifest = new List<PackageManifestStruct>();
                     //单独加一个核心包的配置信息
                     string corePackageName = string.Join("_", new string[]{
-                        configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
-                        configs.PackageMapConfig.Json.PackageMode.ToLower(),
-                        configs.CurrentConfig.Json.CurrentAddonVersion,
-                        "Core"}) + configs.LocalConfig.Json.PackageExtension;
+                        platform,
+                        Module.UserConfig.Json.PackageMode.ToLower(),
+                        Module.ModuleStateConfig.Json.CurrentAddonVersion,
+                        "Core"}) + Module.ModuleConfig.Json.PackageExtension;
                     packageManifest.Add(new PackageManifestStruct
                     {
                         name_ = corePackageName,
@@ -216,7 +215,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     {
                         using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                         {
-                            zipStream.SetLevel(configs.PackageMapConfig.Json.CompressionLevel);
+                            zipStream.SetLevel(Module.UserConfig.Json.CompressionLevel);
 
                             //构建bundle_version
                             BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, ResourceVersion, bundlesCopyToStreaming, zipStream);
@@ -249,7 +248,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     progress += 0.1f;
                     break;
                 default:
-                    throw new ApplicationException("不能识别模式：" + configs.PackageMapConfig.Json.PackageMode);
+                    throw new ApplicationException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
             }
 
             float restProgress = 1 - progress;
@@ -260,7 +259,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                     {
-                        zipStream.SetLevel(configs.PackageMapConfig.Json.CompressionLevel);
+                        zipStream.SetLevel(Module.UserConfig.Json.CompressionLevel);
 
                         //构建Bundles
                         int bundlesCount = package.Bundles.Count;
@@ -293,7 +292,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, ResourceVersion, package.Bundles, zipStream);
 
                         //以下为每个包中Patch和Addon独有内容
-                        switch (configs.PackageMapConfig.Json.PackageMode)
+                        switch (Module.UserConfig.Json.PackageMode)
                         {
                             case "Patch":
                                 //构建map
@@ -311,22 +310,17 @@ namespace EazyBuildPipeline.PackageManager.Editor
                             case "Addon":
                                 break;
                             default:
-                                throw new ApplicationException("不能识别模式：" + configs.PackageMapConfig.Json.PackageMode);
+                                throw new ApplicationException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
                         }
                     }
                 }
             }
-            //结束
-            configs.CurrentConfig.Json.Applying = false;
-            configs.CurrentConfig.Save();
-
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
         private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)
         {
             //AddDirectoryToZipStream(zipStream, "Assets/StreamingAssets/Lua", "Lua/Lua", buffer, "*.lua"); //TODO: 重复的Lua库，可删
-            switch (configs.PackageMapConfig.Json.LuaSource)
+            switch (Module.UserConfig.Json.LuaSource)
             {
                 case "None":
                     break;
@@ -343,14 +337,14 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted64", "Lua/LuaScripts64", buffer, "*.lua");
                     break;
                 default:
-                    throw new ApplicationException("不能识别Lua源：" + configs.PackageMapConfig.Json.LuaSource);
+                    throw new ApplicationException("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
             }
         }
 
         private void BuildMapInZipStream(string mapFilePath, byte[] buffer, ZipOutputStream zipStream)
         {
             //AddBytesToZipStream(zipStream, mapFilePath, System.Text.Encoding.Default.GetBytes(mapContent));
-            AddFileToZipStream(zipStream, Path.Combine(configs.GetBundleInfoFolderPath(), "map"), mapFilePath, buffer);
+            AddFileToZipStream(zipStream, Path.Combine(Module.GetBundleInfoFolderPath(), "map"), mapFilePath, buffer);
         }
 
         private void BuildBundleVersionInfoInZipStream(string bundleVersionFilePath, int bundleVersion, List<string> bundles, ZipOutputStream zipStream)
@@ -430,24 +424,26 @@ namespace EazyBuildPipeline.PackageManager.Editor
         public string GetPackageFileName(string displayName,int resourceVersion)
         {
             string fileName;
-            switch (configs.PackageMapConfig.Json.PackageMode)
+            var currentTag = Module.ModuleStateConfig.Json.CurrentTag;
+            string platform = currentTag[0] == null ? "Unknow" : currentTag[0].ToLower();
+            switch (Module.UserConfig.Json.PackageMode)
             {
                 case "Addon":
                     fileName = string.Format("{0}_addon_{1}_{2}{3}",
-                        configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
-                        configs.CurrentConfig.Json.CurrentAddonVersion + ".1", //TODO:如何处理这个BuildNumber?
+                        platform,
+                        Module.ModuleStateConfig.Json.CurrentAddonVersion,
                         displayName,
-                        configs.LocalConfig.Json.PackageExtension);
+                        Module.ModuleConfig.Json.PackageExtension);
                     break;
                 case "Patch":
                     fileName = string.Format("{0}_patch_{1}_{2}{3}",
-                      configs.CurrentConfig.Json.CurrentTags[0].ToLower(),
+                      platform,
                       resourceVersion,
                       displayName,
-                      configs.LocalConfig.Json.PackageExtension);
+                      Module.ModuleConfig.Json.PackageExtension);
                     break;
                 default:
-                    fileName = displayName + configs.LocalConfig.Json.PackageExtension;
+                    fileName = displayName + Module.ModuleConfig.Json.PackageExtension;
                     break;
             }
             return fileName;

@@ -39,8 +39,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             try
             {
                 folderIcon = EditorGUIUtility.FindTexture("Folder Icon");
-                bundleIcon = G.configs.GetIcon("BundleIcon.png");
-                bundleIcon_Scene = G.configs.GetIcon("BundleIcon_Scene.png");
+                bundleIcon = CommonModule.GetIcon("BundleIcon.png");
+                bundleIcon_Scene = CommonModule.GetIcon("BundleIcon_Scene.png");
             }
             catch (Exception e)
             {
@@ -121,7 +121,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 			bundleDic.Clear();
 			folderDic.Clear();
 
-			string assetBundlesFolderPath = G.configs.LocalConfig.BundleFolderPath;
+			string assetBundlesFolderPath = G.Module.ModuleConfig.BundleWorkFolderPath;
 			if (!Directory.Exists(assetBundlesFolderPath))
 			{
 				EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + assetBundlesFolderPath, "确定");
@@ -135,7 +135,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 return root;
 			}
 
-            string rootPath = G.configs.GetBundleFolderPath();
+            string rootPath = G.Module.GetBundleFolderPath();
 
             BundleTreeItem rootFolderItem = new BundleTreeItem()
             {
@@ -279,8 +279,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 Versions = new VersionsStruct() { ResourceVersion = -1 };
                 BundleBuildMap = null;
-                string versionPath = Path.Combine(G.configs.GetBundleInfoFolderPath(), "Versions.json");
-                string buildMapPath = Path.Combine(G.configs.GetBundleInfoFolderPath(), "BuildMap.json");
+                string versionPath = Path.Combine(G.Module.GetBundleInfoFolderPath(), "Versions.json");
+                string buildMapPath = Path.Combine(G.Module.GetBundleInfoFolderPath(), "BuildMap.json");
                 Versions = JsonConvert.DeserializeObject<VersionsStruct>(File.ReadAllText(versionPath));
                 BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
             }
@@ -300,7 +300,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 					displayName = Path.GetFileName(path),
 					isFolder = true,
 					path = path,
-					relativePath = path.Remove(0, G.configs.GetBundleFolderPathStrCount()).Replace('\\', '/'),
+					relativePath = path.Remove(0, G.Module.GetBundleFolderPathStrCount()).Replace('\\', '/'),
 					icon = folderIcon
 				};
 				parent.AddChild(folderItem);
@@ -318,7 +318,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
 				{
 					EditorUtility.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
-					    loadFileProgressCount,G.configs.LocalConfig.Json.CheckBundle), filePath,
+					    loadFileProgressCount,G.Module.ModuleConfig.Json.CheckBundle), filePath,
 					    (float)loadFileProgressCount % 100000 / 100000);
                     lastTime = EditorApplication.timeSinceStartup;
 				}
@@ -334,7 +334,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 						isFolder = false,
 						verify = true,
 						path = bundlePath,
-						relativePath = bundlePath.Remove(0, G.configs.GetBundleFolderPathStrCount()).Replace('\\', '/'),
+						relativePath = bundlePath.Remove(0, G.Module.GetBundleFolderPathStrCount()).Replace('\\', '/'),
 						bundlePath = bundlePath,
 						displayName = bundleName,
 						icon = bundleIcon,
@@ -345,7 +345,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 					folderItem.AddChild(fileItem);
 					bundleDic.Add(fileItem.relativePath, fileItem);
 					//检查manifest对应文件是否存在
-					if (G.configs.LocalConfig.Json.CheckBundle)
+					if (G.Module.ModuleConfig.Json.CheckBundle)
 					{
 						fileItem.verify = File.Exists(bundlePath);
 						if (fileItem.verify == false)

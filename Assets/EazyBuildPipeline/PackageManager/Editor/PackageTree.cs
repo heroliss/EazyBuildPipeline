@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using EazyBuildPipeline.PackageManager.Editor.Configs;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -190,13 +189,13 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             foreach (var package in Packages)
             {
-                 package.fileName = G.configs.Runner.GetPackageFileName(package.displayName, G.g.bundleTree.Versions.ResourceVersion);
+                 package.fileName = G.Runner.GetPackageFileName(package.displayName, G.g.bundleTree.Versions.ResourceVersion);
             }
         }
 
         private void BuildTreeFromMap(TreeViewItem root)
         {
-            foreach (var package in G.configs.PackageMapConfig.Json.Packages)
+            foreach (var package in G.Module.UserConfig.Json.Packages)
             {
                 Color color = Color.black;
                 ColorUtility.TryParseHtmlString("#" + package.Color, out color);
@@ -221,7 +220,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             UpdateAllFileName();
         }
 
-        private void BuildPackageTreeFromBundleTree(PackageMapConfig.JsonClass.Package package, PackageTreeItem p)
+        private void BuildPackageTreeFromBundleTree(Configs.UserConfig.JsonClass.Package package, PackageTreeItem p)
         {
             foreach (string bundlePath in package.Bundles)
             {
@@ -239,7 +238,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
         }
 
-        private void BuildPackageTree_lostItems(PackageMapConfig.JsonClass.Package package, PackageTreeItem p)
+        private void BuildPackageTree_lostItems(Configs.UserConfig.JsonClass.Package package, PackageTreeItem p)
         {
             //遍历bundles数组添加所有丢失的bundle
             foreach (string bundlePath in package.Bundles) 
@@ -341,7 +340,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             try
             {
-                compressionIcon = G.configs.GetIcon("PackageIcon.png");
+                compressionIcon = CommonModule.GetIcon("PackageIcon.png");
             }
             catch(Exception e)
             {
@@ -374,7 +373,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 }
                 PackageTreeItem item = FindItem(args.itemID, rootItem) as PackageTreeItem;
                 item.displayName = newName;
-                G.configs.Dirty = true;
+                G.Module.IsDirty = true;
             }
             UpdateAllFileName();
         }
@@ -443,38 +442,38 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                     break;
                 case ColumnEnum.Necessery:
-                    if (item.isPackage && G.configs.PackageMapConfig.Json.PackageMode == "Addon")
+                    if (item.isPackage && G.Module.UserConfig.Json.PackageMode == "Addon")
                     {
                         int index = G.NecesseryEnum.IndexOf(item.necessery);
                         int index_new = EditorGUI.Popup(rect, index, G.NecesseryEnum, inDropDownStyle);
                         if (index_new != index)
                         {
                             item.necessery = G.NecesseryEnum[index_new];
-                            G.configs.Dirty = true;
+                            G.Module.IsDirty = true;
                         }
                     }
                     break;
                 case ColumnEnum.DeploymentLocation:
-                    if (item.isPackage && G.configs.PackageMapConfig.Json.PackageMode == "Addon")
+                    if (item.isPackage && G.Module.UserConfig.Json.PackageMode == "Addon")
                     {
                         int index = G.DeploymentLocationEnum.IndexOf(item.deploymentLocation);
                         int index_new = EditorGUI.Popup(rect, index, G.DeploymentLocationEnum, inDropDownStyle);
                         if (index_new != index)
                         {
                             item.deploymentLocation = G.DeploymentLocationEnum[index_new];
-                            G.configs.Dirty = true;
+                            G.Module.IsDirty = true;
                         }
                     }
                     break;
                 case ColumnEnum.CopyToStreaming:
-                    if (item.isPackage && G.configs.PackageMapConfig.Json.PackageMode == "Addon")
+                    if (item.isPackage && G.Module.UserConfig.Json.PackageMode == "Addon")
                     {
                         Rect rect_new = new Rect(rect.x + rect.width / 2 - 8, rect.y, 16, rect.height);
                         bool selected = EditorGUI.Toggle(rect_new, item.copyToStreaming, inToggleStyle);
                         if (selected != item.copyToStreaming)
                         {
                             item.copyToStreaming = selected;
-                            G.configs.Dirty = true;
+                            G.Module.IsDirty = true;
                         }
                     }
                     break;
@@ -647,7 +646,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void DeletePackageItem(IList<int> list)
         {
-            G.configs.Dirty = true;
+            G.Module.IsDirty = true;
             foreach (var id in list)
             {
                 PackageTreeItem item = (PackageTreeItem)FindItem(id, rootItem);
@@ -692,12 +691,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void CreatePackage()
         {
-            if (string.IsNullOrEmpty(G.configs.CurrentConfig.Json.CurrentPackageMap))
+            if (string.IsNullOrEmpty(G.Module.ModuleStateConfig.Json.CurrentUserConfigName))
             {
                 EditorUtility.DisplayDialog("创建Package", "请先选择配置或创建一个空配置", "确定");
                 return;
             }
-            G.configs.Dirty = true;
+            G.Module.IsDirty = true;
             PackageTreeItem package = new PackageTreeItem()
             {
                 id = --packageID,
@@ -762,7 +761,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         public void AddBundlesToPackage(PackageTreeItem packageItem, List<TreeViewItem> bundleItems)
         {
-            G.configs.Dirty = true;
+            G.Module.IsDirty = true;
             foreach (BundleTreeItem item in bundleItems)
             {
                 AddBundlesToPackage(packageItem, item);

@@ -10,7 +10,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 {
     public class TotalControlWindow : EditorWindow, ISerializationCallbackReceiver
     {
-        Configs.Configs configs;
+        Module module;
         readonly int settingPanelHeight = 160;
  
         private PlayerSettingsPanel playerSettingsPanel;
@@ -25,7 +25,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void Awake()
         {
             G.Init();
-            PlayerBuilder.Editor.G.Init();
+            PlayerBuilder.G.Init();
 
             settingPanel = new SettingPanel();
             playerSettingsPanel = new PlayerSettingsPanel();
@@ -69,20 +69,20 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             playerSettingsPanel.OnDestory();
             settingPanel.OnDestory();
             G.Clear();
-            PlayerBuilder.Editor.G.Clear();
+            PlayerBuilder.G.Clear();
         }
 
         public void OnBeforeSerialize()
         {
-            configs = G.configs;
+            module = G.Module;
         }
 
         public void OnAfterDeserialize()
         {
-            G.configs = configs;
+            G.Module = module;
             G.g = new G.GlobalReference();
-            PlayerBuilder.Editor.G.configs = G.configs.PlayerBuilderConfigs;
-            PlayerBuilder.Editor.G.g = new PlayerBuilder.Editor.G.GlobalReference();
+            PlayerBuilder.G.Module = G.Module.PlayerBuilderModule;
+            PlayerBuilder.G.g = new PlayerBuilder.G.GlobalReference();
         }
     }
 }

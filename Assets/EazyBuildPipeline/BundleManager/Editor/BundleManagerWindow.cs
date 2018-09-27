@@ -5,7 +5,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
 {
     public class BundleManagerWindow : EditorWindow, ISerializationCallbackReceiver
     {
-        private Configs.Configs configs;
+        private Module module;
         private AssetBundleManagement2.AssetBundleMainWindow mainTab;
         private SettingPanel settingPanel;
         private float settingPanelHeight = 70;
@@ -62,12 +62,12 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         public void OnBeforeSerialize()
         {
-            configs = G.configs;
+            module = G.Module;
         }
 
         public void OnAfterDeserialize()
         {
-            G.configs = configs;
+            G.Module = module;
             G.g = new G.GlobalReference();
             G.g.mainTab = mainTab; //TODO:对BundleMaster的特殊处理
         }
