@@ -69,7 +69,12 @@ namespace EazyBuildPipeline.PipelineTotalControl
             if (PackageManagerModule.LoadModuleConfig())
             { PackageManagerModule.LoadModuleStateConfig(); }
             if (PlayerBuilderModule.LoadModuleConfig())
-            { PlayerBuilderModule.LoadModuleStateConfig(); }
+            {
+                if (PlayerBuilderModule.LoadModuleStateConfig())
+                {
+                    PlayerBuilderModule.LoadUserConfig();
+                }
+            }
 
             //这里需要将静态的Module与TotalControl中的Module同步，因为该窗口总控面板与PlayerSetting面板结合了
             PlayerBuilder.G.Module = PlayerBuilderModule; 

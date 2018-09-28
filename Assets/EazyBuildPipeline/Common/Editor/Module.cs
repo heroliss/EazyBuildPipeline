@@ -9,6 +9,7 @@ namespace EazyBuildPipeline
     [Serializable]
     public static class CommonModule
     {
+        [SerializeField] 
         public static CommonConfig CommonConfig = new CommonConfig();
         public static string CommonConfigSearchText { get { return "EazyBuildPipeline CommonConfig"; } }
         public static Texture2D GetIcon(string iconFileName)

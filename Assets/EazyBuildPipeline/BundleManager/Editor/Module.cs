@@ -65,7 +65,7 @@ namespace EazyBuildPipeline.BundleManager
                 LoadModuleStateConfig();
             if (success)
             {
-                LoadUserConfig();
+                //LoadUserConfig(); //暂时无用
             }
             return success;
         }

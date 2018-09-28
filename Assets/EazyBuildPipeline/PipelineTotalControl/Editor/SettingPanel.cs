@@ -19,13 +19,13 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         [SerializeField] bool creatingNewConfig;
         [SerializeField] int selectedCompressionIndex;
         [SerializeField] Vector2 scrollPosition;
-        [SerializeField] string[] assetPreprocessorSavedConfigNames;
-        [SerializeField] string[] bundleManagerSavedConfigNames;
-        [SerializeField] string[] packageManagerSavedConfigNames;
+        [SerializeField] string[] assetPreprocessorUserConfigNames;
+        [SerializeField] string[] bundleManagerUserConfigNames;
+        [SerializeField] string[] packageManagerUserConfigNames;
         [SerializeField] string[] userConfigNames;
-        [SerializeField] int assetPreprocessorSavedConfigSelectedIndex;
-        [SerializeField] int bundleManagerSavedConfigSelectedIndex;
-        [SerializeField] int packageManagerSavedConfigSelectedIndex;
+        [SerializeField] int assetPreprocessorUserConfigSelectedIndex;
+        [SerializeField] int bundleManagerUserConfigSelectedIndex;
+        [SerializeField] int packageManagerUserConfigSelectedIndex;
         [SerializeField] int playerBuilderUserConfigSelectedIndex;
 
         [SerializeField] GUIStyle labelMidRight;
@@ -207,14 +207,11 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void ConfigToIndex()
         {
-            try
-            {
-                assetPreprocessorSavedConfigSelectedIndex = assetPreprocessorSavedConfigNames.IndexOf(G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName.RemoveExtension());
-                bundleManagerSavedConfigSelectedIndex = bundleManagerSavedConfigNames.IndexOf(G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentUserConfigName.RemoveExtension());
-                packageManagerSavedConfigSelectedIndex = packageManagerSavedConfigNames.IndexOf(G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentUserConfigName.RemoveExtension());
-                playerBuilderUserConfigSelectedIndex = userConfigNames.IndexOf(G.Module.PlayerBuilderModule.ModuleStateConfig.Json.CurrentUserConfigName.RemoveExtension());
-            }
-            catch { }
+            assetPreprocessorUserConfigSelectedIndex = assetPreprocessorUserConfigNames.IndexOf(G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName.RemoveExtension());
+            bundleManagerUserConfigSelectedIndex = bundleManagerUserConfigNames.IndexOf(G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentUserConfigName.RemoveExtension());
+            packageManagerUserConfigSelectedIndex = packageManagerUserConfigNames.IndexOf(G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentUserConfigName.RemoveExtension());
+            playerBuilderUserConfigSelectedIndex = userConfigNames.IndexOf(G.Module.PlayerBuilderModule.ModuleStateConfig.Json.CurrentUserConfigName.RemoveExtension());
+
             string compressionName = G.Module.BundleManagerModule.CompressionEnumMap.FirstOrDefault(x => x.Value == (G.Module.BundleManagerModule.ModuleStateConfig.Json.CompressionOption)).Key;
             selectedCompressionIndex = G.Module.BundleManagerModule.CompressionEnum.IndexOf(compressionName);
         }
@@ -236,22 +233,22 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void LoadAllModulesUserConfigList()
         {
-            assetPreprocessorSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.AssetPreprocessorModule.ModuleConfig.UserConfigsFolderPath);
-            bundleManagerSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.BundleManagerModule.ModuleConfig.UserConfigsFolderPath);
-            packageManagerSavedConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.PackageManagerModule.ModuleConfig.UserConfigsFolderPath);
+            assetPreprocessorUserConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.AssetPreprocessorModule.ModuleConfig.UserConfigsFolderPath);
+            bundleManagerUserConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.BundleManagerModule.ModuleConfig.UserConfigsFolderPath);
+            packageManagerUserConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.PackageManagerModule.ModuleConfig.UserConfigsFolderPath);
             userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.PlayerBuilderModule.ModuleConfig.UserConfigsFolderPath);
         }
 
         private void InitSelectedIndex()
         {
             selectedCompressionIndex = -1;
-            assetPreprocessorSavedConfigSelectedIndex = -1;
-            bundleManagerSavedConfigSelectedIndex = -1;
-            packageManagerSavedConfigSelectedIndex = -1;
+            assetPreprocessorUserConfigSelectedIndex = -1;
+            bundleManagerUserConfigSelectedIndex = -1;
+            packageManagerUserConfigSelectedIndex = -1;
             playerBuilderUserConfigSelectedIndex = -1;
-            assetPreprocessorSavedConfigNames = new string[0];
-            bundleManagerSavedConfigNames = new string[0];
-            packageManagerSavedConfigNames = new string[0];
+            assetPreprocessorUserConfigNames = new string[0];
+            bundleManagerUserConfigNames = new string[0];
+            packageManagerUserConfigNames = new string[0];
             userConfigNames = new string[0];
         }
 
@@ -314,11 +311,11 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 assetPreprocessorContent, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline);
 
             EditorGUILayout.BeginHorizontal();
-            int index_new = EditorGUILayout.Popup(assetPreprocessorSavedConfigSelectedIndex, assetPreprocessorSavedConfigNames, dropdownOptions);
-            if (assetPreprocessorSavedConfigSelectedIndex != index_new)
+            int index_new = EditorGUILayout.Popup(assetPreprocessorUserConfigSelectedIndex, assetPreprocessorUserConfigNames, dropdownOptions);
+            if (assetPreprocessorUserConfigSelectedIndex != index_new)
             {
-                assetPreprocessorSavedConfigSelectedIndex = index_new;
-                G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName = assetPreprocessorSavedConfigNames[index_new] + ".json";
+                assetPreprocessorUserConfigSelectedIndex = index_new;
+                G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName = assetPreprocessorUserConfigNames[index_new] + ".json";
                 G.Module.AssetPreprocessorModule.LoadUserConfig();
                 return;
             }
@@ -355,11 +352,11 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 bundleManagerContent, G.Module.BundleManagerModule.ModuleStateConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
 
-            index_new = EditorGUILayout.Popup(bundleManagerSavedConfigSelectedIndex, bundleManagerSavedConfigNames, dropdownOptions);
-            if (bundleManagerSavedConfigSelectedIndex != index_new)
+            index_new = EditorGUILayout.Popup(bundleManagerUserConfigSelectedIndex, bundleManagerUserConfigNames, dropdownOptions);
+            if (bundleManagerUserConfigSelectedIndex != index_new)
             {
-                bundleManagerSavedConfigSelectedIndex = index_new;
-                G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentUserConfigName = bundleManagerSavedConfigNames[index_new] + ".json";
+                bundleManagerUserConfigSelectedIndex = index_new;
+                G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentUserConfigName = bundleManagerUserConfigNames[index_new] + ".json";
                 return;
             }
             if (GUILayout.Button(settingGUIContent, miniButtonOptions))
@@ -406,11 +403,11 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                    packageManagerContent, G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
 
-            index_new = EditorGUILayout.Popup(packageManagerSavedConfigSelectedIndex, packageManagerSavedConfigNames, dropdownOptions);
-            if (packageManagerSavedConfigSelectedIndex != index_new)
+            index_new = EditorGUILayout.Popup(packageManagerUserConfigSelectedIndex, packageManagerUserConfigNames, dropdownOptions);
+            if (packageManagerUserConfigSelectedIndex != index_new)
             {
-                packageManagerSavedConfigSelectedIndex = index_new;
-                G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentUserConfigName = packageManagerSavedConfigNames[index_new] + ".json";
+                packageManagerUserConfigSelectedIndex = index_new;
+                G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentUserConfigName = packageManagerUserConfigNames[index_new] + ".json";
                 return;
             }
             if (GUILayout.Button(settingGUIContent, miniButtonOptions))
@@ -583,7 +580,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             if (G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline)
             {
                 //PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载
-                //if (!G.configs.PlayerBuilderConfigs.LoadCurrentPlayerSetting()) return; 
                 if (!G.Module.PlayerBuilderRunner.Check()) return false;
             }
             return true;
@@ -631,55 +627,59 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                         currentStep = Step.PreprocessAssets;
                         break;
                     case Step.PreprocessAssets:
-                        if (G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline)
+                        var state = G.Module.AssetPreprocessorModule.ModuleStateConfig; //TODO:每个Setp中都是重复的内容，可优化
+                        if (state.Json.IsPartOfPipeline)
                         {
                             G.Module.AssetPreprocessorRunner.Run(true);
                         }
-                        else
+                        else if(!string.IsNullOrEmpty(state.Json.CurrentUserConfigName))
                         {
-                            G.Module.AssetPreprocessorModule.ModuleStateConfig.Load(); //TODO:为什么要load？
-                            G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline = false;
-                            G.Module.AssetPreprocessorModule.ModuleStateConfig.Save();
+                            state.Load(); //TODO:为什么要load？
+                            state.Json.IsPartOfPipeline = false;
+                            state.Save();
                         }
                         currentStep = Step.BuildBundles;
                         break;
                     case Step.BuildBundles:
-                        if (G.Module.BundleManagerModule.ModuleStateConfig.Json.IsPartOfPipeline)
+                        var state2 = G.Module.BundleManagerModule.ModuleStateConfig;
+                        if (state2.Json.IsPartOfPipeline)
                         {
                             G.Module.BundleManagerRunner.Run(true);
                         }
-                        else
+                        else if(!string.IsNullOrEmpty(state2.Json.CurrentUserConfigName))
                         {
-                            G.Module.BundleManagerModule.ModuleStateConfig.Load();
-                            G.Module.BundleManagerModule.ModuleStateConfig.Json.IsPartOfPipeline = false;
-                            G.Module.BundleManagerModule.ModuleStateConfig.Save();
+                            state2.Load();
+                            state2.Json.IsPartOfPipeline = false;
+                            state2.Save();
                         }
                         currentStep = Step.BuildPackages;
                         break;
                     case Step.BuildPackages:
-                        if (G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline)
+                        var state3 = G.Module.PackageManagerModule.ModuleStateConfig;
+                        if (state3.Json.IsPartOfPipeline)
                         {
                             G.Module.PackageManagerRunner.ResourceVersion = G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion;
                             G.Module.PackageManagerRunner.Run(true);
                         }
-                        else
+                        else if(!string.IsNullOrEmpty(state3.Json.CurrentUserConfigName))
                         {
-                            G.Module.PackageManagerModule.ModuleStateConfig.Load();
-                            G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline = false;
-                            G.Module.PackageManagerModule.ModuleStateConfig.Save();
+                            state3.Load();
+                            state3.Json.IsPartOfPipeline = false;
+                            state3.Save();
                         }
                         currentStep = Step.BuildPlayer;
                         break;
                     case Step.BuildPlayer:
-                        if (G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline)
+                        var state4 = G.Module.PlayerBuilderModule.ModuleStateConfig;
+                        if (state4.Json.IsPartOfPipeline)
                         {
                             G.Module.PlayerBuilderRunner.Run(true);
                         }
-                        else
+                        else if(!string.IsNullOrEmpty(state4.Json.CurrentUserConfigName))
                         {
-                            G.Module.PlayerBuilderModule.ModuleStateConfig.Load();
-                            G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline = false;
-                            G.Module.PlayerBuilderModule.ModuleStateConfig.Save();
+                            state4.Load();
+                            state4.Json.IsPartOfPipeline = false;
+                            state4.Save();
                         }
                         currentStep = Step.Finish;
                         break;
@@ -720,6 +720,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             Module newModule = new Module();
             newModule.LoadAllConfigs(pipelineRootPath);
             G.Module = newModule;
+            //G.Runner.Module = newModule; //暂不需要
             InitSelectedIndex();
             LoadAllModulesUserConfigList();
             ConfigToIndex();

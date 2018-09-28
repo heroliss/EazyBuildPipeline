@@ -893,6 +893,34 @@
     "addressableNames": null
   },
   {
+    "assetBundleName": "aboriginalresources/audio/skillsound/hero/lunarchild01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/LunarChild01/banyuemanyuexinyue.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/LunarChild01/liuxingyunluo.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/LunarChild01/liuxingyunluozidan.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/LunarChild01/pugong.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/LunarChild01/pugongbaodian.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/LunarChild01/xingchenzhuiluo.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/LunarChild01/yueshenjingu.wav"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/audio/skillsound/hero/westernsheriff01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/WesternSheriff01/jisusheji.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/WesternSheriff01/pugong.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/WesternSheriff01/shanguangshoulei.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/WesternSheriff01/shanguangshouleibaodian.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/WesternSheriff01/zhimingbiaoji.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/WesternSheriff01/zhimingjuji.wav",
+      "Assets/ABOriginalResources/Audio/SkillSound/Heros/WesternSheriff01/zhimingjujibaodian.wav"
+    ],
+    "addressableNames": null
+  },
+  {
     "assetBundleName": "aboriginalresources/audio/skillsound/monster/bombtower01",
     "assetBundleVariant": null,
     "assetNames": [
@@ -2775,6 +2803,22 @@
     "addressableNames": null
   },
   {
+    "assetBundleName": "aboriginalresources/audio/character/hero/lunarchild01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Audio/Character/Heros/LunarChild01/LunarChild01_death.wav"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/audio/character/hero/westernsheriff01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Audio/Character/Heros/WesternSheriff01/WesternSheriff01_death.wav"
+    ],
+    "addressableNames": null
+  },
+  {
     "assetBundleName": "aboriginalresources/audio/character/monster/bombtower01",
     "assetBundleVariant": null,
     "assetNames": [
@@ -3369,6 +3413,22 @@
     "assetBundleVariant": null,
     "assetNames": [
       "Assets/ABOriginalResources/Audio/Character/ActorLines/Meidusha01/Meidusha01_Show.wav"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/audio/character/actorlines/lunarchild01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Audio/Character/ActorLines/LunarChild01/LunarChild01_Show.wav"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/audio/character/actorlines/westernsheriff01",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Audio/Character/ActorLines/WesternSheriff01/WesternSheriff01_Show.wav"
     ],
     "addressableNames": null
   },
@@ -5282,7 +5342,8 @@
       "Assets/ABOriginalResources/Png/Items/Materials/Other/lierizhijianzhuyanjinhuaka.png",
       "Assets/ABOriginalResources/Png/Items/Materials/Other/taitanzhilijinhuaka.png",
       "Assets/ABOriginalResources/Png/Items/Materials/Other/xingchenzhileijinhuaka.png",
-      "Assets/ABOriginalResources/Png/Items/Materials/Other/yueshenpanjinhuaka.png"
+      "Assets/ABOriginalResources/Png/Items/Materials/Other/yueshenpanjinhuaka.png",
+      "Assets/ABOriginalResources/Png/Items/Materials/Other/batchRaceMissionTicket.png"
     ],
     "addressableNames": null
   },
@@ -5685,6 +5746,53 @@
       "Assets/ABOriginalResources/Png/Items/UniversalDebris/UniversalWeapons01.png",
       "Assets/ABOriginalResources/Png/Items/UniversalDebris/UniversalHero02.png",
       "Assets/ABOriginalResources/Png/Items/UniversalDebris/UniversalHero03.png"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/png/item/holystone",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Png/Items/HolyStone/blue01.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/blue02.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/blue03.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/blue04.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core01.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core02.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core03.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core04.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core05.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core06.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core07.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core08.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core09.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core10.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core11.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core12.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core13.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core14.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core15.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core16.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core17.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/core18.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/red01.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/red02.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/red03.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/red04.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/yellow01.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/yellow02.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/yellow03.png",
+      "Assets/ABOriginalResources/Png/Items/HolyStone/yellow04.png"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/png/item/monthcard",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/Png/Items/MonthCard/HalfMoonCard.png",
+      "Assets/ABOriginalResources/Png/Items/MonthCard/MonthCard.png",
+      "Assets/ABOriginalResources/Png/Items/MonthCard/WeekCard.png"
     ],
     "addressableNames": null
   },
@@ -10312,7 +10420,21 @@
       "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Skill_Boss_Gargoyle_SummonTrap.prefab",
       "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Skill_Boss_Gargoyle_wajieshexian.prefab",
       "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Skill_Boss_Gargoyle_yangyanchongji.prefab",
-      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Introduce_Boss_Gargoyle.prefab"
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Introduce_Boss_Gargoyle.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Buff_Boss_Gargoyle_junengguangshu_baodian.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Buff_Boss_Gargoyle_junengguangshu_kuosan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Buff_Boss_Gargoyle_shenshengzhishou_fx.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Buff_Boss_Gargoyle_shenshengzhishou_zhixiang.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Bullet_Boss_Gargoyle_jiguang.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Bullet_Boss_Gargoyle_junengguangshu.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Bullet_Boss_Gargoyle_junengguangshu01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Bullet_Boss_Gargoyle_kongzidan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Bullet_Boss_Gargoyle_zhaohuanshixiang.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Skill_Boss_Gargoyle_jiguang.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Skill_Boss_Gargoyle_junengguangshu.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Skill_Boss_Gargoyle_junengguangshu01.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Skill_Boss_Gargoyle_kongzidan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/Skills/Boss/Gargoyle/Skill_Boss_Gargoyle_zhaohuanshixiang.prefab"
     ],
     "addressableNames": null
   },
@@ -13370,6 +13492,30 @@
     "addressableNames": null
   },
   {
+    "assetBundleName": "aboriginalresources/wowprefabs/story/functionstory/shengpanxitong_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Story/FunctionStory/shengpanxitong.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/story/functionstory/shengshishendian_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Story/FunctionStory/shengshishendian.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/story/functionstory/zhongjishilian_prefab",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/Story/FunctionStory/zhongjishilian.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
     "assetBundleName": "aboriginalresources/wowprefabs/story/chapterstory",
     "assetBundleVariant": null,
     "assetNames": [
@@ -14226,7 +14372,8 @@
     "assetBundleVariant": null,
     "assetNames": [
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/GuidePanel/GuidePanel.prefab",
-      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/GuidePanel/UI_SlideScreen_Hint.prefab"
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/GuidePanel/UI_SlideScreen_Hint.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/GuidePanel/UI_SlideScreen_Hint_02.prefab"
     ],
     "addressableNames": null
   },
@@ -14251,7 +14398,17 @@
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HeroCommentItem.prefab",
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HeroStrategyPanel.prefab",
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HolyPlatePage.prefab",
-      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HolyPlatePanel.prefab"
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HolyPlatePanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HolyStoneClearPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HolyStoneUpgradeSuccessPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/Fx_UI_shengpan_fenjie.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/Fx_UI_shengpan_shengshi_hong.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/Fx_UI_shengpan_shengshi_huang.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/Fx_UI_shengpan_shengshi_lan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/Fx_UI_shengpan_shengshi_xilianpan.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/Fx_UI_shengpan_shengshi_zhongxin.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/Fx_UI_shengpan_xilian_jicheng.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HeroInfo/HolyStoneInfoPanel.prefab"
     ],
     "addressableNames": null
   },
@@ -14628,7 +14785,11 @@
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/DirectPurchase/GiftItem.prefab",
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/AllianceShop.prefab",
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/PieceConversionItem.prefab",
-      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/PieceConversionPanel.prefab"
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/PieceConversionPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/MonthCardCell.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/MonthCardPage.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/MonthCardRewardItem.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/ShoppingMall/MonthCardRewardItemTitle.prefab"
     ],
     "addressableNames": null
   },
@@ -15088,6 +15249,36 @@
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/UltimateTestPanel/UltimateEndBattlePanel.prefab",
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/UltimateTestPanel/UltimateTestBossScene.prefab",
       "Assets/ABOriginalResources/WowPrefabs/UI/Windows/UltimateTestPanel/UltimateTestPanel.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/ui/windows/holytemple",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HolyTemple/HolyTempleMainPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HolyTemple/HolyTempleRulePanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HolyTemple/HolyTempleScene.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HolyTemple/HolyTempleBatchMissionPanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/HolyTemple/HolyTempleSweepPanel.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/ui/windows/allianceinstancezone",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/AllianceInstanceZone/AllianceInstanceZonePanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/AllianceInstanceZone/AllianceInstanceZonePreparePanel.prefab",
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/AllianceInstanceZone/AllianceInstanceZoneScene.prefab"
+    ],
+    "addressableNames": null
+  },
+  {
+    "assetBundleName": "aboriginalresources/wowprefabs/ui/windows/allianceinstancezoneranktippanel",
+    "assetBundleVariant": null,
+    "assetNames": [
+      "Assets/ABOriginalResources/WowPrefabs/UI/Windows/AllianceInstanceZoneRankTipPanel/AllianceInstanceZoneRankTipPanel.prefab"
     ],
     "addressableNames": null
   },

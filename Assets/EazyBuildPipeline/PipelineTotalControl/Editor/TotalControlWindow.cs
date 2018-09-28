@@ -10,11 +10,12 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 {
     public class TotalControlWindow : EditorWindow, ISerializationCallbackReceiver
     {
-        Module module;
+        Module module; //仅用于提供给Unity自动序列化
+        Common.Configs.CommonConfig commonConfig; //仅用于提供给Unity自动序列化
+
         readonly int settingPanelHeight = 160;
- 
-        private PlayerSettingsPanel playerSettingsPanel;
-        private SettingPanel settingPanel;
+        PlayerSettingsPanel playerSettingsPanel;
+        SettingPanel settingPanel;
 
 
         [MenuItem("Window/EazyBuildPipeline/TotalControl")]
@@ -75,13 +76,18 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         public void OnBeforeSerialize()
         {
             module = G.Module;
+            commonConfig = CommonModule.CommonConfig;
         }
 
         public void OnAfterDeserialize()
         {
+            CommonModule.CommonConfig = commonConfig;
             G.Module = module;
+            //G.Runner = new Runner(module);
             G.g = new G.GlobalReference();
+
             PlayerBuilder.G.Module = G.Module.PlayerBuilderModule;
+            PlayerBuilder.G.Runner = new PlayerBuilder.Runner(PlayerBuilder.G.Module);
             PlayerBuilder.G.g = new PlayerBuilder.G.GlobalReference();
         }
     }

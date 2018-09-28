@@ -7,9 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace EazyBuildPipeline.PipelineTotalControl.Editor
+namespace EazyBuildPipeline.PipelineTotalControl
 {
-    public class SVNManager 
+    [Serializable]
+    public partial class SVNManager 
     {
         public bool IsPartOfPipeline = false;
         public bool EnableCheckDiff = false;
@@ -42,7 +43,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
-        public void RunProcess()
+        void RunProcess()
         {
             int progress = 0;
             message = "";
@@ -86,14 +87,13 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 throw new ApplicationException("SVN Resolve 时发生错误：" + errorMessage);
             }
             EditorUtility.DisplayProgressBar("SVN", "Finish!", 1);
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
-        private void OnExited(object sender, EventArgs e)
+        void OnExited(object sender, EventArgs e)
         {
         }
 
-        private void OnErrorReceived(object sender, DataReceivedEventArgs e)
+        void OnErrorReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data.Trim() != "")
             {
@@ -101,7 +101,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private void OnReceived(object sender, DataReceivedEventArgs e)
+        void OnReceived(object sender, DataReceivedEventArgs e)
         {
             message = e.Data;
         }
@@ -128,7 +128,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private void OnInfoExited(object sender, EventArgs e)
+        void OnInfoExited(object sender, EventArgs e)
         {
             Process process = (Process)sender;
             Available = process.ExitCode == 0;
@@ -159,7 +159,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private void ExtractVersionsAndSetVersionState()
+        void ExtractVersionsAndSetVersionState()
         {
             const string lastChangedVersionName = "Last Changed Rev: ";
             const string repositoryVersionName = "Revision: ";
@@ -182,7 +182,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private void OnDiffExited(object sender, EventArgs e)
+        void OnDiffExited(object sender, EventArgs e)
         {
             Process process = (Process)sender;
             if (process.ExitCode == 0)
@@ -195,7 +195,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private void OnDiffErrorReceived(object sender, DataReceivedEventArgs e)
+        void OnDiffErrorReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data.Trim() != "")
             {
@@ -203,7 +203,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private void OnDiffReceived(object sender, DataReceivedEventArgs e)
+        void OnDiffReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data.Trim() != "")
             {
@@ -211,7 +211,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private void OnInfoErrorReceived(object sender, DataReceivedEventArgs e)
+        void OnInfoErrorReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data.Trim() != "")
             {
@@ -219,7 +219,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private void OnInfoReceived(object sender, DataReceivedEventArgs e)
+        void OnInfoReceived(object sender, DataReceivedEventArgs e)
         {
             SVNInfo += e.Data + "\n";
         }
@@ -253,25 +253,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             process.BeginErrorReadLine();
 
             return process;
-        }
-
-        public bool Check()
-        {
-            return true;
-        }
-
-        public void PreProcess()
-        {
-        }
-
-        public void PostProcess()
-        {
-            //后处理过程：重新创建Wrap和Lua文件
-            EditorUtility.DisplayProgressBar("Clear and Generate Wrap Files...", "", 1);
-            ToLuaMenu.ClearWrapFilesAndCreate();
-            EditorUtility.DisplayProgressBar("Clear and Generate Lua Files...", "", 1);
-            LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { });
-            EditorUtility.DisplayProgressBar("Clear and Generate Wrap and Lua Files Finished!", "", 1);
         }
     }
 }

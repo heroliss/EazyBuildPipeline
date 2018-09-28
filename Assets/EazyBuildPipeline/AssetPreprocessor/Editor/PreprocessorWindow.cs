@@ -9,6 +9,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
     public class PreprocessorWindow : EditorWindow, ISerializationCallbackReceiver
     {
         Module module; //仅用于提供给Unity自动序列化
+        Common.Configs.CommonConfig commonConfig; //仅用于提供给Unity自动序列化
+
         [Serializable] public class GroupDictionary1 : SerializableDictionary<string, GroupPanel> { }
         [Serializable] public class GroupDictionary2 : SerializableDictionary<string, GroupDictionary1> { }
         [Serializable] public class GroupDictionary3 : SerializableDictionary<string, GroupDictionary2> { }
@@ -179,11 +181,14 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         public void OnBeforeSerialize()
         {
             module = G.Module;
+            commonConfig = CommonModule.CommonConfig;
         }
 
         public void OnAfterDeserialize()
         {
+            CommonModule.CommonConfig = commonConfig;
             G.Module = module;
+            G.Runner = new Runner(module);
             G.g = new G.GlobalReference();
         }
     }

@@ -14,6 +14,10 @@ namespace EazyBuildPipeline
         /// </summary>
         public static int IndexOf(this string[] array, string s)
         {
+            if (array == null || s == null)
+            {
+                return -1;
+            }
             for (int i = 0; i < array.Length; i++)
             {
                 if (s == array[i])
@@ -34,6 +38,10 @@ namespace EazyBuildPipeline
         /// <returns></returns>
         public static string RemoveExtension(this string path)
         {
+            if (path == null)
+            {
+                return null;
+            }
             int len = Path.GetExtension(path).Length;
             return path.Remove(path.Length - len, len);
         }

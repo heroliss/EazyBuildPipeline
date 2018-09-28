@@ -366,6 +366,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             Module newModule = new Module();
             if (!newModule.LoadAllConfigs(pipelineRootPath)) return;
             G.Module = newModule;
+            G.Runner.Module = newModule;
             InitSelectedIndex();
             LoadUserConfigList();
             ConfigToIndex();

@@ -17,12 +17,12 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         [SerializeField] GUIStyle dropdownStyle;
         [SerializeField] GUIStyle buttonStyle;
-        GUILayoutOption[] defaultOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(90) };
-        GUILayoutOption[] dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
-        GUILayoutOption[] dropdownOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
-        GUILayoutOption[] miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
-        GUILayoutOption[] labelOptions = new GUILayoutOption[] { GUILayout.MinWidth(40), GUILayout.MaxWidth(110) };
-        GUILayoutOption[] inputOptions = new GUILayoutOption[] { GUILayout.Width(40) };
+        GUILayoutOption[] defaultOptions = { GUILayout.MaxHeight(25), GUILayout.MaxWidth(90) };
+        GUILayoutOption[] dropdownOptions = { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
+        GUILayoutOption[] dropdownOptions2 = { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
+        GUILayoutOption[] miniButtonOptions = { GUILayout.MaxWidth(24) };
+        GUILayoutOption[] labelOptions = { GUILayout.MinWidth(40), GUILayout.MaxWidth(110) };
+        GUILayoutOption[] inputOptions = { GUILayout.Width(40) };
 
         private void InitStyles()
         {
@@ -161,6 +161,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             Module newModule = new Module();
             if (!newModule.LoadAllConfigs(pipelineRootPath)) return;
             G.Module = newModule;
+            G.Runner.Module = newModule;
             InitSelectedIndex();
             ConfigToIndex();
             CommonModule.CommonConfig.Save();

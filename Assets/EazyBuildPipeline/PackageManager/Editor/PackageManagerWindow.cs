@@ -8,8 +8,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
     public class PackageManagerWindow : EditorWindow, ISerializationCallbackReceiver
     {
         #region 成员变量
+        Module module; //仅用于提供给Unity自动序列化
+        Common.Configs.CommonConfig commonConfig; //仅用于提供给Unity自动序列化
         private Styles styles;
-        private Module module;
         private SettingPanel settingPanel;
         private Rect m_splitterRect;
         private Rect upFixedRect;
@@ -147,12 +148,16 @@ namespace EazyBuildPipeline.PackageManager.Editor
             module = G.Module;
             module.UserConfig.Json.Packages = settingPanel.GetPackageMap();
             styles = G.g.styles;
+            commonConfig = CommonModule.CommonConfig;
         }
 
         public void OnAfterDeserialize()
         {
+            CommonModule.CommonConfig = commonConfig;
             G.Module = module;
+            G.Runner = new Runner(module);
             G.g = new G.GlobalReference();
+
             G.g.styles = styles;
         }
     }

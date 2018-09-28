@@ -183,7 +183,6 @@ namespace EazyBuildPipeline.PlayerBuilder
                     PlayerSettings.SetArchitecture(BuildTargetGroup.iOS, (int)ps.IOS.Architecture);
                     PlayerSettings.stripEngineCode = ps.IOS.StripEngineCode;
                     PlayerSettings.iOS.scriptCallOptimization = ps.IOS.ScriptCallOptimization;
-                    ApplyIOSPostProcessSettings();
                     break;
                 case BuildTargetGroup.Android:
                     PlayerSettings.preserveFramebufferAlpha = ps.Android.PreserveFramebufferAlpha;
@@ -207,6 +206,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 default:
                     break;
             }
+            ApplyIOSPostProcessSettings(); //里面也有对Android的后处理
         }
 
         public void FetchAllScriptDefines()

@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using EazyBuildPipeline.Common.Configs;
 
 namespace EazyBuildPipeline.BundleManager.Editor
 {
     public class BundleManagerWindow : EditorWindow, ISerializationCallbackReceiver
     {
-        private Module module;
+        Module module; //仅用于提供给Unity自动序列化
+        Common.Configs.CommonConfig commonConfig; //仅用于提供给Unity自动序列化
+
         private AssetBundleManagement2.AssetBundleMainWindow mainTab;
         private SettingPanel settingPanel;
         private float settingPanelHeight = 70;
@@ -63,12 +66,16 @@ namespace EazyBuildPipeline.BundleManager.Editor
         public void OnBeforeSerialize()
         {
             module = G.Module;
+            commonConfig = CommonModule.CommonConfig;
         }
 
         public void OnAfterDeserialize()
         {
+            CommonModule.CommonConfig = commonConfig;
             G.Module = module;
+            G.Runner = new Runner(module);
             G.g = new G.GlobalReference();
+
             G.g.mainTab = mainTab; //TODO:对BundleMaster的特殊处理
         }
     }

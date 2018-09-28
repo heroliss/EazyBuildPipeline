@@ -85,7 +85,7 @@ namespace EazyBuildPipeline.Common.Configs
     [Serializable]
     public class ModuleStateConfigJsonClass
     {
-        public string[] CurrentTag = { "Example Platform" };
+        public string[] CurrentTag = { };
         public string CurrentUserConfigName;
         public bool Applying;
         public bool IsPartOfPipeline;
