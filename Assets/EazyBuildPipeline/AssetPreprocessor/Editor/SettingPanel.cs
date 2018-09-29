@@ -312,9 +312,14 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			}
 			if (ensure)
 			{
-				Module newModule = new Module();
-				if (!newModule.LoadAllConfigs(path)) return;
-				G.Module = newModule;
+                string originPipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
+                Module newModule = new Module();
+                if (!newModule.LoadAllConfigs(path))
+                {
+                    CommonModule.CommonConfig.Json.PipelineRootPath = originPipelineRootPath;
+                    return;
+                }
+                G.Module = newModule;
                 G.Runner.Module = newModule;
 				G.g.OnChangeCurrentUserConfig();
 				CommonModule.CommonConfig.Save();

@@ -350,29 +350,22 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
             if (ensure)
             {
-                try
+                string originPipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
+                Module newModule = new Module();
+                if (!newModule.LoadAllConfigs(path))
                 {
-                    ChangeAllConfigsExceptRef(path);
+                    CommonModule.CommonConfig.Json.PipelineRootPath = originPipelineRootPath;
+                    return;
                 }
-                catch (Exception e)
-                {
-                    EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
-                }
+                G.Module = newModule;
+                G.Runner.Module = newModule;
+                InitSelectedIndex();
+                LoadUserConfigList();
+                ConfigToIndex();
+                CommonModule.CommonConfig.Save();
+                HandleApplyingWarning();
+                OnChangeRootPath();
             }
-        }
-
-        private void ChangeAllConfigsExceptRef(string pipelineRootPath)
-        {
-            Module newModule = new Module();
-            if (!newModule.LoadAllConfigs(pipelineRootPath)) return;
-            G.Module = newModule;
-            G.Runner.Module = newModule;
-            InitSelectedIndex();
-            LoadUserConfigList();
-            ConfigToIndex();
-            CommonModule.CommonConfig.Save();
-            HandleApplyingWarning();
-            OnChangeRootPath();
         }
 
         private void OnChangeRootPath()

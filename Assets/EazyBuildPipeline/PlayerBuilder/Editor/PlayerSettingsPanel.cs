@@ -85,36 +85,42 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             var ps = G.Module.UserConfig.Json.PlayerSettings;
             scrollPosition_Android = EditorGUILayout.BeginScrollView(scrollPosition_Android);
 
-            EditorGUILayout.LabelField("Identification", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Identity", EditorStyles.boldLabel);
             EBPEditorGUILayout.TextField("Package Name", ref ps.Android.PackageName, OnValueChanged);
             EBPEditorGUILayout.TextField("Client Version", ref ps.Android.ClientVersion, OnValueChanged);
             EBPEditorGUILayout.IntField("Bundle Version Code", ref ps.Android.BundleVersionCode, OnValueChanged);
-            ps.Android.MinimumAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Minimum API Level", ps.Android.MinimumAPILevel, OnValueChanged);
-            ps.Android.TargetAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Target API Level", ps.Android.TargetAPILevel, OnValueChanged);
-
             EditorGUILayout.Separator();
-            EditorGUILayout.LabelField("Configuration", EditorStyles.boldLabel);
+
+            EditorGUILayout.LabelField("Deployment Info", EditorStyles.boldLabel);
+            ps.Android.WritePermission = (Configs.UserConfig.PlayerSettings.AndroidSettings.WritePermissionEnum)EBPEditorGUILayout.EnumPopup("Write Permission", ps.Android.WritePermission, OnValueChanged);
             ps.Android.DeviceFilter = (AndroidTargetDevice)EBPEditorGUILayout.EnumPopup("Device Filter", ps.Android.DeviceFilter, OnValueChanged);
             ps.Android.InstallLocation = (AndroidPreferredInstallLocation)EBPEditorGUILayout.EnumPopup("Install Location", ps.Android.InstallLocation, OnValueChanged);
             ps.Android.InternetAccess = (Configs.UserConfig.PlayerSettings.AndroidSettings.InternetAccessEnum)EBPEditorGUILayout.EnumPopup("Internet Access", ps.Android.InternetAccess, OnValueChanged);
-            ps.Android.WritePermission = (Configs.UserConfig.PlayerSettings.AndroidSettings.WritePermissionEnum)EBPEditorGUILayout.EnumPopup("Write Permission", ps.Android.WritePermission, OnValueChanged);
-
             EditorGUILayout.Separator();
+            ps.Android.MinimumAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Minimum API Level", ps.Android.MinimumAPILevel, OnValueChanged);
+            ps.Android.TargetAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Target API Level", ps.Android.TargetAPILevel, OnValueChanged);
+            EditorGUILayout.Separator();
+            EBPEditorGUILayout.Toggle("Use OBB Mode", ref ps.Android.UseObbMode, OnValueChanged);
+            EditorGUILayout.Separator();
+
+            EditorGUILayout.LabelField("Support", EditorStyles.boldLabel);
             EBPEditorGUILayout.Toggle("Android TV Compatibility", ref ps.Android.AndroidTVCompatibility, OnValueChanged);
             EBPEditorGUILayout.Toggle("Android Game", ref ps.Android.AndroidGame, OnValueChanged);
             //ps.Android.AndroidGameSupprot
-            EBPEditorGUILayout.Toggle("Strip Engine Code", ref ps.Android.StripEngineCode, OnValueChanged);
-
             EditorGUILayout.Separator();
+
+            EditorGUILayout.LabelField("Optimization", EditorStyles.boldLabel);
+            EBPEditorGUILayout.Toggle("Strip Engine Code", ref ps.Android.StripEngineCode, OnValueChanged);
+            EditorGUILayout.Separator();
+
             EditorGUILayout.LabelField("Resolution", EditorStyles.boldLabel);
             EBPEditorGUILayout.Toggle("Preserve Framebuffer Alpha", ref ps.Android.PreserveFramebufferAlpha, OnValueChanged);
             ps.Android.BlitType = (AndroidBlitType)EBPEditorGUILayout.EnumPopup("Blit Type", ps.Android.BlitType, OnValueChanged);
-
             EditorGUILayout.Separator();
+
             EditorGUILayout.LabelField("Rendering", EditorStyles.boldLabel);
             EBPEditorGUILayout.Toggle("Protect Graphics Memory", ref ps.Android.ProtectGraphicsMemory, OnValueChanged);
 
-            EditorGUILayout.Separator();
             EditorGUILayout.EndScrollView();
         }
 
@@ -165,8 +171,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EBPEditorGUILayout.TextField("Export Ipa Path", ref ps.IOS.ExportIpaPath, OnValueChanged);
             EBPEditorGUILayout.TextField("TaskPath", ref ps.IOS.TaskPath, OnValueChanged);
             EditorGUI.EndDisabledGroup();
-            EBPEditorGUILayout.TextField("BuglyAppID", ref ps.IOS.BuglyAppID, OnValueChanged);
-            EBPEditorGUILayout.TextField("BuglyAppKey", ref ps.IOS.BuglyAppKey, OnValueChanged);
     
             EditorGUILayout.EndScrollView();
         }
@@ -179,13 +183,21 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EditorGUILayout.LabelField("General Player Settings", EditorStyles.boldLabel);
             EBPEditorGUILayout.TextField("Company Name", ref ps.General.CompanyName, OnValueChanged);
             EBPEditorGUILayout.TextField("Product Name", ref ps.General.ProductName, OnValueChanged);
-
             EditorGUILayout.Separator();
+
+            EditorGUILayout.LabelField("Download Configs & Language", EditorStyles.boldLabel);
+            ps.General.DownloadConfigType = (Configs.UserConfig.PlayerSettings.GeneralSettings.DownloadConfigTypeEnum)EBPEditorGUILayout.EnumPopup("Configs", ps.General.DownloadConfigType, OnValueChanged);
+            ps.General.DownloadLanguageType = (WowGamePlay.LanguageType)EBPEditorGUILayout.EnumPopup("Language", ps.General.DownloadLanguageType, OnValueChanged);
+            EditorGUILayout.Separator();
+
             EditorGUILayout.LabelField("Build Settings", EditorStyles.boldLabel);
             G.Module.UserConfig.Json.BuildSettings.CompressionMethod =(Configs.UserConfig.BuildSettings.CompressionMethodEnum)EBPEditorGUILayout.EnumPopup("Compression Method", G.Module.UserConfig.Json.BuildSettings.CompressionMethod, OnValueChanged);
-            
-            //以下为当前配置，不保存在配置文件中
+            EBPEditorGUILayout.TextField("BuglyAppID", ref ps.General.BuglyAppID, OnValueChanged);
+            EBPEditorGUILayout.TextField("BuglyAppKey", ref ps.General.BuglyAppKey, OnValueChanged);
             EditorGUILayout.Separator();
+
+            //以下为当前配置，不保存在配置文件中
+            EditorGUILayout.LabelField("Temp Build Settings", EditorStyles.boldLabel);
             EBPEditorGUILayout.Toggle("Development Build", ref G.Module.ModuleStateConfig.Json.DevelopmentBuild);
             EditorGUI.BeginDisabledGroup(!G.Module.ModuleStateConfig.Json.DevelopmentBuild);
             EBPEditorGUILayout.Toggle("AutoConnect Profiler", ref G.Module.ModuleStateConfig.Json.ConnectWithProfiler);

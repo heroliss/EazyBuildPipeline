@@ -1,4 +1,5 @@
-﻿using EazyBuildPipeline.Common.Configs;
+﻿using System;
+using EazyBuildPipeline.Common.Configs;
 using UnityEditor;
 
 namespace EazyBuildPipeline
@@ -18,18 +19,31 @@ namespace EazyBuildPipeline
         public void Run(bool isPartOfPipeline = false)
         {
             var state = Module.ModuleStateConfig.Json;
-            state.IsPartOfPipeline = isPartOfPipeline;
-            state.Applying = true;
-            Module.ModuleStateConfig.Save();
+            try
+            {
+                state.IsPartOfPipeline = isPartOfPipeline;
+                state.Applying = true;
+                state.ErrorMessage = "Unexpected Halt!";
+                state.DetailedErrorMessage = null;
+                Module.ModuleStateConfig.Save(); 
 
-            PreProcess();
-            RunProcess();
-            PostProcess();
+                PreProcess();
+                RunProcess();
+                PostProcess(); 
 
-            state.Applying = false;
-            Module.ModuleStateConfig.Save();
+                state.Applying = false;
+                state.ErrorMessage = null;
+                Module.ModuleStateConfig.Save();
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+                AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            }
+            catch(Exception e)
+            {
+                state.ErrorMessage = e.Message;
+                state.DetailedErrorMessage = e.ToString();
+                Module.ModuleStateConfig.Save();
+                throw e;
+            }
         }
         public abstract bool Check();
         protected abstract void PreProcess();

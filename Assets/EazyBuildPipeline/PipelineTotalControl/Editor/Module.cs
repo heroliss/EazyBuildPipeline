@@ -46,20 +46,17 @@ namespace EazyBuildPipeline.PipelineTotalControl
 
         public Module()
         {
-            AssetPreprocessorRunner = new AssetPreprocessor.Runner(AssetPreprocessorModule);
-            BundleManagerRunner = new BundleManager.Runner(BundleManagerModule);
-            PackageManagerRunner = new PackageManager.Runner(PackageManagerModule);
-            PlayerBuilderRunner = new PlayerBuilder.Runner(PlayerBuilderModule);
+            InitRunners();
         }
 
-        public void LoadAllConfigs(string pipelineRootPath = null)
+        public bool LoadAllConfigs(string pipelineRootPath = null)
         {
-            if (!CommonModule.LoadCommonConfig()) return;
+            if (!CommonModule.LoadCommonConfig()) return false;
             if (pipelineRootPath != null)
             {
                 CommonModule.CommonConfig.Json.PipelineRootPath = pipelineRootPath;
             }
-            if (!LoadModuleConfig()) return;
+            if (!LoadModuleConfig()) return false;
             //这里暂时不需要ModuleStateConfig，所以不加载
 
             if (AssetPreprocessorModule.LoadModuleConfig())
@@ -79,6 +76,15 @@ namespace EazyBuildPipeline.PipelineTotalControl
             //这里需要将静态的Module与TotalControl中的Module同步，因为该窗口总控面板与PlayerSetting面板结合了
             PlayerBuilder.G.Module = PlayerBuilderModule; 
             PlayerBuilder.G.Runner = PlayerBuilderRunner;
+            return true;
+        }
+
+        public void InitRunners()
+        {
+            AssetPreprocessorRunner = new AssetPreprocessor.Runner(AssetPreprocessorModule);
+            BundleManagerRunner = new BundleManager.Runner(BundleManagerModule);
+            PackageManagerRunner = new PackageManager.Runner(PackageManagerModule);
+            PlayerBuilderRunner = new PlayerBuilder.Runner(PlayerBuilderModule);
         }
     }
 }

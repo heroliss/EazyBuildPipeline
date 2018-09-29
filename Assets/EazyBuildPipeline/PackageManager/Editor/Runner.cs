@@ -155,6 +155,10 @@ namespace EazyBuildPipeline.PackageManager
                     break;
 
                 case "Addon":
+                    //修改当前ResourceVersion
+                    CommonModule.CommonConfig.Json.CurrentResourceVersion = ResourceVersion;
+                    CommonModule.CommonConfig.Save();
+
                     EditorUtility.DisplayProgressBar("正在获取需要拷贝到Streaming中的Bundles信息", "", progress); progress += 0.01f;
                     //得到需要拷贝到Streaming中的Bundles
                     List<string> bundlesCopyToStreaming = new List<string>();

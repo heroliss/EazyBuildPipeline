@@ -32,7 +32,7 @@ namespace EazyBuildPipeline
             }
         }
 
-        public static Enum EnumPopup(string label, Enum selected, Action action = null)//TODO:如何优化？
+        public static Enum EnumPopup(string label, Enum selected, Action action = null) //TODO:如何用ref传递枚举?
         {
             Enum selected_new = EditorGUILayout.EnumPopup(label, selected);
             if (!selected_new.Equals(selected))

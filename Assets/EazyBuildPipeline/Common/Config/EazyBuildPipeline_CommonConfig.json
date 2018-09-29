@@ -2,9 +2,10 @@
   "PipelineRootPath": "/Users/eazydev/Work/PipelineRoot",
   "CurrentAssetTag": [
     "iOS",
-    "HD",
-    "ZH_CN"
+    "SD",
+    "EN"
   ],
+  "CurrentResourceVersion": 0,
   "TagEnum": {
     "Platform": [
       "iOS",

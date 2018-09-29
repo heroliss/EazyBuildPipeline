@@ -1,5 +1,6 @@
 ﻿#pragma warning disable 0649
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -97,14 +98,30 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             [Serializable]
             public class GeneralSettings
             {
+                public enum DownloadConfigTypeEnum
+                {
+                    localtest,
+                    ios_cn,
+                    taptap,
+                    ios_banhao,
+                }
+
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
                 public string CompanyName;
                 public string ProductName;
+
+                //Extension
+                [JsonConverter(typeof(StringEnumConverter))] public DownloadConfigTypeEnum DownloadConfigType;
+                [JsonConverter(typeof(StringEnumConverter))] public WowGamePlay.LanguageType DownloadLanguageType;
+                //For BuglyInit
+                public string BuglyAppID;
+                public string BuglyAppKey;
             }
 
             [Serializable]
             public class IOSSettings
             {
+                public enum ArchitectureEnum { ARMv7, ARM64, Universal } //TODO: 没有找到该枚举类型，所以自己创建了一个
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
                 public string BundleID;
                 public string ClientVersion;
@@ -115,34 +132,14 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public string LocationUsageDesc;
                 public string MicrophoneUsageDesc;
                 //public string BlueToothUsageDesc; //TODO:这个是否应该归类到后处理中?
-                public string TargetDevice_str;
-                public iOSTargetDevice TargetDevice
-                {
-                    get { return TargetDevice_str.ToEnum<iOSTargetDevice>(); }
-                    set { TargetDevice_str = value.ToString(); }
-                }
-                public string TargetSDK_str;
-                public iOSSdkVersion TargetSDK
-                {
-                    get { return TargetSDK_str.ToEnum<iOSSdkVersion>(); }
-                    set { TargetSDK_str = value.ToString(); }
-                }
+                [JsonConverter(typeof(StringEnumConverter))] public iOSTargetDevice TargetDevice;
+                [JsonConverter(typeof(StringEnumConverter))] public iOSSdkVersion TargetSDK;
                 public string TargetMinimumIOSVersion;
                 public bool StripEngineCode;
-                public string ScriptCallOptimization_str;
-                public ScriptCallOptimizationLevel ScriptCallOptimization
-                {
-                    get { return ScriptCallOptimization_str.ToEnum<ScriptCallOptimizationLevel>(); }
-                    set { ScriptCallOptimization_str = value.ToString(); }
-                }
+                [JsonConverter(typeof(StringEnumConverter))] public ScriptCallOptimizationLevel ScriptCallOptimization;
                 public string ProvisioningProfile;
-                public string Architecture_str;
-                public enum ArchitectureEnum { ARMv7, ARM64, Universal } //TODO: 没有找到该枚举类型，所以自己创建了一个
-                public ArchitectureEnum Architecture
-                {
-                    get { return Architecture_str.ToEnum<ArchitectureEnum>(); }
-                    set { Architecture_str = value.ToString(); }
-                }
+                [JsonConverter(typeof(StringEnumConverter))] public ArchitectureEnum Architecture;
+
                 //For iOSPostprocessor
                 public string ThirdFrameWorkPath;
                 public string ExportIpaPath;
@@ -151,51 +148,31 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public string PhotoUsageDesc;
                 public string PhotoUsageAddDesc;
                 public string TaskPath;
-                //For BuglyInit
-                public string BuglyAppID;
-                public string BuglyAppKey;
             }
 
             [Serializable]
             public class AndroidSettings
             {
+                public enum InternetAccessEnum { Auto, Require }
+                public enum WritePermissionEnum { Internal, External_SDCard }
+
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
                 public bool PreserveFramebufferAlpha;
-                public string BlitType_str;
-                public AndroidBlitType BlitType
-                {
-                    get { return BlitType_str.ToEnum<AndroidBlitType>(); }
-                    set { BlitType_str = value.ToString(); }
-                }
+                [JsonConverter(typeof(StringEnumConverter))] public AndroidBlitType BlitType;
                 public bool ProtectGraphicsMemory;
                 public string ClientVersion;
                 public int BundleVersionCode;
-                public string MinimumAPILevel_str;
-                public AndroidSdkVersions MinimumAPILevel
-                {
-                    get { return MinimumAPILevel_str.ToEnum<AndroidSdkVersions>(); }
-                    set { MinimumAPILevel_str = value.ToString(); }
-                }
-                public string TargetAPILevel_str;
-                public AndroidSdkVersions TargetAPILevel
-                {
-                    get { return TargetAPILevel_str.ToEnum<AndroidSdkVersions>(); }
-                    set { TargetAPILevel_str = value.ToString(); }
-                }
-                public string InstallLocation_str;
-                public AndroidPreferredInstallLocation InstallLocation
-                {
-                    get { return InstallLocation_str.ToEnum<AndroidPreferredInstallLocation>(); }
-                    set { InstallLocation_str = value.ToString(); }
-                }
-                public enum InternetAccessEnum { Auto, Require }
+                [JsonConverter(typeof(StringEnumConverter))] public AndroidSdkVersions MinimumAPILevel;
+                [JsonConverter(typeof(StringEnumConverter))] public AndroidSdkVersions TargetAPILevel;
+                [JsonConverter(typeof(StringEnumConverter))] public AndroidPreferredInstallLocation InstallLocation;
+                [JsonIgnore]
                 public InternetAccessEnum InternetAccess
                 {
                     get { return ForceInternetPermission ? InternetAccessEnum.Require : InternetAccessEnum.Auto; }
                     set { ForceInternetPermission = (value == InternetAccessEnum.Require);  }
                 }
                 public bool ForceInternetPermission;
-                public enum WritePermissionEnum { Internal, External_SDCard }
+                [JsonIgnore]
                 public WritePermissionEnum WritePermission
                 {
                     get { return ForceSDCardPermission ? WritePermissionEnum.External_SDCard : WritePermissionEnum.Internal; }
@@ -205,15 +182,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public bool AndroidTVCompatibility;
                 public bool AndroidGame;
                 public bool StripEngineCode;
-                public string DeviceFilter_str;
                 //Unity 2018 AndroidArchitecture ，2017 为 AndroidTargetDevice
-                public AndroidTargetDevice DeviceFilter
-                {
-                    get { return DeviceFilter_str.ToEnum<AndroidTargetDevice>(); }
-                    set { DeviceFilter_str = value.ToString(); }
-                }
-
+                [JsonConverter(typeof(StringEnumConverter))] public AndroidTargetDevice DeviceFilter;
                 public string PackageName;
+                public bool UseObbMode;
             }
 
             [Serializable]

@@ -1,9 +1,24 @@
 {
   "PlayerSettings": {
     "General": {
-      "ScriptDefines": [],
+      "ScriptDefines": [
+        {
+          "Active": true,
+          "GroupName": "Script Defines Group",
+          "Defines": [
+            {
+              "Active": true,
+              "Define": "DEBUG_ASSETBUNDLES"
+            }
+          ]
+        }
+      ],
       "CompanyName": "EazyGame",
-      "ProductName": "t102R"
+      "ProductName": "t102R",
+      "DownloadConfigType": "localtest",
+      "DownloadLanguageType": "cn",
+      "BuglyAppID": null,
+      "BuglyAppKey": null
     },
     "IOS": {
       "ScriptDefines": [
@@ -30,26 +45,20 @@
       "CameraUsageDesc": "aaaaaaaaaaaaaa",
       "LocationUsageDesc": "bbbbbbbbbbbb",
       "MicrophoneUsageDesc": "cccccccccccccc",
-      "TargetDevice_str": "iPhoneOnly",
-      "TargetSDK_str": "DeviceSDK",
+      "TargetDevice": "iPhoneOnly",
+      "TargetSDK": "DeviceSDK",
       "TargetMinimumIOSVersion": "8.1",
       "StripEngineCode": false,
-      "ScriptCallOptimization_str": "SlowAndSafe",
+      "ScriptCallOptimization": "SlowAndSafe",
       "ProvisioningProfile": "b96fe178-0522-4116-9ca1-c7fed2b877a7",
-      "Architecture_str": "Universal",
+      "Architecture": "Universal",
       "ThirdFrameWorkPath": "/Users/eazydev/Work/FrameWork",
       "ExportIpaPath": "",
       "IsBuildArchive": false,
       "BlueToothUsageDesc": "dddddddddddd",
       "PhotoUsageDesc": "eeeeeeeeeeeeee",
       "PhotoUsageAddDesc": "fffffffffffffffffffff",
-      "TaskPath": "",
-      "BuglyAppID": "",
-      "BuglyAppKey": "",
-      "TargetDevice": 0,
-      "TargetSDK": 988,
-      "ScriptCallOptimization": 0,
-      "Architecture": 2
+      "TaskPath": ""
     },
     "Android": {
       "ScriptDefines": [
@@ -73,27 +82,20 @@
         }
       ],
       "PreserveFramebufferAlpha": false,
-      "BlitType_str": "Never",
+      "BlitType": "Never",
       "ProtectGraphicsMemory": false,
       "ClientVersion": "1.2.6",
       "BundleVersionCode": 1,
-      "MinimumAPILevel_str": "AndroidApiLevel16",
-      "TargetAPILevel_str": "AndroidApiLevelAuto",
-      "InstallLocation_str": "Auto",
+      "MinimumAPILevel": "AndroidApiLevel16",
+      "TargetAPILevel": "AndroidApiLevelAuto",
+      "InstallLocation": "Auto",
       "ForceInternetPermission": true,
       "ForceSDCardPermission": true,
       "AndroidTVCompatibility": true,
       "AndroidGame": true,
       "StripEngineCode": false,
-      "DeviceFilter_str": "ARMv7",
-      "PackageName": "com.eazygame.projectnormalcrh052601t102r",
-      "BlitType": 1,
-      "MinimumAPILevel": 16,
-      "TargetAPILevel": 0,
-      "InstallLocation": 0,
-      "InternetAccess": 1,
-      "WritePermission": 1,
-      "DeviceFilter": 3
+      "DeviceFilter": "ARMv7",
+      "PackageName": "com.eazygame.projectnormalcrh052601t102r"
     }
   },
   "BuildSettings": {

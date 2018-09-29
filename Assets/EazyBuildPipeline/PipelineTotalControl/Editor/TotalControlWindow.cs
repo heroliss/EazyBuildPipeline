@@ -83,11 +83,15 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         {
             CommonModule.CommonConfig = commonConfig;
             G.Module = module;
-            //G.Runner = new Runner(module);
+            //G.Runner = new Runner(module); //暂时没有Runner
             G.g = new G.GlobalReference();
 
+            //重新初始化所有Runner
+            G.Module.InitRunners();
+
+            //把实例关联到PlayerBuilder的G中
             PlayerBuilder.G.Module = G.Module.PlayerBuilderModule;
-            PlayerBuilder.G.Runner = new PlayerBuilder.Runner(PlayerBuilder.G.Module);
+            PlayerBuilder.G.Runner = G.Module.PlayerBuilderRunner;
             PlayerBuilder.G.g = new PlayerBuilder.G.GlobalReference();
         }
     }

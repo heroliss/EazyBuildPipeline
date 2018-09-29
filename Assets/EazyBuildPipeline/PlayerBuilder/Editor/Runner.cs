@@ -13,6 +13,7 @@ namespace EazyBuildPipeline.PlayerBuilder
         ModuleConfig, ModuleConfig.JsonClass,
         ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
+        public BuildPlayerOptions BuildPlayerOptions;
         public Runner(Module module) : base(module)
         {
         }
@@ -50,10 +51,6 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         protected override void RunProcess()
         {
-            //修改PlayerSettings
-            EditorUtility.DisplayProgressBar("Applying PlayerSettings", "", 0);
-            ApplyPlayerSettings();
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             //准备BuildOptions
             EditorUtility.DisplayProgressBar("Preparing BuildOptions", "", 0);
             BuildOptions buildOptions =
@@ -63,17 +60,25 @@ namespace EazyBuildPipeline.PlayerBuilder
                 (Module.UserConfig.Json.BuildSettings.CompressionMethod == UserConfig.BuildSettings.CompressionMethodEnum.LZ4 ? BuildOptions.CompressWithLz4 : BuildOptions.None) |
                 (Module.UserConfig.Json.BuildSettings.CompressionMethod == UserConfig.BuildSettings.CompressionMethodEnum.LZ4HC ? BuildOptions.CompressWithLz4HC : BuildOptions.None);
 
+            //设置路径和文件名
             string tagsPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
-            BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), Module.ModuleStateConfig.Json.CurrentTag[0], true);
+            string locationPath = tagsPath;
+            switch (EditorUserBuildSettings.activeBuildTarget)
+            {
+                case BuildTarget.Android:
+                    locationPath = Path.Combine(tagsPath, PlayerSettings.productName + PlayerSettings.bundleVersion + ".apk");
+                    break;
+            }
+            //获取场景
             string[] scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes);
-            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+            //构成BuildPlayerOptions
+            BuildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = scenes,
-                locationPathName = tagsPath,
-                target = target,
+                locationPathName = locationPath,
+                target = EditorUserBuildSettings.activeBuildTarget,
                 options = buildOptions
             };
-
             //重建目录
             EditorUtility.DisplayProgressBar("正在重建目录", tagsPath, 0);
             if (Directory.Exists(tagsPath))
@@ -82,13 +87,23 @@ namespace EazyBuildPipeline.PlayerBuilder
             }
             Directory.CreateDirectory(tagsPath);
             //Build Player
-            EditorUtility.DisplayProgressBar("开始BuildPlayer", "", 0);
-            var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            EditorUtility.DisplayProgressBar("Starting BuildPlayer...", "", 0);
+            var report = BuildPipeline.BuildPlayer(BuildPlayerOptions);
             if (!string.IsNullOrEmpty(report))
             {
                 throw new ApplicationException("BuildPlayer时发生错误：" + report);
             }
         }
+
+        public void ApplyPlayerSettingsAndScriptDefines()
+        {
+            var activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
+            var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(activeBuildTarget);
+
+            ApplyScriptDefines(buildTargetGroup);
+            ApplyPlayerSettings(buildTargetGroup);
+        }
+
         public void FetchPlayerSettings()
         {
             var ps = Module.UserConfig.Json.PlayerSettings;
@@ -134,34 +149,12 @@ namespace EazyBuildPipeline.PlayerBuilder
             ps.Android.AndroidGame = PlayerSettings.Android.androidIsGame;
             //TODO: 未找到 16.	Android GamePad Support
             ps.Android.StripEngineCode = PlayerSettings.stripEngineCode;
+            ps.Android.UseObbMode = PlayerSettings.Android.useAPKExpansionFiles;
         }
 
-        public void ApplyIOSPostProcessSettings()
+        private void ApplyPlayerSettings(BuildTargetGroup buildTargetGroup)
         {
             var ps = Module.UserConfig.Json.PlayerSettings;
-
-            iOSBuildPostProcessor.ProductName = ps.General.ProductName; //重复
-            iOSBuildPostProcessor.ProvisioningProfile = ps.IOS.ProvisioningProfile; //重复
-            iOSBuildPostProcessor.TeamID = ps.IOS.TeamID; //重复
-            iOSBuildPostProcessor.FrameWorkPath = ps.IOS.ThirdFrameWorkPath;
-            iOSBuildPostProcessor.IsBuildArchive = ps.IOS.IsBuildArchive;
-            iOSBuildPostProcessor.ExportIpaPath = ps.IOS.ExportIpaPath;
-            iOSBuildPostProcessor.TaskPath = ps.IOS.TaskPath;
-            iOSBuildPostProcessor.BlueToothUsageDesc = ps.IOS.BlueToothUsageDesc;
-            iOSBuildPostProcessor.PhotoUsageDesc = ps.IOS.PhotoUsageDesc;
-            iOSBuildPostProcessor.PhotoUsageAddDesc = ps.IOS.PhotoUsageAddDesc;
-            //iOSBuildPostProcessor.BuglyAppKey = ps.IOS.BuglyAppKey; //不需要
-            BuglyInit.BuglyAppID = ps.IOS.BuglyAppID;
-            BuglyInit.BuglyAppKey = ps.IOS.BuglyAppKey;
-        }
-
-        public void ApplyPlayerSettings()
-        {
-            var ps = Module.UserConfig.Json.PlayerSettings;
-            var activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
-            var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(activeBuildTarget);
-            ApplyScriptDefines(buildTargetGroup);
-
             PlayerSettings.companyName = ps.General.CompanyName;
             PlayerSettings.productName = ps.General.ProductName;
             switch (buildTargetGroup)
@@ -202,11 +195,11 @@ namespace EazyBuildPipeline.PlayerBuilder
                     PlayerSettings.Android.androidIsGame = ps.Android.AndroidGame;
                     //TODO：未找到：16.	Android GamePad Support
                     PlayerSettings.stripEngineCode = ps.Android.StripEngineCode;
+                    PlayerSettings.Android.useAPKExpansionFiles = ps.Android.UseObbMode;
                     break;
                 default:
                     break;
             }
-            ApplyIOSPostProcessSettings(); //里面也有对Android的后处理
         }
 
         public void FetchAllScriptDefines()

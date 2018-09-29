@@ -144,29 +144,21 @@ namespace EazyBuildPipeline.BundleManager.Editor
 			//}
 			if (ensure)
 			{
-				try
-				{
-					ChangeAllConfigsExceptRef(path);
-				}
-				catch (Exception e)
-				{
-					EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
-				}
-			}
+                string originPipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
+                Module newModule = new Module();
+                if (!newModule.LoadAllConfigs(path))
+                {
+                    CommonModule.CommonConfig.Json.PipelineRootPath = originPipelineRootPath;
+                    return;
+                }
+                G.Module = newModule;
+                G.Runner.Module = newModule;
+                InitSelectedIndex();
+                ConfigToIndex();
+                CommonModule.CommonConfig.Save();
+                HandleApplyingWarning();
+            }
 		}
-
-        private void ChangeAllConfigsExceptRef(string pipelineRootPath)
-        {
-            //使用newConfigs加载确保发生异常后不修改原configs
-            Module newModule = new Module();
-            if (!newModule.LoadAllConfigs(pipelineRootPath)) return;
-            G.Module = newModule;
-            G.Runner.Module = newModule;
-            InitSelectedIndex();
-            ConfigToIndex();
-            CommonModule.CommonConfig.Save();
-            HandleApplyingWarning();
-        }
 
         private void InitSelectedIndex()
         {

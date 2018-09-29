@@ -29,6 +29,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         [SerializeField] int playerBuilderUserConfigSelectedIndex;
 
         [SerializeField] GUIStyle labelMidRight;
+        [SerializeField] GUIStyle richTextLabel;
         [SerializeField] Texture2D settingIcon;
         [SerializeField] Texture2D warnIcon;
         [SerializeField] Texture2D fingerIcon;
@@ -165,6 +166,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void InitStyles()
         {
             labelMidRight = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleRight };
+            richTextLabel = new GUIStyle(EditorStyles.label) { richText = true };
 
             settingGUIContent = new GUIContent(settingIcon);
             assetPreprocessorContent = new GUIContent("Preprocess Assets:");
@@ -290,7 +292,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
 
-            //SVN Update     
+            //SVN Update
             EditorGUILayout.BeginHorizontal();
             FrontIndicator(Step.SVNUpdate, false, assetPreprocessorWarnContent);
             SVNManager.IsPartOfPipeline = GUILayout.Toggle(SVNManager.IsPartOfPipeline, "SVN Update", GUILayout.Width(200)) && SVNManager.Available;
@@ -304,7 +306,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             GUILayout.FlexibleSpace();
 
-            //AssetPreprocessor   
+            //AssetPreprocessor
             EditorGUILayout.BeginHorizontal();
             FrontIndicator(Step.PreprocessAssets, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.Applying, assetPreprocessorWarnContent);
             G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
@@ -336,8 +338,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             GUILayout.Space(10);
             GUILayout.Label(G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline ?
-                "→ " + EBPUtility.GetTagStr(G.Module.AssetPreprocessorModule.UserConfig.Json.Tags) :
-                (SVNManager.IsPartOfPipeline ? "Unknow" : EBPUtility.GetTagStr(CommonModule.CommonConfig.Json.CurrentAssetTag)));
+                            "<color=orange>→  " + EBPUtility.GetTagStr(G.Module.AssetPreprocessorModule.UserConfig.Json.Tags) + "</color>" :
+                            "<color=cyan>" + EBPUtility.GetTagStr(CommonModule.CommonConfig.Json.CurrentAssetTag) + "</color>", richTextLabel);
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
@@ -439,7 +441,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             GUILayout.FlexibleSpace();
 
-            //BuildPlayer    
+            //BuildPlayer
             EditorGUILayout.BeginHorizontal();
             FrontIndicator(Step.BuildPlayer, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying, playerBuilderWarnContent);
             G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
@@ -542,12 +544,12 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void ClickedApply()
         {
-            PlayerBuilder.G.Runner.ApplyPlayerSettings();
+            PlayerBuilder.G.Runner.ApplyPlayerSettingsAndScriptDefines();
         }
 
         private void ClickedRunPipeline()
         {
-            ReloadAssetsTags();
+            ResetAssetsTags();
             if (ReloadConfigsAndCheck())
             {
                 bool ensure = EditorUtility.DisplayDialog("运行Pipeline", "确定开始运行管线？", "确定", "取消");
@@ -585,21 +587,17 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             return true;
         }
 
-        private void ReloadAssetsTags()
+        private void ResetAssetsTags()
         {
-            //更换后续步骤的Tags为 将被AssetPreprocessor改变的Tags 或当 前的AssetsTags 或者 将被SVN更新改变的Tags
+            //重设后续步骤的Tag为 
+            //将被AssetPreprocessor改变的Tag
             if (G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline)
             {
                 G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
                 G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
                 G.Module.PlayerBuilderModule.ModuleStateConfig.Json.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
             }
-            else if (SVNManager.IsPartOfPipeline)
-            {
-                G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentTag = new[] { "UnKnow" };
-                G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentTag = new[] { "UnKnow" };
-                G.Module.PlayerBuilderModule.ModuleStateConfig.Json.CurrentTag = new[] { "UnKnow" };
-            }
+            //当前Assets的Tag
             else
             {
                 G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
@@ -702,30 +700,35 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 G.g.MainWindow.Repaint();
             }
         }
-
         private void ChangeRootPath(string path)
         {
-            try
+            bool ensure = true;
+            if(!Directory.Exists(path)) 
             {
-                ChangeAllConfigsExceptRef(path);
+                G.Module.DisplayDialog("目录不存在:" + path);
+                return;
             }
-            catch (Exception e)
+            if (G.Module.IsDirty)
             {
-                EditorUtility.DisplayDialog("错误", "更换根目录时发生错误：" + e.ToString(), "确定");
+                ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
             }
-        }
-
-        private void ChangeAllConfigsExceptRef(string pipelineRootPath)
-        {
-            Module newModule = new Module();
-            newModule.LoadAllConfigs(pipelineRootPath);
-            G.Module = newModule;
-            //G.Runner.Module = newModule; //暂不需要
-            InitSelectedIndex();
-            LoadAllModulesUserConfigList();
-            ConfigToIndex();
-            CommonModule.CommonConfig.Save();
-            OnChangeRootPath();
+            if (ensure)
+            {
+                string originPipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
+                Module newModule = new Module();
+                if (!newModule.LoadAllConfigs(path))
+                {
+                    CommonModule.CommonConfig.Json.PipelineRootPath = originPipelineRootPath;
+                    return;
+                }
+                G.Module = newModule;
+                //G.Runner.Module = newModule; //暂时不需要
+                InitSelectedIndex();
+                LoadAllModulesUserConfigList();
+                ConfigToIndex();
+                CommonModule.CommonConfig.Save();
+                OnChangeRootPath();
+            }
         }
 
         private void OnChangeRootPath()
