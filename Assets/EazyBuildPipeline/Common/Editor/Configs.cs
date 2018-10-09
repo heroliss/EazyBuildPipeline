@@ -58,9 +58,20 @@ namespace EazyBuildPipeline.Common.Configs
         #endregion
     }
 
-    [Serializable]
-    public class ModuleConfig<TJsonClass> : EBPConfig<TJsonClass> where TJsonClass : ModuleConfigJsonClass, new()
+    public interface IModuleConfig
     {
+        string JsonPath { get; set; }
+        string WorkPath { get; }
+        string StateConfigPath { get; }
+        string UserConfigsFolderPath { get; }
+        string ModuleRootPath { get; }
+        ModuleConfigJsonClass BaseJson { get; }
+    }
+
+    [Serializable]
+    public class ModuleConfig<TJsonClass> : EBPConfig<TJsonClass>, IModuleConfig where TJsonClass : ModuleConfigJsonClass, new()
+    {
+        public ModuleConfigJsonClass BaseJson { get { return Json; } }
         public string PipelineRootPath;
         public string WorkPath { get { return Path.Combine(PipelineRootPath, Json.WorkRelativePath); } }
         public string StateConfigPath { get { return Path.Combine(WorkPath, Json.StateConfigRelativePath); } }
@@ -76,9 +87,17 @@ namespace EazyBuildPipeline.Common.Configs
         public string StateConfigRelativePath = "_Configs/State.json";
     }
 
-    [Serializable]
-    public class ModuleStateConfig<TJsonClass> : EBPConfig<TJsonClass> where TJsonClass : ModuleStateConfigJsonClass, new()
+    public interface IModuleStateConfig
     {
+        string JsonPath { get; set; }
+        string CurrentUserConfigPath { get; }
+        ModuleStateConfigJsonClass BaseJson { get; }
+    }
+
+    [Serializable]
+    public class ModuleStateConfig<TJsonClass> : EBPConfig<TJsonClass>, IModuleStateConfig where TJsonClass : ModuleStateConfigJsonClass, new()
+    {
+        public ModuleStateConfigJsonClass BaseJson { get { return Json; } }
         public string UserConfigsFolderPath;
         public string CurrentUserConfigPath { get { return Path.Combine(UserConfigsFolderPath, Json.CurrentUserConfigName); } }
     }
@@ -102,8 +121,10 @@ namespace EazyBuildPipeline
     [Serializable]
     public class EBPConfig<TJson> where TJson : new()
     {
-        public TJson Json = new TJson();
-        public string JsonPath;
+        public TJson Json { get { return json; } set { json = value; } }
+        [SerializeField] TJson json = new TJson();
+        public string JsonPath { get { return jsonPath; } set { jsonPath = value; } }
+        [SerializeField] string jsonPath;
 
         /// <summary>
         /// 加载配置

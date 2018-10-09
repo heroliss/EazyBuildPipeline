@@ -29,7 +29,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 selectedUserConfigIndex = userConfigNames.IndexOf(currentUserConfigName.Remove(
                     currentUserConfigName.Length - extension.Length, extension.Length));
             }
-            HandleApplyingWarning();
+            EBPUtility.HandleApplyingWarning(G.Module);
         }
 
         private void InitStyles()
@@ -324,7 +324,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				G.g.OnChangeCurrentUserConfig();
 				CommonModule.CommonConfig.Save();
 				selectedUserConfigIndex = userConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.Module.ModuleStateConfig.Json.CurrentUserConfigName));
-				HandleApplyingWarning();
+                EBPUtility.HandleApplyingWarning(G.Module);
 			}
 		}
 		double lastTime;
@@ -374,14 +374,6 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				{
 					SaveUserConfig();
 				}
-			}
-		}
-
-		private void HandleApplyingWarning()
-		{
-			if (G.Module.ModuleStateConfig.Json.Applying)
-			{
-                EditorUtility.DisplayDialog("提示", "上次应用配置时发生错误或被强制中断，可能导致对Unity内的文件替换不完全或错误、对meta文件的修改不完全或错误，建议还原meta文件、重新应用配置。", "确定");
 			}
 		}
 	}

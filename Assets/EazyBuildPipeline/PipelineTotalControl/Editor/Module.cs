@@ -2,6 +2,7 @@
 using UnityEditor;
 using System;
 using EazyBuildPipeline.PipelineTotalControl.Configs;
+using System.Collections.Generic;
 
 namespace EazyBuildPipeline.PipelineTotalControl
 {
@@ -34,6 +35,7 @@ namespace EazyBuildPipeline.PipelineTotalControl
         ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
         public override string ModuleName { get { return "TotalControl"; } }
+
         public AssetPreprocessor.Module AssetPreprocessorModule = new AssetPreprocessor.Module();
         public AssetPreprocessor.Runner AssetPreprocessorRunner;
         public BundleManager.Module BundleManagerModule = new BundleManager.Module();
@@ -42,14 +44,32 @@ namespace EazyBuildPipeline.PipelineTotalControl
         public PackageManager.Runner PackageManagerRunner;
         public PlayerBuilder.Module PlayerBuilderModule = new PlayerBuilder.Module();
         public PlayerBuilder.Runner PlayerBuilderRunner;
-        //TODO:可以构建模块列表来减少重复代码
 
+        [NonSerialized]
+        public List<ModuleItem> Modules;
+        public struct ModuleItem
+        {
+            public ModuleItem(BaseModule module, IRunner runner)
+            {
+                Module = module;
+                Runner = runner;
+            }
+            public BaseModule Module;
+            public IRunner Runner;
+        }
         public Module()
         {
             InitRunners();
+            Modules = new List<ModuleItem>
+            {
+                new ModuleItem(AssetPreprocessorModule, AssetPreprocessorRunner),
+                new ModuleItem(BundleManagerModule, BundleManagerRunner),
+                new ModuleItem(PackageManagerModule, PackageManagerRunner),
+                new ModuleItem(PlayerBuilderModule, PlayerBuilderRunner),
+            };
         }
 
-        public bool LoadAllConfigs(string pipelineRootPath = null)
+        public override bool LoadAllConfigs(string pipelineRootPath = null)
         {
             if (!CommonModule.LoadCommonConfig()) return false;
             if (pipelineRootPath != null)
@@ -59,18 +79,18 @@ namespace EazyBuildPipeline.PipelineTotalControl
             if (!LoadModuleConfig()) return false;
             //这里暂时不需要ModuleStateConfig，所以不加载
 
-            if (AssetPreprocessorModule.LoadModuleConfig())
-            { AssetPreprocessorModule.LoadModuleStateConfig(); }
-            if (BundleManagerModule.LoadModuleConfig())
-            { BundleManagerModule.LoadModuleStateConfig(); }
-            if (PackageManagerModule.LoadModuleConfig())
-            { PackageManagerModule.LoadModuleStateConfig(); }
-            if (PlayerBuilderModule.LoadModuleConfig())
+            //加载所有模块的模块配置和状态配置
+            foreach (var item in Modules)
             {
-                if (PlayerBuilderModule.LoadModuleStateConfig())
-                {
-                    PlayerBuilderModule.LoadUserConfig();
+                if (item.Module.LoadModuleConfig())
+                { 
+                    item.Module.LoadModuleStateConfig(); 
                 }
+            }
+            //加载PlayerSettings
+            if (!string.IsNullOrEmpty(PlayerBuilderModule.ModuleStateConfig.CurrentUserConfigPath))
+            {
+                PlayerBuilderModule.LoadUserConfig();
             }
 
             //这里需要将静态的Module与TotalControl中的Module同步，因为该窗口总控面板与PlayerSetting面板结合了
@@ -85,6 +105,11 @@ namespace EazyBuildPipeline.PipelineTotalControl
             BundleManagerRunner = new BundleManager.Runner(BundleManagerModule);
             PackageManagerRunner = new PackageManager.Runner(PackageManagerModule);
             PlayerBuilderRunner = new PlayerBuilder.Runner(PlayerBuilderModule);
+        }
+
+        public override bool LoadUserConfig()
+        {
+            throw new NotImplementedException("总控模块当前不存在用户配置，应该避免加载和使用。");
         }
     }
 }

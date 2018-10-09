@@ -4,7 +4,13 @@ using UnityEditor;
 
 namespace EazyBuildPipeline
 {
-    public abstract class EBPRunner<TModule, TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass>
+    public interface IRunner
+    {
+        void Run(bool isPartOfPipeline = false);
+        bool Check();
+    }
+
+    public abstract class EBPRunner<TModule, TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass> : IRunner
         where TModule : EBPModule<TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass>
         where TModuleConfig : ModuleConfig<TModuleConfigJsonClass>, new()
         where TModuleConfigJsonClass : ModuleConfigJsonClass, new()

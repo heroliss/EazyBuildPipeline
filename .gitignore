@@ -28,14 +28,10 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
-/.vs/g_208new
-/AssetBundles
-/UnityPackageManager
-/AssetsBuildConfigs
-/ProjectSettings
-/Assets/*
-!/Assets/EazyBuildPipeline
+
+#只添加EazyBuildPipeline目录，并排除meta文件
 *.meta
-/.vs
-/.*
-/EazyUnityStarter
+/*
+!/Assets/
+/Assets/*
+!/Assets/EazyBuildPipeline/

@@ -37,7 +37,7 @@ namespace EazyBuildPipeline.PlayerBuilder
         public override string ModuleName { get { return "PlayerBuilder"; } }
         public UserConfig UserConfig = new UserConfig();
 
-        public bool LoadAllConfigs(string pipelineRootPath = null)
+        public override bool LoadAllConfigs(string pipelineRootPath = null)
         {
             if (!CommonModule.LoadCommonConfig()) return false;
             if (pipelineRootPath != null)
@@ -54,7 +54,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             return success;
         }
 
-        public bool LoadUserConfig()
+        public override bool LoadUserConfig()
         {
             try
             {

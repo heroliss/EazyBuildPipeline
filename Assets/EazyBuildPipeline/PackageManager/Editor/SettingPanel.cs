@@ -363,7 +363,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 LoadUserConfigList();
                 ConfigToIndex();
                 CommonModule.CommonConfig.Save();
-                HandleApplyingWarning();
+                EBPUtility.HandleApplyingWarning(G.Module);
                 OnChangeRootPath();
             }
         }
@@ -394,18 +394,12 @@ namespace EazyBuildPipeline.PackageManager.Editor
             LoadUserConfigList();
 
             ConfigToIndex();
-            HandleApplyingWarning();
+            EBPUtility.HandleApplyingWarning(G.Module);
         }
+
         private void LoadUserConfigList()
         {
             userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.ModuleConfig.UserConfigsFolderPath);
-        }
-        private void HandleApplyingWarning()
-        {
-            if (G.Module.ModuleStateConfig.Json.Applying)
-            {
-                EditorUtility.DisplayDialog("提示", "上次执行打包时发生错误或被强制中断，可能导致产生不完整或错误的压缩包、在StreamingAssets下产生不完整或错误的文件，建议重新打包。", "确定");
-            }
         }
 
         private void ConfigToIndex()

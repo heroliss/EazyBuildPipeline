@@ -45,10 +45,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         [SerializeField] GUIContent bundleManagerContent;
         [SerializeField] GUIContent packageManagerContent;
         [SerializeField] GUIContent playerBuilderContent;
-        [SerializeField] GUIContent assetPreprocessorWarnContent;
-        [SerializeField] GUIContent bundleManagerWarnContent;
-        [SerializeField] GUIContent packageManagerWarnContent;
-        [SerializeField] GUIContent playerBuilderWarnContent;
 
         GUILayoutOption[] dropdownOptions = { GUILayout.Width(150) };
         GUILayoutOption[] dropdownOptions2 = { GUILayout.MaxWidth(100) };
@@ -57,7 +53,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         GUILayoutOption[] miniButtonOptions = { GUILayout.MaxHeight(18), GUILayout.MaxWidth(22) };
         GUILayoutOption[] inputOptions = { GUILayout.Width(50) };
         GUILayoutOption[] iconOptions = { GUILayout.Width(20), GUILayout.Height(20) };
-        private bool needRepaint;
+        bool needRepaint;
 
         public void Awake()
         {
@@ -173,10 +169,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             bundleManagerContent = new GUIContent("Build Bundles:");
             packageManagerContent = new GUIContent("Build Packages:");
             playerBuilderContent = new GUIContent("Build Player:");
-            assetPreprocessorWarnContent = new GUIContent(warnIcon, "上次应用配置时发生错误或被强制中断，可能导致对Unity内的文件替换不完全或错误、对meta文件的修改不完全或错误，建议还原meta文件、重新应用配置。");
-            bundleManagerWarnContent = new GUIContent(warnIcon, "上次创建Bundles时发生错误或被强制中断，可能导致产生的文件不完全或错误，建议重新创建");
-            packageManagerWarnContent = new GUIContent(warnIcon, "上次创建Packages时发生错误或被强制中断，可能导致产生不完整或错误的压缩包、在StreamingAssets下产生不完整或错误的文件，建议重新创建。");
-            playerBuilderWarnContent = new GUIContent(warnIcon, "上次执行打包时发生错误或被强制中断，建议重新打包。");
         }
 
         private void LoadAllConfigs()
@@ -294,7 +286,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //SVN Update
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.SVNUpdate, false, assetPreprocessorWarnContent);
+            FrontIndicator(Step.SVNUpdate, false, SVNManager.errorMessage);
             SVNManager.IsPartOfPipeline = GUILayout.Toggle(SVNManager.IsPartOfPipeline, "SVN Update", GUILayout.Width(200)) && SVNManager.Available;
             SVNInfo();
             if (GUILayout.Button(refreshIcon, miniButtonOptions))
@@ -308,7 +300,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //AssetPreprocessor
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.PreprocessAssets, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.Applying, assetPreprocessorWarnContent);
+            FrontIndicator(Step.PreprocessAssets, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.Applying, 
+                           G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                 assetPreprocessorContent, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline);
 
@@ -349,7 +342,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //BundleManager     
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.BuildBundles, G.Module.BundleManagerModule.ModuleStateConfig.Json.Applying, bundleManagerWarnContent);
+            FrontIndicator(Step.BuildBundles, G.Module.BundleManagerModule.ModuleStateConfig.Json.Applying,
+                           G.Module.BundleManagerModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.BundleManagerModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                 bundleManagerContent, G.Module.BundleManagerModule.ModuleStateConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
@@ -400,7 +394,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //PackageManager
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.BuildPackages, G.Module.PackageManagerModule.ModuleStateConfig.Json.Applying, packageManagerWarnContent);
+            FrontIndicator(Step.BuildPackages, G.Module.PackageManagerModule.ModuleStateConfig.Json.Applying, 
+                          G.Module.PackageManagerModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                    packageManagerContent, G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
@@ -443,7 +438,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //BuildPlayer
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.BuildPlayer, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying, playerBuilderWarnContent);
+            FrontIndicator(Step.BuildPlayer, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying, 
+                          G.Module.PlayerBuilderModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                   playerBuilderContent, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline);
             EditorGUILayout.BeginHorizontal();
@@ -523,16 +519,12 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             GUILayout.EndHorizontal();
         }
 
-        private void FrontIndicator(Step step, bool applying, GUIContent warnContent)
+        private void FrontIndicator(Step step, bool applying, string errorMessage)
         {
-            if (currentStep == step)
-            {
-                GUILayout.Label(fingerIcon, iconOptions);
-            }
-            else
-            {
-                GUILayout.Label(applying ? warnContent : GUIContent.none, iconOptions);
-            }
+            GUILayout.Label(currentStep != step ? applying ?
+                            new GUIContent(warnIcon, "上次运行时发生错误：" + errorMessage) :
+                            GUIContent.none :
+                            new GUIContent(fingerIcon), iconOptions);
         }
 
         private void FetchSettings()
@@ -564,25 +556,17 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private bool ReloadConfigsAndCheck()
         {
             //重新加载配置并检查
-            if (G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline)
+
+            foreach (var item in G.Module.Modules)
             {
-                if (!G.Module.AssetPreprocessorModule.LoadUserConfig()) return false;
-                if (!G.Module.AssetPreprocessorRunner.Check()) return false;
-            }
-            if (G.Module.BundleManagerModule.ModuleStateConfig.Json.IsPartOfPipeline)
-            {
-                if (!G.Module.BundleManagerModule.LoadUserConfig()) return false;
-                if (!G.Module.BundleManagerRunner.Check()) return false;
-            }
-            if (G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline)
-            {
-                if (!G.Module.PackageManagerModule.LoadUserConfig()) return false;
-                if (!G.Module.PackageManagerRunner.Check()) return false;
-            }
-            if (G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline)
-            {
-                //PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载
-                if (!G.Module.PlayerBuilderRunner.Check()) return false;
+                if (item.Module.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
+                {
+                    if (item.Module != G.Module.PlayerBuilderModule)//PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载用户配置
+                    {
+                        if (!item.Module.LoadUserConfig()) return false;
+                    }
+                    if (!item.Runner.Check()) return false;
+                }
             }
             return true;
         }
@@ -593,16 +577,18 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             //将被AssetPreprocessor改变的Tag
             if (G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline)
             {
-                G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
-                G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
-                G.Module.PlayerBuilderModule.ModuleStateConfig.Json.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
+                foreach (var item in G.Module.Modules)
+                {
+                    item.Module.BaseModuleStateConfig.BaseJson.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
+                }
             }
             //当前Assets的Tag
             else
             {
-                G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
-                G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
-                G.Module.PlayerBuilderModule.ModuleStateConfig.Json.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
+                foreach (var item in G.Module.Modules)
+                {
+                    item.Module.BaseModuleStateConfig.BaseJson.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
+                }
             }
         }
 

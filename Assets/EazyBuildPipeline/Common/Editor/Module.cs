@@ -9,7 +9,7 @@ namespace EazyBuildPipeline
     [Serializable]
     public static class CommonModule
     {
-        [SerializeField] 
+        [SerializeField]
         public static CommonConfig CommonConfig = new CommonConfig();
         public static string CommonConfigSearchText { get { return "EazyBuildPipeline CommonConfig"; } }
         public static Texture2D GetIcon(string iconFileName)
@@ -38,6 +38,26 @@ namespace EazyBuildPipeline
         }
     }
 
+    [Serializable]
+    public abstract class BaseModule
+    {
+        public bool IsDirty; //用来表示子类中自定义配置是否被修改，该变量与这个类所有内容都无关
+        public abstract string ModuleName { get; }
+        public string ModuleConfigSearchText { get { return "EazyBuildPipeline ModuleConfig " + ModuleName; } }
+
+        public void DisplayDialog(string text)
+        {
+            EditorUtility.DisplayDialog(ModuleName, text, "确定");
+        }
+
+        public abstract IModuleConfig BaseModuleConfig { get; }
+        public abstract IModuleStateConfig BaseModuleStateConfig { get; }
+        public abstract bool LoadModuleConfig();
+        public abstract bool LoadModuleStateConfig();
+        public abstract bool LoadAllConfigs(string pipelineRootPath = null);
+        public abstract bool LoadUserConfig();
+    }
+
     /// <summary>EazyBuildPipeline模块基类</summary>
     /// <Tip>
     /// 其中各种Config类继承自EBPConfig类，这种继承本可以省略，直接产生一个 EBPConfig<JsonClass> 即可，
@@ -49,24 +69,19 @@ namespace EazyBuildPipeline
     /// (由于Unity内置序列化工具不支持字典，所以使用Unity的JsonUtility序列化字典只能变为序列化两个List)
     /// </Tip>
     [Serializable]
-    public abstract class EBPModule<TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass>
+    public abstract class EBPModule<TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass> : BaseModule
         where TModuleConfig : ModuleConfig<TModuleConfigJsonClass>, new()
         where TModuleConfigJsonClass : ModuleConfigJsonClass, new()
         where TModuleStateConfig : ModuleStateConfig<TModuleStateConfigJsonClass>, new()
         where TModuleStateConfigJsonClass : ModuleStateConfigJsonClass, new()
     {
-        public bool IsDirty; //用来表示子类中自定义配置是否被修改，该变量与这个类所有内容都无关
-        public abstract string ModuleName { get; }
-        public string ModuleConfigSearchText { get { return "EazyBuildPipeline ModuleConfig " + ModuleName; } }
         public TModuleConfig ModuleConfig = new TModuleConfig();
         public TModuleStateConfig ModuleStateConfig = new TModuleStateConfig();
-        
-        public void DisplayDialog(string text)
-        {
-            EditorUtility.DisplayDialog(ModuleName, text, "确定");
-        }
 
-        public bool LoadModuleConfig()
+        public override IModuleConfig BaseModuleConfig { get { return ModuleConfig; } }
+        public override IModuleStateConfig BaseModuleStateConfig { get { return ModuleStateConfig; } }
+
+        public override bool LoadModuleConfig()
         {
             ModuleConfig.PipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
             try
@@ -88,7 +103,7 @@ namespace EazyBuildPipeline
             }
         }
 
-        public bool LoadModuleStateConfig()
+        public override bool LoadModuleStateConfig()
         {
             ModuleStateConfig.UserConfigsFolderPath = ModuleConfig.UserConfigsFolderPath;
             try

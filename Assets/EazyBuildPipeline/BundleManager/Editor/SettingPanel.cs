@@ -156,9 +156,9 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 InitSelectedIndex();
                 ConfigToIndex();
                 CommonModule.CommonConfig.Save();
-                HandleApplyingWarning();
+                EBPUtility.HandleApplyingWarning(G.Module);
             }
-		}
+        }
 
         private void InitSelectedIndex()
         {
@@ -176,15 +176,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             G.Module.LoadAllConfigs();
             InitSelectedIndex();
             ConfigToIndex();
-            HandleApplyingWarning();
-        }
-
-        private void HandleApplyingWarning()
-        {
-            if (G.Module.ModuleStateConfig.Json.Applying)
-            {
-                EditorUtility.DisplayDialog("提示", "上次创建Bundles时发生错误或被强制中断，可能导致产生的文件不完全或错误，建议重新创建", "确定");
-            }
+            EBPUtility.HandleApplyingWarning(G.Module);
         }
 
         private void ConfigToIndex()

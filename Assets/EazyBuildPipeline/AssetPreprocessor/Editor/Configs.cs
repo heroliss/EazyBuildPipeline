@@ -41,7 +41,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Configs
         public class JsonClass
         {
             public List<Group> Groups = new List<Group>();
-            public string[] Tags = new string[0];
+            public string[] Tags = { };
         }
     }
 

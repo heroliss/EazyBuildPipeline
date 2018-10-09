@@ -75,7 +75,7 @@ namespace EazyBuildPipeline.PackageManager
 
         public UserConfig UserConfig = new UserConfig();
 
-        public bool LoadAllConfigs(string pipelineRootPath = null)
+        public override bool LoadAllConfigs(string pipelineRootPath = null)
         {
             if (!CommonModule.LoadCommonConfig()) return false;
             if (pipelineRootPath != null)
@@ -97,7 +97,7 @@ namespace EazyBuildPipeline.PackageManager
             return success;
         }
 
-        public bool LoadUserConfig()
+        public override bool LoadUserConfig()
         {
             try
             {
