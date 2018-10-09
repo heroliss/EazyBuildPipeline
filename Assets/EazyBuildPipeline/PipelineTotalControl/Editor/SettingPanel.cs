@@ -195,7 +195,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "加载Icon时发生错误：" + e.Message, "确定");
+                G.Module.DisplayDialog("加载Icon时发生错误：" + e.Message);
             }
         }
 
@@ -220,8 +220,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     return i;
                 }
             }
-            EditorUtility.DisplayDialog("错误", string.Format("加载配置文件时发生错误：\n欲加载的类型“{0}”"
-                  + "不存在于第 {1} 个全局类型枚举中！\n", s, count), "确定");
+            G.Module.DisplayDialog(string.Format("加载配置文件时发生错误：\n欲加载的类型“{0}”"
+                  + "不存在于第 {1} 个全局类型枚举中！\n", s, count));
             return -1;
         }
 
@@ -541,10 +541,9 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void ClickedRunPipeline()
         {
-            ResetAssetsTags();
-            if (ReloadConfigsAndCheck())
+            if (ReloadAllUserConfigsAndCheck())
             {
-                bool ensure = EditorUtility.DisplayDialog("运行Pipeline", "确定开始运行管线？", "确定", "取消");
+                bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定开始运行管线？", "确定", "取消");
                 if (ensure)
                 {
                     //开始执行
@@ -553,42 +552,38 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private bool ReloadConfigsAndCheck()
+        private bool ReloadAllUserConfigsAndCheck()
         {
-            //重新加载配置并检查
-
             foreach (var item in G.Module.Modules)
             {
                 if (item.Module.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
-                {
+                { 
+                    //重新加载用户配置
                     if (item.Module != G.Module.PlayerBuilderModule)//PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载用户配置
                     {
                         if (!item.Module.LoadUserConfig()) return false;
                     }
+                    //重设CurrentTag
+                    ResetCurrentTag(item);
+                    //检查配置
                     if (!item.Runner.Check()) return false;
                 }
             }
             return true;
         }
 
-        private void ResetAssetsTags()
+        private void ResetCurrentTag(Module.ModuleItem item)
         {
-            //重设后续步骤的Tag为 
+            //重设后续步骤的Tag为
             //将被AssetPreprocessor改变的Tag
             if (G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline)
             {
-                foreach (var item in G.Module.Modules)
-                {
-                    item.Module.BaseModuleStateConfig.BaseJson.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
-                }
+                item.Module.BaseModuleStateConfig.BaseJson.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
             }
             //当前Assets的Tag
             else
             {
-                foreach (var item in G.Module.Modules)
-                {
-                    item.Module.BaseModuleStateConfig.BaseJson.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
-                }
+                item.Module.BaseModuleStateConfig.BaseJson.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
             }
         }
 
@@ -696,7 +691,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             if (G.Module.IsDirty)
             {
-                ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
+                ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "更改未保存，是否要放弃更改？", "放弃保存", "返回");
             }
             if (ensure)
             {
@@ -735,7 +730,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 try
                 {
                     result = EditorUtility.DisplayDialog(
-                        "PlayerBuilder", "当前配置未保存，是否保存并覆盖 \" " +
+                        G.Module.ModuleName, "当前配置未保存，是否保存并覆盖 \" " +
                         userConfigNames[playerBuilderUserConfigSelectedIndex] + " \" ?", "保存并退出", "直接退出");
                 }
                 catch { }
@@ -761,7 +756,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     {
                         string path = Path.Combine(PlayerBuilder.G.Module.ModuleConfig.UserConfigsFolderPath, s + ".json");
                         if (File.Exists(path))
-                            EditorUtility.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
+                            G.Module.DisplayDialog("创建新文件失败，该名称已存在！");
                         else
                         {
                             CreateNewBuildSetting(s, path);
@@ -769,7 +764,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     }
                     catch (Exception e)
                     {
-                        EditorUtility.DisplayDialog("创建失败", "创建时发生错误：" + e.Message, "确定");
+                        G.Module.DisplayDialog("创建时发生错误：" + e.Message);
                     }
                 }
                 creatingNewConfig = false;
@@ -819,7 +814,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             //新建
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.Create(path).Close();
-            EditorUtility.DisplayDialog("创建成功", "创建成功!", "确定");
+            G.Module.DisplayDialog("创建成功!");
             //更新列表
             userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(PlayerBuilder.G.Module.ModuleConfig.UserConfigsFolderPath);
             //保存
@@ -834,7 +829,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             bool ensureLoad = true;
             if (PlayerBuilder.G.Module.UserConfig.IsDirty)
             {
-                ensureLoad = EditorUtility.DisplayDialog("切换配置", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
+                ensureLoad = EditorUtility.DisplayDialog(G.Module.ModuleName, "更改未保存，是否要放弃更改？", "放弃保存", "返回");
             }
             if (ensureLoad)
             {
@@ -851,7 +846,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 }
                 catch (Exception e)
                 {
-                    EditorUtility.DisplayDialog("切换map", "切换Map配置时发生错误：" + e.Message, "确定");
+                    G.Module.DisplayDialog("切换Map配置时发生错误：" + e.Message);
                 }
             }
         }
@@ -875,7 +870,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             bool ensure = true;
             if (PlayerBuilder.G.Module.UserConfig.IsDirty && playerBuilderUserConfigSelectedIndex >= 0)
             {
-                ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + userConfigNames[playerBuilderUserConfigSelectedIndex], "覆盖保存", "取消");
+                ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "是否保存并覆盖原配置：" + userConfigNames[playerBuilderUserConfigSelectedIndex], "覆盖保存", "取消");
             }
             if (!ensure) return;
 
@@ -888,13 +883,13 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             {
                 PlayerBuilder.G.Module.UserConfig.Save();
 
-                EditorUtility.DisplayDialog("保存", "保存配置成功！", "确定");
+                G.Module.DisplayDialog("保存配置成功！");
                 PlayerBuilder.G.Module.UserConfig.IsDirty = false;
             }
 
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("保存", "保存配置时发生错误：\n" + e.Message, "确定");
+                G.Module.DisplayDialog("保存配置时发生错误：\n" + e.Message);
             }
         }
     }

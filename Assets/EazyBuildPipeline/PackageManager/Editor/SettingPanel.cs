@@ -220,7 +220,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             if (!G.Runner.Check()) return;
             if (!CheckAllPackageItem()) return;
 
-            bool ensure = EditorUtility.DisplayDialog("Build Packages", string.Format("确定应用当前配置？"),
+            bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, string.Format("确定应用当前配置？"),
                 "确定", "取消");
             if (ensure)
             {
@@ -232,7 +232,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     G.Runner.Run();
 
                     TimeSpan time = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
-                    if (EditorUtility.DisplayDialog("Build Packages", "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
+                    if (EditorUtility.DisplayDialog(G.Module.ModuleName, "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                         "显示文件", "关闭"))
                     {
                         string firstPackagePath = Path.Combine(G.Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(G.Module.ModuleStateConfig.Json.CurrentTag) +
@@ -242,7 +242,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 }
                 catch (Exception e)
                 {
-                    EditorUtility.DisplayDialog("Build Packages", "打包时发生错误：" + e.Message, "确定");
+                    G.Module.DisplayDialog("打包时发生错误：" + e.Message);
                 }
                 finally
                 {
@@ -411,7 +411,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             int length = G.Module.ModuleStateConfig.Json.CurrentTag.Length;
             if (length > CommonModule.CommonConfig.Json.TagEnum.Count)
             {
-                EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
+                G.Module.DisplayDialog("欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失");
             }
             else if (length < CommonModule.CommonConfig.Json.TagEnum.Count)
             {
@@ -456,7 +456,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             bool ensure = true;
             if (G.Module.IsDirty)
             {
-                ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + userConfigNames[selectedUserConfigIndex], "覆盖保存", "取消");
+                ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "是否保存并覆盖原配置：" + userConfigNames[selectedUserConfigIndex], "覆盖保存", "取消");
             }
             if (!ensure) return;
 
@@ -470,7 +470,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 G.Module.UserConfig.Json.Packages = GetPackageMap();
                 G.Module.UserConfig.Save();
 
-                EditorUtility.DisplayDialog("保存", "保存配置成功！", "确定");
+                G.Module.DisplayDialog("保存配置成功！");
                 G.Module.IsDirty = false; 
                 
                 G.g.OnChangeCurrentConfig(); //总控暂时用不上 设置Dirty也用不上
@@ -478,7 +478,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("保存", "保存配置时发生错误：\n" + e.Message, "确定");
+                G.Module.DisplayDialog("保存配置时发生错误：\n" + e.Message);
             }
         }
 
@@ -547,7 +547,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     {
                         string path = Path.Combine(G.Module.ModuleStateConfig.UserConfigsFolderPath, s + ".json");
                         if (File.Exists(path))
-                            EditorUtility.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
+                            G.Module.DisplayDialog("创建新文件失败，该名称已存在！");
                         else
                         {
                             CreateNewMap(s, path);
@@ -555,7 +555,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     }
                     catch (Exception e)
                     {
-                        EditorUtility.DisplayDialog("创建失败", "创建时发生错误：" + e.Message, "确定");
+                        G.Module.DisplayDialog("创建时发生错误：" + e.Message);
                     }
                 }
                 creatingNewConfig = false;
@@ -567,7 +567,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //新建
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.Create(path).Close();
-            EditorUtility.DisplayDialog("创建成功", "创建成功!", "确定");
+            G.Module.DisplayDialog("创建成功!");
             //更新列表
             userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.ModuleConfig.UserConfigsFolderPath);
             //保存
@@ -620,7 +620,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 bool result = false;
                 try
                 {
-                    result = EditorUtility.DisplayDialog("PackageManager",
+                    result = EditorUtility.DisplayDialog(G.Module.ModuleName,
                         "当前配置未保存，是否保存并覆盖 \" " + userConfigNames[selectedUserConfigIndex] + " \" ?", "保存并退出", "直接退出");
                 }
                 catch { }

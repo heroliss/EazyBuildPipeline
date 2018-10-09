@@ -113,7 +113,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             }
             else if (CommonModule.CommonConfig.Json.TagEnum.Count < G.Module.UserConfig.Json.Tags.Length)
             {
-                EditorUtility.DisplayDialog("Preprocessor", "全局标签枚举类型少于欲加载的标签配置类型", "确定");
+                G.Module.DisplayDialog("全局标签枚举类型少于欲加载的标签配置类型");
                 for (int i = 0; i < CommonModule.CommonConfig.Json.TagEnum.Count; i++)
                 {
                     selectedTagIndexs[i] = GetIndex(CommonModule.CommonConfig.Json.TagEnum.Values.ToArray()[i], G.Module.UserConfig.Json.Tags[i], i);
@@ -130,10 +130,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     return i;
                 }
             }
-            EditorUtility.DisplayDialog("错误", string.Format("加载用户配置文件时发生错误：\n欲加载的类型“{0}”"
+            G.Module.DisplayDialog(string.Format("加载用户配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, G.Module.UserConfig.JsonPath, CommonModule.CommonConfig.JsonPath), "确定");
+                  s, count, G.Module.UserConfig.JsonPath, CommonModule.CommonConfig.JsonPath));
             return -1;
         }
     }

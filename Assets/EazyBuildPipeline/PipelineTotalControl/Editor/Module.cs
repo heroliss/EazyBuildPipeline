@@ -79,18 +79,17 @@ namespace EazyBuildPipeline.PipelineTotalControl
             if (!LoadModuleConfig()) return false;
             //这里暂时不需要ModuleStateConfig，所以不加载
 
-            //加载所有模块的模块配置和状态配置
+            //加载所有模块的模块配置、状态配置、用户配置
             foreach (var item in Modules)
             {
                 if (item.Module.LoadModuleConfig())
                 { 
-                    item.Module.LoadModuleStateConfig(); 
+                    if(item.Module.LoadModuleStateConfig() && 
+                       !string.IsNullOrEmpty(item.Module.BaseModuleStateConfig.CurrentUserConfigPath))
+                    {
+                        item.Module.LoadUserConfig();
+                    }
                 }
-            }
-            //加载PlayerSettings
-            if (!string.IsNullOrEmpty(PlayerBuilderModule.ModuleStateConfig.CurrentUserConfigPath))
-            {
-                PlayerBuilderModule.LoadUserConfig();
             }
 
             //这里需要将静态的Module与TotalControl中的Module同步，因为该窗口总控面板与PlayerSetting面板结合了

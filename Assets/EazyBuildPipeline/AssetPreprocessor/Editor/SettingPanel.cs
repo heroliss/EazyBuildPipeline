@@ -108,7 +108,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void ClickedApply()
 		{
-			bool ensure = EditorUtility.DisplayDialog("Preprocessor", "确定应用当前配置？应用过程不可中断。", "确定", "取消");
+			bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定应用当前配置？应用过程不可中断。", "确定", "取消");
 			if (ensure)
             {
                 try
@@ -117,7 +117,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 }
                 catch (Exception e)
                 {
-                    EditorUtility.DisplayDialog("Preprocessor", "应用配置时发生错误：" + e.ToString(), "确定");
+                    G.Module.DisplayDialog("应用配置时发生错误：" + e);
                 }
                 finally
                 {
@@ -141,7 +141,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 					s += "\n第二步未执行";
 				}
 
-				if (EditorUtility.DisplayDialog("Preprocessor", s, "查看日志文件", "关闭"))
+				if (EditorUtility.DisplayDialog(G.Module.ModuleName, s, "查看日志文件", "关闭"))
 				{
 					foreach (string logFilePath in G.Runner.LogFilePathList)
 					{
@@ -368,7 +368,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 		{
 			if (G.Module.IsDirty && selectedUserConfigIndex != -1)
 			{
-				bool ensure = EditorUtility.DisplayDialog("Preprocessor", "修改未保存！是否保存修改并覆盖原配置：“" +
+				bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "修改未保存！是否保存修改并覆盖原配置：“" +
 					userConfigNames[selectedUserConfigIndex] + "”？", "保存并退出", "直接退出");
 				if (ensure)
 				{

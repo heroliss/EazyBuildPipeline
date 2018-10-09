@@ -106,7 +106,7 @@ namespace EazyBuildPipeline.PackageManager
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "载入用户配置文件：" + UserConfig.JsonPath + " 时发生错误：" + e.Message, "确定");
+                G.Module.DisplayDialog("载入用户配置文件：" + UserConfig.JsonPath + " 时发生错误：" + e.Message);
                 return false;
             }
         }

@@ -1,27 +1,8 @@
 {
-    "Groups": [
-        {
-            "FullGroupName": "Language",
-            "Options": [
-                "EN"
-            ]
-        },
-        {
-            "FullGroupName": "Texture Import Settings Override/Max Size",
-            "Options": [
-                "2048 -> 1024"
-            ]
-        },
-        {
-            "FullGroupName": "Texture Import Settings Override/Format",
-            "Options": [
-                "RGB24 -> ASTC RGB 4x4"
-            ]
-        }
-    ],
-    "Tags": [
-        "Android",
-        "HD",
-        "ZH_HK"
-    ]
+  "Groups": [],
+  "Tags": [
+    "Android",
+    "SD",
+    "EN"
+  ]
 }

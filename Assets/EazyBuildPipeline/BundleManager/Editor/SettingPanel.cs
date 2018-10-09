@@ -112,7 +112,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             int resourceVersion = G.Module.ModuleStateConfig.Json.CurrentResourceVersion;
             string tagPath = Path.Combine(G.Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(G.Module.ModuleStateConfig.Json.CurrentTag));
 
-            bool ensure = EditorUtility.DisplayDialog("Build Bundles", string.Format("确定应用当前配置？\n\n" +
+            bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, string.Format("确定应用当前配置？\n\n" +
                 "目标平台: {0}\n 输出路径: {1} \n Resources Version: {2} \n 参数: {3}",
                 target, tagPath, resourceVersion, optionsValue), "确定", "取消");
             //开始应用          
@@ -122,11 +122,11 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 {
                     EditorUtility.DisplayProgressBar("Build Bundles", "Getting Bunild Maps...", 0);
                     G.Runner.Run();
-                    EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles成功！", "确定");
+                    G.Module.DisplayDialog("创建AssetBundles成功！");
                 }
                 catch (Exception e)
                 {
-                    EditorUtility.DisplayDialog("Build Bundles", "创建AssetBundles时发生错误：" + e.Message, "确定");
+                    G.Module.DisplayDialog("创建AssetBundles时发生错误：" + e.Message);
                 }
                 finally
                 {
@@ -188,7 +188,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             int length = G.Module.ModuleStateConfig.Json.CurrentTag.Length;
             if (length > CommonModule.CommonConfig.Json.TagEnum.Count)
             {
-                EditorUtility.DisplayDialog("提示", "欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失", "确定");
+                G.Module.DisplayDialog("欲加载的标签种类比全局标签种类多，请检查全局标签类型是否丢失");
             }
             else if (length < CommonModule.CommonConfig.Json.TagEnum.Count)
             {
@@ -217,10 +217,10 @@ namespace EazyBuildPipeline.BundleManager.Editor
                     return i;
                 }
             }
-            EditorUtility.DisplayDialog("错误", string.Format("加载用户配置文件时发生错误：\n欲加载的类型“{0}”"
+            G.Module.DisplayDialog(string.Format("加载用户配置文件时发生错误：\n欲加载的类型“{0}”"
                   + "不存在于第 {1} 个全局类型枚举中！\n"
                   + "\n请检查配置文件：{2} 和全局类型配置文件：{3}  中的类型名是否匹配",
-                  s, count, G.Module.ModuleStateConfig.JsonPath, CommonModule.CommonConfig.JsonPath), "确定");
+                  s, count, G.Module.ModuleStateConfig.JsonPath, CommonModule.CommonConfig.JsonPath));
             return -1;
         }
     }
