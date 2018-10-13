@@ -99,7 +99,7 @@ namespace EazyBuildPipeline.Common.Configs
     {
         public ModuleStateConfigJsonClass BaseJson { get { return Json; } }
         public string UserConfigsFolderPath;
-        public string CurrentUserConfigPath { get { return Path.Combine(UserConfigsFolderPath, Json.CurrentUserConfigName); } }
+        public string CurrentUserConfigPath { get { return Path.Combine(UserConfigsFolderPath ?? "", Json.CurrentUserConfigName ?? ""); } }
     }
 
     [Serializable]

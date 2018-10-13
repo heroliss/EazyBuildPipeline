@@ -77,7 +77,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
         private void OnValueChanged()
         {
-            G.Module.UserConfig.IsDirty = true;
+            G.Module.IsDirty = true;
         }
 
         private void AndroidPanel()
@@ -227,7 +227,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         ps.Android.ScriptDefines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
                         break;
                 }
-                G.Module.UserConfig.IsDirty = true;
+                G.Module.IsDirty = true;
             }
             if (GUILayout.Button("Apply All Defines", GUILayout.Height(30)))
             {
@@ -272,7 +272,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 if(group.Active != b)
                 {
                     group.Active = b;
-                    G.Module.UserConfig.IsDirty = true;
+                    G.Module.IsDirty = true;
                 }
 
                 EditorGUI.BeginDisabledGroup(!group.Active);
@@ -281,7 +281,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 if(group.GroupName != newDefineStr)
                 {
                     group.GroupName = newDefineStr;
-                    G.Module.UserConfig.IsDirty = true;
+                    G.Module.IsDirty = true;
                 }
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("+"))
@@ -289,7 +289,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     if (!group.Defines.Exists(x => x.Define == ""))
                     {
                         group.Defines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefine() { Active = true, Define = "" });
-                        G.Module.UserConfig.IsDirty = true;
+                        G.Module.IsDirty = true;
                     }
                 }
                 if (GUILayout.Button("-"))
@@ -302,7 +302,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     if (ensure)
                     {
                         RemoveGroup(scriptDefinesGroupList, i);
-                        G.Module.UserConfig.IsDirty = true;
+                        G.Module.IsDirty = true;
                     }
                 }
                 EditorGUILayout.Space();
@@ -311,14 +311,14 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     var t = scriptDefinesGroupList[i];
                     scriptDefinesGroupList[i] = scriptDefinesGroupList[i - 1];
                     scriptDefinesGroupList[i - 1] = t;
-                    G.Module.UserConfig.IsDirty = true;
+                    G.Module.IsDirty = true;
                 }
                 if (GUILayout.Button("▼") && i < scriptDefinesGroupList.Count - 1)
                 {
                     var t = scriptDefinesGroupList[i];
                     scriptDefinesGroupList[i] = scriptDefinesGroupList[i + 1];
                     scriptDefinesGroupList[i + 1] = t;
-                    G.Module.UserConfig.IsDirty = true;
+                    G.Module.IsDirty = true;
                 }
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space();
@@ -330,7 +330,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     if (define.Active != b)
                     {
                         define.Active = b;
-                        G.Module.UserConfig.IsDirty = true;
+                        G.Module.IsDirty = true;
                     }
                     EditorGUI.BeginDisabledGroup(!define.Active);
                     newDefineStr = GUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle ,GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
@@ -347,7 +347,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                             UpdateRepeatList(ps.IOS.ScriptDefines, define);
                             UpdateRepeatList(ps.Android.ScriptDefines, define);
                         }
-                        G.Module.UserConfig.IsDirty = true;
+                        G.Module.IsDirty = true;
                     }
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("-"))
@@ -360,7 +360,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         if (ensure)
                         {
                             RemoveDefine(group, j);
-                            G.Module.UserConfig.IsDirty = true;
+                            G.Module.IsDirty = true;
                         }
                     }
                     EditorGUILayout.Space();
@@ -369,14 +369,14 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         var t = group.Defines[j];
                         group.Defines[j] = group.Defines[j - 1];
                         group.Defines[j - 1] = t;
-                        G.Module.UserConfig.IsDirty = true;
+                        G.Module.IsDirty = true;
                     }
                     if (GUILayout.Button("▽") && j < group.Defines.Count - 1)
                     {
                         var t = group.Defines[j];
                         group.Defines[j] = group.Defines[j + 1];
                         group.Defines[j + 1] = t;
-                        G.Module.UserConfig.IsDirty = true;
+                        G.Module.IsDirty = true;
                     }
                     EditorGUI.EndDisabledGroup();
                     EditorGUILayout.EndHorizontal();

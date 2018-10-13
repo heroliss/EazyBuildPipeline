@@ -42,6 +42,8 @@ namespace EazyBuildPipeline
     public abstract class BaseModule
     {
         public bool IsDirty; //用来表示子类中自定义配置是否被修改，该变量与这个类所有内容都无关
+        public bool RootAvailable;
+        public string StateConfigLoadFailedMessage;
         public abstract string ModuleName { get; }
         public string ModuleConfigSearchText { get { return "EazyBuildPipeline ModuleConfig " + ModuleName; } }
 
@@ -52,9 +54,9 @@ namespace EazyBuildPipeline
 
         public abstract IModuleConfig BaseModuleConfig { get; }
         public abstract IModuleStateConfig BaseModuleStateConfig { get; }
-        public abstract bool LoadModuleConfig();
-        public abstract bool LoadModuleStateConfig();
-        public abstract bool LoadAllConfigs(string pipelineRootPath = null);
+        public abstract bool LoadModuleConfig(string pipelineRootPath);
+        public abstract bool LoadModuleStateConfig(string pipelineRootPath);
+        public abstract bool LoadAllConfigs(string pipelineRootPath);
         public abstract bool LoadUserConfig();
     }
 
@@ -81,9 +83,9 @@ namespace EazyBuildPipeline
         public override IModuleConfig BaseModuleConfig { get { return ModuleConfig; } }
         public override IModuleStateConfig BaseModuleStateConfig { get { return ModuleStateConfig; } }
 
-        public override bool LoadModuleConfig()
+        public override bool LoadModuleConfig(string pipelineRootPath)
         {
-            ModuleConfig.PipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
+            ModuleConfig.PipelineRootPath = pipelineRootPath;
             try
             {
                 string[] guids = AssetDatabase.FindAssets(ModuleConfigSearchText);
@@ -103,12 +105,13 @@ namespace EazyBuildPipeline
             }
         }
 
-        public override bool LoadModuleStateConfig()
+        public override bool LoadModuleStateConfig(string pipelineRootPath)
         {
+            string rootPath = pipelineRootPath;
             ModuleStateConfig.UserConfigsFolderPath = ModuleConfig.UserConfigsFolderPath;
             try
             {
-                if (Directory.Exists(CommonModule.CommonConfig.Json.PipelineRootPath)) //根目录是否存在
+                if (Directory.Exists(rootPath)) //根目录是否存在
                 {
                     ModuleStateConfig.JsonPath = ModuleConfig.StateConfigPath;
                     if (Directory.Exists(Path.GetDirectoryName(ModuleStateConfig.JsonPath))) //_Configs目录是否存在
@@ -129,23 +132,27 @@ namespace EazyBuildPipeline
                     }
                     else
                     {
-                        DisplayDialog("不是有效的Pipeline根目录:" + CommonModule.CommonConfig.Json.PipelineRootPath +
-                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(ModuleStateConfig.JsonPath));
+                        StateConfigLoadFailedMessage = "不是有效的Pipeline根目录:" + rootPath +
+                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(ModuleStateConfig.JsonPath);
+                        RootAvailable = false;
                         return false;
                     }
                 }
                 else
                 {
-                    DisplayDialog("根目录不存在:" + CommonModule.CommonConfig.Json.PipelineRootPath);
+                    StateConfigLoadFailedMessage = "根目录不存在:" + rootPath;
+                    RootAvailable = false;
                     return false;
                 }
+                RootAvailable = true;
                 return true;
             }
             catch (Exception e)
             {
-                DisplayDialog("加载模块 " + ModuleName + " 状态配置文件时发生错误：" + e.Message
+                StateConfigLoadFailedMessage = "加载模块 " + ModuleName + " 状态配置文件时发生错误：" + e.Message
                             + "\n加载路径：" + ModuleStateConfig.JsonPath
-                            + "\n请设置正确的文件路径以及形如以下所示的配置文件：\n" + new TModuleStateConfig());
+                            + "\n请设置正确的文件路径以及形如以下所示的配置文件：\n" + new TModuleStateConfig();
+                RootAvailable = false;
                 return false;
             }
         }

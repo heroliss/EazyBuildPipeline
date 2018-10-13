@@ -75,17 +75,11 @@ namespace EazyBuildPipeline.PackageManager
 
         public UserConfig UserConfig = new UserConfig();
 
-        public override bool LoadAllConfigs(string pipelineRootPath = null)
+        public override bool LoadAllConfigs(string pipelineRootPath)
         {
-            if (!CommonModule.LoadCommonConfig()) return false;
-            if (pipelineRootPath != null)
-            {
-                CommonModule.CommonConfig.Json.PipelineRootPath = pipelineRootPath;
-            }
-            bool success = 
-                LoadModuleConfig() &&
-                LoadModuleStateConfig();
-            if (success)
+            bool success =
+                LoadModuleConfig(pipelineRootPath);
+            if (LoadModuleStateConfig(pipelineRootPath))
             {
                 if (G.OverrideCurrentUserConfigName != null)
                 {
@@ -101,12 +95,15 @@ namespace EazyBuildPipeline.PackageManager
         {
             try
             {
-                UserConfig.Load(ModuleStateConfig.CurrentUserConfigPath);
+                if (!string.IsNullOrEmpty(ModuleStateConfig.CurrentUserConfigPath))
+                {
+                    UserConfig.Load(ModuleStateConfig.CurrentUserConfigPath);
+                }
                 return true;
             }
             catch (Exception e)
             {
-                G.Module.DisplayDialog("载入用户配置文件：" + UserConfig.JsonPath + " 时发生错误：" + e.Message);
+                DisplayDialog("载入用户配置文件：" + ModuleStateConfig.CurrentUserConfigPath + " 时发生错误：" + e.Message);
                 return false;
             }
         }

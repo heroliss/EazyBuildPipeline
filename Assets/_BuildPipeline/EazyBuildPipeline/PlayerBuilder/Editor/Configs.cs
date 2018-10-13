@@ -72,7 +72,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             InitAllRepeatList();
         }
 
-        public bool IsDirty;
         [Serializable]
         public class JsonClass
         {

@@ -32,7 +32,7 @@ namespace EazyBuildPipeline.PipelineTotalControl
     [Serializable]
     public class Module : EBPModule<
         ModuleConfig, ModuleConfig.JsonClass,
-        ModuleStateConfig, ModuleStateConfig.JsonClass>
+        ModuleStateConfig, ModuleStateConfig.JsonClass>, ISerializationCallbackReceiver
     {
         public override string ModuleName { get { return "TotalControl"; } }
 
@@ -57,7 +57,7 @@ namespace EazyBuildPipeline.PipelineTotalControl
             public BaseModule Module;
             public IRunner Runner;
         }
-        public Module()
+        public void Init()
         {
             InitRunners();
             Modules = new List<ModuleItem>
@@ -67,33 +67,27 @@ namespace EazyBuildPipeline.PipelineTotalControl
                 new ModuleItem(PackageManagerModule, PackageManagerRunner),
                 new ModuleItem(PlayerBuilderModule, PlayerBuilderRunner),
             };
+            //这里需要将静态的Module与TotalControl中的Module同步(用于反序列化时重新指定新的引用)
+            PlayerBuilder.G.Module = PlayerBuilderModule;
+            PlayerBuilder.G.Runner = PlayerBuilderRunner;
+        }
+        public Module()
+        {
+            Init();
         }
 
-        public override bool LoadAllConfigs(string pipelineRootPath = null)
+        public override bool LoadAllConfigs(string pipelineRootPath)
         {
-            if (!CommonModule.LoadCommonConfig()) return false;
-            if (pipelineRootPath != null)
-            {
-                CommonModule.CommonConfig.Json.PipelineRootPath = pipelineRootPath;
-            }
-            if (!LoadModuleConfig()) return false;
+            if (!LoadModuleConfig(pipelineRootPath)) return false;
             //这里暂时不需要ModuleStateConfig，所以不加载
-
+            
             //加载所有模块的模块配置、状态配置、用户配置
             foreach (var item in Modules)
             {
-                if (item.Module.LoadModuleConfig())
-                { 
-                    if(item.Module.LoadModuleStateConfig() && 
-                       !string.IsNullOrEmpty(item.Module.BaseModuleStateConfig.CurrentUserConfigPath))
-                    {
-                        item.Module.LoadUserConfig();
-                    }
-                }
+                item.Module.LoadAllConfigs(pipelineRootPath);
             }
-
             //这里需要将静态的Module与TotalControl中的Module同步，因为该窗口总控面板与PlayerSetting面板结合了
-            PlayerBuilder.G.Module = PlayerBuilderModule; 
+            PlayerBuilder.G.Module = PlayerBuilderModule;
             PlayerBuilder.G.Runner = PlayerBuilderRunner;
             return true;
         }
@@ -109,6 +103,15 @@ namespace EazyBuildPipeline.PipelineTotalControl
         public override bool LoadUserConfig()
         {
             throw new NotImplementedException("总控模块当前不存在用户配置，应该避免加载和使用。");
+        }
+
+        public void OnBeforeSerialize()
+        {
+        }
+
+        public void OnAfterDeserialize()
+        {
+            Init();
         }
     }
 }

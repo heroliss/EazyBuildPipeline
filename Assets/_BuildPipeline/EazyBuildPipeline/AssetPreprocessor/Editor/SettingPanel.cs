@@ -21,6 +21,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         public void Awake()
         {
             InitStyles();
+
             userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.ModuleConfig.UserConfigsFolderPath);
             string currentUserConfigName = G.Module.ModuleStateConfig.Json.CurrentUserConfigName;
             if (currentUserConfigName != null)
@@ -53,20 +54,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 creatingNewConfig = false;
             }
             GUILayout.FlexibleSpace();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-            string path = EditorGUILayout.DelayedTextField(G.Module.ModuleConfig.PipelineRootPath);
-            if (GUILayout.Button("...", GUILayout.MaxWidth(24)))
-            {
-                path = EditorUtility.OpenFolderPanel("打开根目录", G.Module.ModuleConfig.PipelineRootPath, null);
-            }
-            if (!string.IsNullOrEmpty(path) && path != G.Module.ModuleConfig.PipelineRootPath)
-            {
-                ChangeRootPath(path);
-                return;
-            }
-            EditorGUILayout.EndHorizontal();
+            EBPEditorGUILayout.RootSettingLine(G.Module, ChangeRootPath);
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.BeginHorizontal();
@@ -304,30 +292,21 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 		}
 
 		private void ChangeRootPath(string path)
-		{
-			bool ensure = true;
-			if (G.Module.IsDirty)
-			{
-				ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
-			}
-			if (ensure)
-			{
-                string originPipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
-                Module newModule = new Module();
-                if (!newModule.LoadAllConfigs(path))
-                {
-                    CommonModule.CommonConfig.Json.PipelineRootPath = originPipelineRootPath;
-                    return;
-                }
-                G.Module = newModule;
-                G.Runner.Module = newModule;
-				G.g.OnChangeCurrentUserConfig();
-				CommonModule.CommonConfig.Save();
-				selectedUserConfigIndex = userConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.Module.ModuleStateConfig.Json.CurrentUserConfigName));
-                EBPUtility.HandleApplyingWarning(G.Module);
-			}
-		}
-		double lastTime;
+        {
+            Module newModule = new Module();
+            if (!newModule.LoadAllConfigs(path))
+            {
+                return;
+            }
+            CommonModule.CommonConfig.Json.PipelineRootPath = path;
+            CommonModule.CommonConfig.Save();
+            G.Module = newModule;
+            G.Runner.Module = newModule;
+            G.g.OnChangeCurrentUserConfig();
+            selectedUserConfigIndex = userConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.Module.ModuleStateConfig.Json.CurrentUserConfigName));
+            EBPUtility.HandleApplyingWarning(G.Module);
+        }
+        double lastTime;
 		private void ClickedSyncDirectory()
 		{
 			if (!Directory.Exists(Path.GetDirectoryName(G.Module.ModuleConfig.PreStoredAssetsFolderPath)))

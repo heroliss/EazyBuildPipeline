@@ -48,19 +48,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
         public void OnGUI()
         {
             GUILayout.FlexibleSpace();
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-            string path = EditorGUILayout.DelayedTextField(CommonModule.CommonConfig.Json.PipelineRootPath);
-            if (GUILayout.Button("...", miniButtonOptions))
-            {
-                path = EditorUtility.OpenFolderPanel("打开根目录", CommonModule.CommonConfig.Json.PipelineRootPath, null);
-            }
-            if (!string.IsNullOrEmpty(path) && path != CommonModule.CommonConfig.Json.PipelineRootPath)
-            {
-                ChangeRootPath(path);
-                return;
-            }
-            EditorGUILayout.EndHorizontal();
+            EBPEditorGUILayout.RootSettingLine(G.Module, ChangeRootPath);
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.BeginHorizontal();
@@ -137,27 +125,19 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
 		private void ChangeRootPath(string path)
         {
-            bool ensure = true;
-			//if (Configs.g.bun.Dirty)
-			//{
-			//    ensure = !EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "返回", "放弃保存");
-			//}
-			if (ensure)
-			{
-                string originPipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
-                Module newModule = new Module();
-                if (!newModule.LoadAllConfigs(path))
-                {
-                    CommonModule.CommonConfig.Json.PipelineRootPath = originPipelineRootPath;
-                    return;
-                }
-                G.Module = newModule;
-                G.Runner.Module = newModule;
-                InitSelectedIndex();
-                ConfigToIndex();
-                CommonModule.CommonConfig.Save();
-                EBPUtility.HandleApplyingWarning(G.Module);
+            Module newModule = new Module();
+            if (!newModule.LoadAllConfigs(path))
+            {
+                return;
             }
+            CommonModule.CommonConfig.Json.PipelineRootPath = path;
+            CommonModule.CommonConfig.Save();
+            G.Module = newModule;
+            G.Runner.Module = newModule;
+            InitSelectedIndex();
+            ConfigToIndex();
+            EBPUtility.HandleApplyingWarning(G.Module);
+
         }
 
         private void InitSelectedIndex()
@@ -173,7 +153,8 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         private void LoadAllConfigs()
         {
-            G.Module.LoadAllConfigs();
+            CommonModule.LoadCommonConfig();
+            G.Module.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath);
             InitSelectedIndex();
             ConfigToIndex();
             EBPUtility.HandleApplyingWarning(G.Module);

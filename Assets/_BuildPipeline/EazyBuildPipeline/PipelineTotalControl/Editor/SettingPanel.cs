@@ -173,7 +173,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void LoadAllConfigs()
         {
-            G.Module.LoadAllConfigs();
+            CommonModule.LoadCommonConfig();
+            G.Module.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath);
             InitSelectedIndex();
             LoadAllModulesUserConfigList();
             ConfigToIndex();
@@ -269,19 +270,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             //Root
             GUILayout.FlexibleSpace();
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Root:", GUILayout.Width(45));
-            string path = EditorGUILayout.DelayedTextField(CommonModule.CommonConfig.Json.PipelineRootPath);
-            if (GUILayout.Button("...", miniButtonOptions))
-            {
-                path = EditorUtility.OpenFolderPanel("打开根目录", CommonModule.CommonConfig.Json.PipelineRootPath, null);
-            }
-            if (!string.IsNullOrEmpty(path) && path != CommonModule.CommonConfig.Json.PipelineRootPath)
-            {
-                ChangeRootPath(path);
-                return;
-            }
-            EditorGUILayout.EndHorizontal();
+            EBPEditorGUILayout.RootSettingLine(PlayerBuilder.G.Module, ChangeRootPath);
             GUILayout.FlexibleSpace();
 
             //SVN Update
@@ -532,7 +521,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             //由于这些功能逻辑上属于PlayerSetting而非TotalControl,因此使用PlayerBuilder.G来访问
             PlayerBuilder.G.Runner.FetchPlayerSettings(); 
             PlayerBuilder.G.Module.UserConfig.InitAllRepeatList();
-            PlayerBuilder.G.Module.UserConfig.IsDirty = true;
+            PlayerBuilder.G.Module.IsDirty = true;
         }
         private void ClickedApply()
         {
@@ -683,33 +672,19 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void ChangeRootPath(string path)
         {
-            bool ensure = true;
-            if(!Directory.Exists(path)) 
+            Module newModule = new Module();
+            if (!newModule.LoadAllConfigs(path))
             {
-                G.Module.DisplayDialog("目录不存在:" + path);
                 return;
             }
-            if (G.Module.IsDirty)
-            {
-                ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "更改未保存，是否要放弃更改？", "放弃保存", "返回");
-            }
-            if (ensure)
-            {
-                string originPipelineRootPath = CommonModule.CommonConfig.Json.PipelineRootPath;
-                Module newModule = new Module();
-                if (!newModule.LoadAllConfigs(path))
-                {
-                    CommonModule.CommonConfig.Json.PipelineRootPath = originPipelineRootPath;
-                    return;
-                }
-                G.Module = newModule;
-                //G.Runner.Module = newModule; //暂时不需要
-                InitSelectedIndex();
-                LoadAllModulesUserConfigList();
-                ConfigToIndex();
-                CommonModule.CommonConfig.Save();
-                OnChangeRootPath();
-            }
+            CommonModule.CommonConfig.Json.PipelineRootPath = path;
+            CommonModule.CommonConfig.Save();
+            G.Module = newModule;
+            //G.Runner.Module = newModule; //暂时不需要
+            InitSelectedIndex();
+            LoadAllModulesUserConfigList();
+            ConfigToIndex();
+            OnChangeRootPath();
         }
 
         private void OnChangeRootPath()
@@ -724,7 +699,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         {
             SetdownActions();
 
-            if (PlayerBuilder.G.Module.UserConfig.IsDirty)
+            if (PlayerBuilder.G.Module.IsDirty)
             {
                 bool result = false;
                 try
@@ -779,7 +754,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private bool ShowBuildSettingDropdown()
         {
-            if (PlayerBuilder.G.Module.UserConfig.IsDirty)
+            if (PlayerBuilder.G.Module.IsDirty)
             {
                 try
                 {
@@ -788,7 +763,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 catch { }
             }
             int selectedBuildSetting_new = EditorGUILayout.Popup(playerBuilderUserConfigSelectedIndex, userConfigNames, dropdownOptions);
-            if (PlayerBuilder.G.Module.UserConfig.IsDirty)
+            if (PlayerBuilder.G.Module.IsDirty)
             {
                 try
                 {
@@ -827,7 +802,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void ChangeUserConfig(int selectedUserConfigIndex_new)
         {
             bool ensureLoad = true;
-            if (PlayerBuilder.G.Module.UserConfig.IsDirty)
+            if (PlayerBuilder.G.Module.IsDirty)
             {
                 ensureLoad = EditorUtility.DisplayDialog(G.Module.ModuleName, "更改未保存，是否要放弃更改？", "放弃保存", "返回");
             }
@@ -868,7 +843,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void ClickedSave()
         {
             bool ensure = true;
-            if (PlayerBuilder.G.Module.UserConfig.IsDirty && playerBuilderUserConfigSelectedIndex >= 0)
+            if (PlayerBuilder.G.Module.IsDirty && playerBuilderUserConfigSelectedIndex >= 0)
             {
                 ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "是否保存并覆盖原配置：" + userConfigNames[playerBuilderUserConfigSelectedIndex], "覆盖保存", "取消");
             }
@@ -884,7 +859,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 PlayerBuilder.G.Module.UserConfig.Save();
 
                 G.Module.DisplayDialog("保存配置成功！");
-                PlayerBuilder.G.Module.UserConfig.IsDirty = false;
+                PlayerBuilder.G.Module.IsDirty = false;
             }
 
             catch (Exception e)

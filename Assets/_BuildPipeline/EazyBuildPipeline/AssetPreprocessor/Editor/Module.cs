@@ -45,18 +45,12 @@ namespace EazyBuildPipeline.AssetPreprocessor
         public OptionsEnumConfig OptionsEnumConfig = new OptionsEnumConfig();
         public UserConfig UserConfig = new UserConfig();
 
-        public override bool LoadAllConfigs(string pipelineRootPath = null)
+        public override bool LoadAllConfigs(string pipelineRootPath)
         {
-            if (!CommonModule.LoadCommonConfig()) return false;
-            if (pipelineRootPath != null)
-            {
-                CommonModule.CommonConfig.Json.PipelineRootPath = pipelineRootPath;
-            }
             bool success =
-              LoadModuleConfig() &&
-              LoadOptionsEnumConfig() &&
-              LoadModuleStateConfig();
-            if (success)
+              LoadModuleConfig(pipelineRootPath) &&
+              LoadOptionsEnumConfig();
+            if (LoadModuleStateConfig(pipelineRootPath))
             {
                 if (G.OverrideCurrentUserConfigName != null)
                 {
@@ -88,7 +82,10 @@ namespace EazyBuildPipeline.AssetPreprocessor
         {
             try
             {
-                UserConfig.Load(ModuleStateConfig.CurrentUserConfigPath);
+                if (!string.IsNullOrEmpty(ModuleStateConfig.CurrentUserConfigPath))
+                {
+                    UserConfig.Load(ModuleStateConfig.CurrentUserConfigPath);
+                }
                 return true;
             }
             catch (Exception e)

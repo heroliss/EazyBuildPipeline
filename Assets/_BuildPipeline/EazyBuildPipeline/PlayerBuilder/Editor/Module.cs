@@ -37,17 +37,11 @@ namespace EazyBuildPipeline.PlayerBuilder
         public override string ModuleName { get { return "PlayerBuilder"; } }
         public UserConfig UserConfig = new UserConfig();
 
-        public override bool LoadAllConfigs(string pipelineRootPath = null)
+        public override bool LoadAllConfigs(string pipelineRootPath)
         {
-            if (!CommonModule.LoadCommonConfig()) return false;
-            if (pipelineRootPath != null)
-            {
-                CommonModule.CommonConfig.Json.PipelineRootPath = pipelineRootPath;
-            }
-            bool success = 
-                LoadModuleConfig() &&
-                LoadModuleStateConfig();
-            if (success)
+            bool success =
+                LoadModuleConfig(pipelineRootPath);
+            if (LoadModuleStateConfig(pipelineRootPath))
             {
                 LoadUserConfig();
             }
@@ -58,7 +52,10 @@ namespace EazyBuildPipeline.PlayerBuilder
         {
             try
             {
-                UserConfig.Load(ModuleStateConfig.CurrentUserConfigPath);
+                if (!string.IsNullOrEmpty(ModuleStateConfig.CurrentUserConfigPath))
+                {
+                    UserConfig.Load(ModuleStateConfig.CurrentUserConfigPath);
+                }
                 return true;
             }
             catch (Exception e)
