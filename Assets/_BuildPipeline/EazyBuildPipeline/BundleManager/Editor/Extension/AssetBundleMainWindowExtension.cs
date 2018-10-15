@@ -40,12 +40,20 @@ namespace AssetBundleManagement2
         {
             if (EazyBuildPipeline.BundleManager.G.g != null)
             {
-                var buildMap = EazyBuildPipeline.BundleManager.G.g.mainTab.GetBuildMap_extension();
-                System.IO.File.WriteAllText(System.IO.Path.Combine(
-                    EazyBuildPipeline.BundleManager.G.Module.ModuleConfig.UserConfigsFolderPath,
-                    System.IO.Path.GetFileName(path) + ".json"),
-                    Newtonsoft.Json.JsonConvert.SerializeObject(buildMap, Newtonsoft.Json.Formatting.Indented));
-                EazyBuildPipeline.BundleManager.G.g.OnChangeConfigList();
+                if (!System.IO.Directory.Exists(EazyBuildPipeline.CommonModule.CommonConfig.Json.UserConfigsRootPath))
+                {
+                    EazyBuildPipeline.BundleManager.G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + EazyBuildPipeline.CommonModule.CommonConfig.Json.UserConfigsRootPath);
+                }
+                else
+                {
+                    var buildMap = EazyBuildPipeline.BundleManager.G.g.mainTab.GetBuildMap_extension();
+                    System.IO.Directory.CreateDirectory(EazyBuildPipeline.BundleManager.G.Module.ModuleConfig.UserConfigsFolderPath);
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(
+                        EazyBuildPipeline.BundleManager.G.Module.ModuleConfig.UserConfigsFolderPath,
+                        System.IO.Path.GetFileName(path) + ".json"),
+                        Newtonsoft.Json.JsonConvert.SerializeObject(buildMap, Newtonsoft.Json.Formatting.Indented));
+                    EazyBuildPipeline.BundleManager.G.g.OnChangeConfigList();
+                }
             }
             //            buildTab_.UpdateBuildMap(path);
             if (AssetBundleModel.IsBundleMapDirty)

@@ -1,5 +1,5 @@
 {
-  "PipelineRootPath": "E:/",
+  "PipelineRootPath": "E:/PipelineRoot",
   "CurrentAssetTag": [
     "Android",
     "SD",
@@ -22,5 +22,10 @@
       "ZH_TW"
     ]
   },
-  "IconsFolderRelativePath": "Icons"
+  "IconsFolderRelativePath": "Icons",
+  "UserConfigsRootPath": "E:/UserConfigsRoot",
+  "UserConfigsFolderName_AssetPreprocessor": "AssetPreprocessConfigs",
+  "UserConfigsFolderName_BundleManager": "BundleMaps",
+  "UserConfigsFolderName_PackageManager": "PackageMaps",
+  "UserConfigsFolderName_PlayerBuilder": "BuildSettings"
 }

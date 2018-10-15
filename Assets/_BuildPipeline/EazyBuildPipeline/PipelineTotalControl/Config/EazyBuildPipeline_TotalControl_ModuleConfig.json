@@ -1,6 +1,5 @@
 {
   "EnableCheckDiff": false,
-  "UserConfigsFolderRelativePath": "UserConfigs",
   "WorkRelativePath": "UnityPlayers",
   "StateConfigRelativePath": "_Config/State.json"
 }

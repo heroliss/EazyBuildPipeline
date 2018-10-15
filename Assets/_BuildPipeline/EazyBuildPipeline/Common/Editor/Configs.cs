@@ -15,8 +15,13 @@ namespace EazyBuildPipeline.Common.Configs
                 { { "Example Group 1:",new []{"example tag1","example tag2","example tag3"} },
                   { "Example Group 2:",new []{"example tag a","example tag b"} } };
         }
-        public string IconsFolderPath { get { return Path.Combine(CommonRootPath, Json.IconsFolderRelativePath); } }
-        public string CommonRootPath { get { return Path.GetDirectoryName(JsonPath); } }
+        public string IconsFolderPath { get { return Path.Combine(CommonConfigRootPath, Json.IconsFolderRelativePath); } }
+        public string CommonConfigRootPath { get { return Path.GetDirectoryName(JsonPath); } }
+        public string UserConfigsFolderPath_AssetPreprocessor { get { return Path.Combine(Json.UserConfigsRootPath, Json.UserConfigsFolderName_AssetPreprocessor); } }
+        public string UserConfigsFolderPath_BundleManager { get { return Path.Combine(Json.UserConfigsRootPath, Json.UserConfigsFolderName_BundleManager); } }
+        public string UserConfigsFolderPath_PackageManager { get { return Path.Combine(Json.UserConfigsRootPath, Json.UserConfigsFolderName_PackageManager); } }
+        public string UserConfigsFolderPath_PlayerBuilder { get { return Path.Combine(Json.UserConfigsRootPath, Json.UserConfigsFolderName_PlayerBuilder); } }
+
         [Serializable]
         public class JsonClass
         {
@@ -25,6 +30,12 @@ namespace EazyBuildPipeline.Common.Configs
             public int CurrentResourceVersion;
             public Dictionary<string, string[]> TagEnum;
             public string IconsFolderRelativePath;
+
+            public string UserConfigsRootPath;
+            public string UserConfigsFolderName_AssetPreprocessor;
+            public string UserConfigsFolderName_BundleManager;
+            public string UserConfigsFolderName_PackageManager;
+            public string UserConfigsFolderName_PlayerBuilder;
         }
 
         #region 自定义序列化
@@ -69,20 +80,19 @@ namespace EazyBuildPipeline.Common.Configs
     }
 
     [Serializable]
-    public class ModuleConfig<TJsonClass> : EBPConfig<TJsonClass>, IModuleConfig where TJsonClass : ModuleConfigJsonClass, new()
+    public abstract class ModuleConfig<TJsonClass> : EBPConfig<TJsonClass>, IModuleConfig where TJsonClass : ModuleConfigJsonClass, new()
     {
         public ModuleConfigJsonClass BaseJson { get { return Json; } }
         public string PipelineRootPath;
         public string WorkPath { get { return Path.Combine(PipelineRootPath, Json.WorkRelativePath); } }
         public string StateConfigPath { get { return Path.Combine(WorkPath, Json.StateConfigRelativePath); } }
-        public string UserConfigsFolderPath { get { return Path.Combine(ModuleRootPath, Json.UserConfigsFolderRelativePath); } }
+        public abstract string UserConfigsFolderPath { get; }
         public string ModuleRootPath { get { return Path.GetDirectoryName(JsonPath); } }
     }
 
     [Serializable]
     public class ModuleConfigJsonClass
     {
-        public string UserConfigsFolderRelativePath = "UserConfigs";
         public string WorkRelativePath;
         public string StateConfigRelativePath = "_Configs/State.json";
     }
@@ -99,7 +109,15 @@ namespace EazyBuildPipeline.Common.Configs
     {
         public ModuleStateConfigJsonClass BaseJson { get { return Json; } }
         public string UserConfigsFolderPath;
-        public string CurrentUserConfigPath { get { return Path.Combine(UserConfigsFolderPath ?? "", Json.CurrentUserConfigName ?? ""); } }
+        public string CurrentUserConfigPath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(UserConfigsFolderPath) || string.IsNullOrEmpty(Json.CurrentUserConfigName))
+                    return null;
+                return Path.Combine(UserConfigsFolderPath, Json.CurrentUserConfigName);
+            }
+        }
     }
 
     [Serializable]

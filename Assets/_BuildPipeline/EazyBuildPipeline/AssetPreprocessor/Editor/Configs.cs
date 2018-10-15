@@ -13,6 +13,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Configs
         //Pipeline配置路径
         public string PreStoredAssetsFolderPath { get { return Path.Combine(WorkPath, Json.PreStoredAssetsFolderRelativePath); } }
         public string LogsFolderPath { get { return Path.Combine(WorkPath, Json.LogsFolderRelativePath); } }
+
+        public override string UserConfigsFolderPath { get { return CommonModule.CommonConfig.UserConfigsFolderPath_AssetPreprocessor; } }
+
         [Serializable]
         public class JsonClass : Common.Configs.ModuleConfigJsonClass
         {

@@ -24,16 +24,17 @@ namespace EazyBuildPipeline.PackageManager.Editor
         [SerializeField] GUIStyle labelStyle;
 
         GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
-        GUILayoutOption[] dropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(80) };
-        GUILayoutOption[] miniDropdownOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
+        GUILayoutOption[] shortPopupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(80) };
+        GUILayoutOption[] miniPopupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
         GUILayoutOption[] miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
-        GUILayoutOption[] popupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
+        GUILayoutOption[] configNamePopupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
         GUILayoutOption[] labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
         GUILayoutOption[] shortLabelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
         GUILayoutOption[] shortLabelOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(40) };
 
         [SerializeField] string[] userConfigNames = { };
         [SerializeField] bool creatingNewConfig;
+        [SerializeField] bool loadBundlesFromConfig;
 
         private void InitStyles()
         {
@@ -70,7 +71,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.BeginHorizontal();
-            if(ShowTagsDropdown()) return;
+            EditorGUI.BeginDisabledGroup(loadBundlesFromConfig);
+            if (ShowTagsDropdown()) return;
+            EditorGUI.EndDisabledGroup();
             GUILayout.FlexibleSpace();
             GUILayout.Space(10);
             if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonStyle, buttonOptions))
@@ -93,9 +96,13 @@ namespace EazyBuildPipeline.PackageManager.Editor
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.BeginHorizontal();
+            loadBundlesFromConfig = EditorGUILayout.Toggle(GUIContent.none, loadBundlesFromConfig, GUILayout.Width(16));
+            EditorGUI.BeginDisabledGroup(!loadBundlesFromConfig);
+            EditorGUILayout.Popup(0, new[] { "aaaaaaaaaaaaa", "bbb" }, dropdownStyle, configNamePopupOptions);
             GUILayout.FlexibleSpace();
+            EditorGUI.EndDisabledGroup();
             EditorGUILayout.LabelField("Mode:", labelStyle, shortLabelOptions2);
-            int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, G.PackageModeEnum, dropdownStyle, dropdownOptions);
+            int currentPackageModeIndex_new = EditorGUILayout.Popup(selectedPackageModeIndex, G.PackageModeEnum, dropdownStyle, shortPopupOptions);
             if (selectedPackageModeIndex != currentPackageModeIndex_new)
             {
                 selectedPackageModeIndex = currentPackageModeIndex_new;
@@ -106,7 +113,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
             GUILayout.Space(10);
             EditorGUILayout.LabelField("Lua:", labelStyle, shortLabelOptions);
-            int currentLuaSourceIndex_new = EditorGUILayout.Popup(selectedLuaSourceIndex, G.LuaSourceEnum, dropdownStyle, dropdownOptions);
+            int currentLuaSourceIndex_new = EditorGUILayout.Popup(selectedLuaSourceIndex, G.LuaSourceEnum, dropdownStyle, shortPopupOptions);
             if (selectedLuaSourceIndex != currentLuaSourceIndex_new)
             {
                 selectedLuaSourceIndex = currentLuaSourceIndex_new;
@@ -117,7 +124,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             GUILayout.Space(10);
             EditorGUILayout.LabelField("CompressLevel:", labelStyle, labelOptions);
             int compressionLevel_new = EditorGUILayout.IntPopup(G.Module.UserConfig.Json.CompressionLevel, compressionLevelsEnumStr,
-                compressionLevelEnum, dropdownStyle, miniDropdownOptions);
+                compressionLevelEnum, dropdownStyle, miniPopupOptions);
             if (compressionLevel_new != G.Module.UserConfig.Json.CompressionLevel)
             {
                 G.Module.UserConfig.Json.CompressionLevel = compressionLevel_new;
@@ -162,7 +169,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             int i = 0;
             foreach (var tagType in CommonModule.CommonConfig.Json.TagEnum.Values)
             {
-                selectedIndexs_new[i] = EditorGUILayout.Popup(selectedTagIndexs[i], tagType, dropdownStyle, dropdownOptions);
+                selectedIndexs_new[i] = EditorGUILayout.Popup(selectedTagIndexs[i], tagType, dropdownStyle, shortPopupOptions);
                 if (selectedIndexs_new[i] != selectedTagIndexs[i])
                 {
                     selectedTagIndexs[i] = selectedIndexs_new[i];
@@ -516,7 +523,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             GUI.SetNextControlName("InputField1");
             string tip = "<输入名称>(回车确定，空串取消)";
-            string s = EditorGUILayout.DelayedTextField(tip, dropdownStyle, popupOptions);
+            string s = EditorGUILayout.DelayedTextField(tip, dropdownStyle, configNamePopupOptions);
             GUI.FocusControl("InputField1");
             s = s.Trim().Replace('\\', '/');
             if (s != tip)
@@ -545,6 +552,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private void CreateNewMap(string name, string path)
         {
             //新建
+            if (!Directory.Exists(CommonModule.CommonConfig.Json.UserConfigsRootPath))
+            {
+                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.Json.UserConfigsRootPath);
+                return;
+            }
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.Create(path).Close();
             G.Module.DisplayDialog("创建成功!");
@@ -576,7 +588,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 }
                 catch { }
             }
-            int selectedMapIndex_new = EditorGUILayout.Popup(selectedUserConfigIndex, userConfigNames, dropdownStyle, popupOptions);
+            int selectedMapIndex_new = EditorGUILayout.Popup(selectedUserConfigIndex, userConfigNames, dropdownStyle, configNamePopupOptions);
             if (G.Module.IsDirty)
             {
                 try

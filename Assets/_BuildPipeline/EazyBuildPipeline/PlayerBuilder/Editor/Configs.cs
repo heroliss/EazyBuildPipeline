@@ -11,6 +11,8 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
     [Serializable]
     public class ModuleConfig : Common.Configs.ModuleConfig<ModuleConfig.JsonClass>
     {
+        public override string UserConfigsFolderPath { get { return CommonModule.CommonConfig.UserConfigsFolderPath_PlayerBuilder; } }
+
         [Serializable]
         public class JsonClass : Common.Configs.ModuleConfigJsonClass
         {

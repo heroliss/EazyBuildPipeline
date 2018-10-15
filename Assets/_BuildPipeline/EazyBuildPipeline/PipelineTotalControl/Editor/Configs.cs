@@ -10,6 +10,9 @@ namespace EazyBuildPipeline.PipelineTotalControl.Configs
     [Serializable]
     public class ModuleConfig : Common.Configs.ModuleConfig<ModuleConfig.JsonClass>
     {
+        public override string UserConfigsFolderPath
+        { get { throw new NotImplementedException("这个属性暂时无用"); } }
+
         [Serializable]
         public class JsonClass : Common.Configs.ModuleConfigJsonClass
         {

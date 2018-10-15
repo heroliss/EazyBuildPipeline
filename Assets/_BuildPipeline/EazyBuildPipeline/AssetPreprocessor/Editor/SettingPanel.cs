@@ -238,10 +238,15 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 		private void CreateNewUserConfig(string name, string path)
 		{
-			//新建   
-			Directory.CreateDirectory(Path.GetDirectoryName(path));
+            //新建
+            if (!Directory.Exists(CommonModule.CommonConfig.Json.UserConfigsRootPath))
+            {
+                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.Json.UserConfigsRootPath);
+                return;
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 			File.Create(path).Close();
-			EditorUtility.DisplayDialog("创建成功", "创建成功!", "确定");
+			G.Module.DisplayDialog("创建成功!");
 			//更新列表
 			userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.ModuleConfig.UserConfigsFolderPath);
 			//保存

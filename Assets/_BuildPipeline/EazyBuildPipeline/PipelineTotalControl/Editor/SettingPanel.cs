@@ -787,6 +787,11 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void CreateNewBuildSetting(string name, string path)
         {
             //新建
+            if (!Directory.Exists(CommonModule.CommonConfig.Json.UserConfigsRootPath))
+            {
+                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.Json.UserConfigsRootPath);
+                return;
+            }
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.Create(path).Close();
             G.Module.DisplayDialog("创建成功!");

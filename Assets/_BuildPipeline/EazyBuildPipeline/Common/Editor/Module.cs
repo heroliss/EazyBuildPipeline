@@ -26,6 +26,7 @@ namespace EazyBuildPipeline
                     throw new ApplicationException("未能找到本地公共配置文件! 搜索文本：" + CommonConfigSearchText);
                 }
                 CommonConfig.Load(AssetDatabase.GUIDToAssetPath(guids[0]));
+                CheckAndSetUserConfigsRootPath();
                 return true;
             }
             catch (Exception e)
@@ -34,6 +35,21 @@ namespace EazyBuildPipeline
                                             + "\n加载路径：" + CommonConfig.JsonPath
                                             + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + new CommonConfig(), "确定");
                 return false;
+            }
+        }
+
+        public static void CheckAndSetUserConfigsRootPath()
+        {
+            string userConfigsRootPath = CommonConfig.Json.UserConfigsRootPath;
+            if(string.IsNullOrEmpty(userConfigsRootPath) || !Directory.Exists(userConfigsRootPath))
+            {
+                EditorUtility.DisplayDialog("Load UserConfig", "用户配置根目录不存在：" + userConfigsRootPath + "\n\n请设置根目录来存放用户配置文件", "设置");
+                string newPath = EditorUtility.OpenFolderPanel("Open UserConfigs Root", userConfigsRootPath, null);
+                if (!string.IsNullOrEmpty(newPath))
+                {
+                    CommonConfig.Json.UserConfigsRootPath = newPath;
+                    CommonConfig.Save();
+                }
             }
         }
     }

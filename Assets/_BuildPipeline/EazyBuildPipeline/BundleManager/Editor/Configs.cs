@@ -12,6 +12,8 @@ namespace EazyBuildPipeline.BundleManager.Configs
     [Serializable]
     public class ModuleConfig : Common.Configs.ModuleConfig<ModuleConfig.JsonClass>
     {
+        public override string UserConfigsFolderPath { get { return CommonModule.CommonConfig.UserConfigsFolderPath_BundleManager; } }
+
         [Serializable]
         public class JsonClass : Common.Configs.ModuleConfigJsonClass
         {
