@@ -96,6 +96,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void ClickedApply()
 		{
+            if (!G.Runner.Check()) return;
 			bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定应用当前配置？应用过程不可中断。", "确定", "取消");
 			if (ensure)
             {

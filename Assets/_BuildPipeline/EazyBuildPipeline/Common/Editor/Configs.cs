@@ -83,8 +83,7 @@ namespace EazyBuildPipeline.Common.Configs
     public abstract class ModuleConfig<TJsonClass> : EBPConfig<TJsonClass>, IModuleConfig where TJsonClass : ModuleConfigJsonClass, new()
     {
         public ModuleConfigJsonClass BaseJson { get { return Json; } }
-        public string PipelineRootPath;
-        public string WorkPath { get { return Path.Combine(PipelineRootPath, Json.WorkRelativePath); } }
+        public string WorkPath { get { return Path.Combine(CommonModule.CommonConfig.Json.PipelineRootPath, Json.WorkRelativePath); } }
         public string StateConfigPath { get { return Path.Combine(WorkPath, Json.StateConfigRelativePath); } }
         public abstract string UserConfigsFolderPath { get; }
         public string ModuleRootPath { get { return Path.GetDirectoryName(JsonPath); } }

@@ -122,6 +122,11 @@ namespace EazyBuildPipeline.AssetPreprocessor
 
         public override bool Check()
         {
+            if (!Module.RootAvailable)
+            {
+                Module.DisplayDialog(Module.StateConfigLoadFailedMessage);
+                return false;
+            }
             if (!Directory.Exists(Module.ModuleConfig.PreStoredAssetsFolderPath))
             {
                 Module.DisplayDialog("不能应用配置，找不到目录:" + Module.ModuleConfig.PreStoredAssetsFolderPath);

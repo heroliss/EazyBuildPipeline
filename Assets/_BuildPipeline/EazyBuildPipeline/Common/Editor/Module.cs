@@ -101,7 +101,6 @@ namespace EazyBuildPipeline
 
         public override bool LoadModuleConfig(string pipelineRootPath)
         {
-            ModuleConfig.PipelineRootPath = pipelineRootPath;
             try
             {
                 string[] guids = AssetDatabase.FindAssets(ModuleConfigSearchText);
@@ -124,7 +123,7 @@ namespace EazyBuildPipeline
         public override bool LoadModuleStateConfig(string pipelineRootPath)
         {
             string rootPath = pipelineRootPath;
-            ModuleStateConfig.UserConfigsFolderPath = ModuleConfig.UserConfigsFolderPath;
+            ModuleStateConfig.UserConfigsFolderPath = ModuleConfig.UserConfigsFolderPath; //拷贝配置项
             try
             {
                 if (Directory.Exists(rootPath)) //根目录是否存在

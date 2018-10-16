@@ -19,6 +19,11 @@ namespace EazyBuildPipeline.PlayerBuilder
         }
         public override bool Check()
         {
+            if (!Module.RootAvailable)
+            {
+                Module.DisplayDialog(Module.StateConfigLoadFailedMessage);
+                return false;
+            }
             if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
             {
                 Module.DisplayDialog("错误：Assets Tags为空");

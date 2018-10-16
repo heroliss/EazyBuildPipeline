@@ -32,6 +32,11 @@ namespace EazyBuildPipeline.PackageManager
 
         public override bool Check()
         {
+            if (!Module.RootAvailable)
+            {
+                Module.DisplayDialog(Module.StateConfigLoadFailedMessage);
+                return false;
+            }
             if (Module.UserConfig.Json.Packages.Count == 0)
             {
                 Module.DisplayDialog("该配置内没有Package");

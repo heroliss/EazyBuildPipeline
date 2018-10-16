@@ -37,7 +37,7 @@ namespace EazyBuildPipeline.PackageManager.Configs
     [Serializable]
     public class ModuleConfig : Common.Configs.ModuleConfig<ModuleConfig.JsonClass>
     {
-        public string BundleWorkFolderPath { get { return Path.Combine(PipelineRootPath, Json.BundleWorkFolderRelativePath); } }
+        public string BundleWorkFolderPath { get { return Path.Combine(CommonModule.CommonConfig.Json.PipelineRootPath, Json.BundleWorkFolderRelativePath); } }
         public override string UserConfigsFolderPath { get { return CommonModule.CommonConfig.UserConfigsFolderPath_PackageManager; } }
 
         [Serializable]
