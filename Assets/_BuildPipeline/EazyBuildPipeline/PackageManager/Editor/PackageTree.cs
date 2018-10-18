@@ -19,7 +19,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         int folderID = 0;
         int bundleID = 0;
         int packageCount, folderCount, bundleCount;
-        GUIStyle labelErrorStyle;
+        GUIStyle labelErrorStyle; 
         GUIStyle inDropDownStyle;
         GUIStyle inToggleStyle;
 

@@ -76,7 +76,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 MultiColumnHeaderState.OverwriteSerializedFields(packageTreeHeaderState, packageMCHS);
             packageTreeHeaderState = packageMCHS;
 
-            G.g.bundleTree = new BundleTree(bundleTreeViewState, new MultiColumnHeader(bundleTreeHeaderState));
+            G.g.bundleTree = new BundleTree(bundleTreeViewState, new MultiColumnHeader(bundleTreeHeaderState),
+                settingPanel.LoadBundlesFromConfig, settingPanel.BundleConfigPath);
             G.g.packageTree = new PackageTree(packageTreeViewState, new MultiColumnHeader(packageTreeHeaderState));
         }
 

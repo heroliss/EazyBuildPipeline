@@ -17,6 +17,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
         public Texture2D folderIcon, bundleIcon, bundleIcon_Scene;
         public class BundleTreeItemDictionary : SerializableDictionary<string, BundleTreeItem> { }
 		public BundleTreeItemDictionary bundleDic, folderDic; //key为相对路径，必须首尾无斜杠
+        public bool LoadBundlesFromConfig = true;
+        public string BundleConfigPath;
 
         int loadFileProgressCount;
 		List<BundleTreeItem> checkFailedItems;
@@ -48,7 +50,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
         }
 
-		public BundleTree(TreeViewState treeViewState, MultiColumnHeader multiColumnHeader)
+		public BundleTree(TreeViewState treeViewState, MultiColumnHeader multiColumnHeader,
+            bool loadBundlesFromConfig, string bundleConfigPath)
 				: base(treeViewState, multiColumnHeader)
 		{
 			InitStyles();
@@ -91,6 +94,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
 			folderDic = new BundleTreeItemDictionary();
 			checkFailedItems = new List<BundleTreeItem>();
 
+            LoadBundlesFromConfig = loadBundlesFromConfig;
+            BundleConfigPath = bundleConfigPath;
+
 			Reload();
 		}
 
@@ -116,15 +122,25 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
 		protected override TreeViewItem BuildRoot()
 		{
-			loadFileProgressCount = 0;
+			loadFileProgressCount = 0; 
 			checkFailedItems.Clear();
 			bundleDic.Clear();
 			folderDic.Clear();
 
-			string assetBundlesFolderPath = G.Module.ModuleConfig.BundleWorkFolderPath;
-			if (!Directory.Exists(assetBundlesFolderPath))
-			{
-				EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + assetBundlesFolderPath, "确定");
+            if (LoadBundlesFromConfig)
+            {
+                return BuildBundleTreeFromConfig();
+            }
+            else
+            {
+                return BuildBundleTreeFromFolder();
+            }
+		}
+
+        private TreeViewItem BuildBundleTreeFromConfig()
+        {
+            if (string.IsNullOrEmpty(BundleConfigPath))
+            {
                 BundleTreeItem root = new BundleTreeItem()
                 {
                     id = 0,
@@ -133,7 +149,99 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     isFolder = false,
                 };
                 return root;
-			}
+            }
+
+            BundleTreeItem rootFolderItem = new BundleTreeItem()
+            {
+                id = 0,
+                depth = -1,
+                displayName = "Root",
+                isFolder = true,
+                relativePath = "", //这里是相对路径的根
+                icon = folderIcon
+            };
+            AssetBundleBuild[] bundles = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(BundleConfigPath));
+            foreach (var bundleItem in bundles)
+            {
+                BundleTreeItem currentFolderItem = rootFolderItem;
+                BundleTreeItem folderItem;
+                string[] folders = bundleItem.assetBundleName.Split('/');
+                string bundleName = folders[folders.Length - 1];
+                for (int i = 0; i < folders.Length - 1; i++)
+                {
+                    string folderName = folders[i];
+                    folderItem = null;
+                    if (currentFolderItem.hasChildren)
+                    {
+                        folderItem = (BundleTreeItem)currentFolderItem.children.Find(x => x.displayName == folderName); //x.id <= 0 说明该项为文件夹
+                    }
+                    if (folderItem == null)
+                    {
+                        folderItem = new BundleTreeItem()
+                        {
+                            id = --directoryLastID,
+                            displayName = folderName,
+                            isFolder = true,
+                            relativePath = currentFolderItem.relativePath == "" ? folderName : currentFolderItem.relativePath + "/" + folderName,
+                            icon = folderIcon
+                        };
+                        currentFolderItem.AddChild(folderItem);
+                        folderDic.Add(folderItem.relativePath, folderItem);
+                    }
+                    currentFolderItem = folderItem;
+                }
+                var fileItem = new BundleTreeItem()
+                {
+                    isFolder = false,
+                    verify = true,
+                    path = null,
+                    relativePath = bundleItem.assetBundleName,
+                    bundlePath = null,
+                    displayName = bundleName,
+                    icon = bundleIcon,
+                    id = ++fileLastID,
+                    size = -1,
+                    style = labelBundleStyle
+                };
+                currentFolderItem.AddChild(fileItem);
+                bundleDic.Add(fileItem.relativePath, fileItem);
+            }
+            //加入虚拟的assetbundlemanifest
+            var assetbundlemanifest = new BundleTreeItem()
+            {
+                isFolder = false,
+                verify = true,
+                path = null,
+                relativePath = "assetbundlemanifest",
+                bundlePath = null,
+                displayName = "assetbundlemanifest",
+                icon = bundleIcon,
+                id = ++fileLastID,
+                size = -1,
+                style = labelBundleStyle
+            };
+            rootFolderItem.AddChild(assetbundlemanifest);
+            bundleDic.Add(assetbundlemanifest.relativePath, assetbundlemanifest);
+
+            SetupDepthsFromParentsAndChildren(rootFolderItem);
+            return rootFolderItem;
+        }
+
+        private TreeViewItem BuildBundleTreeFromFolder()
+        {
+            string assetBundlesFolderPath = G.Module.ModuleConfig.BundleWorkFolderPath;
+            if (!Directory.Exists(assetBundlesFolderPath))
+            {
+                EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + assetBundlesFolderPath, "确定");
+                BundleTreeItem root = new BundleTreeItem()
+                {
+                    id = 0,
+                    depth = -1,
+                    displayName = "Root",
+                    isFolder = false,
+                };
+                return root;
+            }
 
             string rootPath = G.Module.GetBundleFolderPath();
 
@@ -154,17 +262,18 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 EditorUtility.ClearProgressBar();
             }
 
-			SetupDepthsFromParentsAndChildren(rootFolderItem);
+            SetupDepthsFromParentsAndChildren(rootFolderItem);
 
-			//检查
-			if (checkFailedItems.Count > 0)
-			{
-				EditorUtility.DisplayDialog("提示", "有 " + checkFailedItems.Count +
-					" 个manifest文件缺少对应的bundle文件！\n（这些项已标记为警告色:黄色）", "确定");
-			}
-            LoadBundleInfo();
-			return rootFolderItem;
-		}
+            //检查
+            if (checkFailedItems.Count > 0)
+            {
+                EditorUtility.DisplayDialog("提示", "有 " + checkFailedItems.Count +
+                    " 个manifest文件缺少对应的bundle文件！\n（这些项已标记为警告色:黄色）", "确定");
+            }
+            LoadBundleInfo(); //加载信息文件
+            return rootFolderItem;
+        }
+
 		protected override IList<TreeViewItem> BuildRows(TreeViewItem root)
 		{
 			var rows = base.BuildRows(root);
@@ -278,11 +387,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
             try
             {
                 Versions = new VersionsStruct() { ResourceVersion = -1 };
-                BundleBuildMap = null;
+                //BundleBuildMap = null;
                 string versionPath = Path.Combine(G.Module.GetBundleInfoFolderPath(), "Versions.json");
-                string buildMapPath = Path.Combine(G.Module.GetBundleInfoFolderPath(), "BuildMap.json");
+                //string buildMapPath = Path.Combine(G.Module.GetBundleInfoFolderPath(), "BuildMap.json");
                 Versions = JsonConvert.DeserializeObject<VersionsStruct>(File.ReadAllText(versionPath));
-                BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
+                //BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
             }
             catch //(Exception e)
             {
@@ -333,9 +442,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
 					{
 						isFolder = false,
 						verify = true,
-						path = bundlePath,
+						path = filePath, //manifest文件路径
 						relativePath = bundlePath.Remove(0, G.Module.GetBundleFolderPathStrCount()).Replace('\\', '/'),
-						bundlePath = bundlePath,
+						bundlePath = bundlePath, //去掉manifest后缀的完整路径
 						displayName = bundleName,
 						icon = bundleIcon,
 						id = ++fileLastID,
@@ -463,6 +572,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
 		{
 			var item = (BundleTreeItem)FindItem(id, rootItem);
 			GenericMenu menu = new GenericMenu();
+            if (item.packageItems.Count > 0)
+			{
+				menu.AddItem(new GUIContent("Locate"), false, () => { Locate(item); });
+				menu.AddSeparator(null);
+			}
 			if (G.g.packageTree.Packages.Count > 0)
 			{
 				foreach (var package in G.g.packageTree.Packages)
@@ -480,13 +594,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
 				}
 				menu.AddSeparator(null);
 			}
-			if (item.packageItems.Count > 0)
-			{
-				menu.AddItem(new GUIContent("Locate"), false, () => { Locate(item); });
-				menu.AddSeparator(null);
-			}
-            menu.AddItem(new GUIContent("Reveal In Finder"), false, () => { EditorUtility.RevealInFinder(item.path + ".manifest"); });
-            menu.AddSeparator(null);
+            if (!LoadBundlesFromConfig)
+            {
+                menu.AddItem(new GUIContent("Reveal In Finder"), false, () => { EditorUtility.RevealInFinder(item.path); });
+                menu.AddSeparator(null);
+            }
             if (item.hasChildren)
 			{
 				menu.AddItem(new GUIContent("Recursive Expand"), false, () => { SetExpandedRecursiveForAllSelection(true); });

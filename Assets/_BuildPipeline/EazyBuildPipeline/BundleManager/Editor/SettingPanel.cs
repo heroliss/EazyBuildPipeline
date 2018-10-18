@@ -20,7 +20,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
         GUILayoutOption[] defaultOptions = { GUILayout.MaxHeight(25), GUILayout.MaxWidth(90) };
         GUILayoutOption[] dropdownOptions = { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
         GUILayoutOption[] dropdownOptions2 = { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
-        GUILayoutOption[] miniButtonOptions = { GUILayout.MaxWidth(24) };
         GUILayoutOption[] labelOptions = { GUILayout.MinWidth(40), GUILayout.MaxWidth(110) };
         GUILayoutOption[] inputOptions = { GUILayout.Width(40) };
 
@@ -66,8 +65,16 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 selectedCompressionIndex = selectedCompressionIndex_new;
                 return;
             }
-            if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions))
-            { ClickedApply(); return; }
+            if (G.Module.RootAvailable)
+            {
+                if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions))
+                { ClickedApply(); return; }
+            }
+            else
+            {
+                if (GUILayout.Button(new GUIContent("Check"), buttonStyle, defaultOptions))
+                { ClickedCheck(); return; }
+            }
             EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
         }
@@ -89,6 +96,13 @@ namespace EazyBuildPipeline.BundleManager.Editor
             return false;
         }
 
+        private void ClickedCheck()
+        {
+            if (G.Runner.Check(true))
+            {
+                G.Module.DisplayDialog("检查正常！");
+            }
+        }
         private void ClickedApply()
         {
             G.Module.ModuleStateConfig.Json.CurrentUserConfigName = Path.GetFileName(AssetBundleManagement2.AssetBundleModel.BuildMapPath) + ".json"; //TODO: 覆盖当前map文件名，BundleMaster的特殊处理

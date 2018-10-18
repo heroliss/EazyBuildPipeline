@@ -30,24 +30,13 @@ namespace EazyBuildPipeline.PackageManager
         {
         }
 
-        public override bool Check()
+        public override bool Check(bool onlyCheckConfig = false)
         {
-            if (!Module.RootAvailable)
-            {
-                Module.DisplayDialog(Module.StateConfigLoadFailedMessage);
-                return false;
-            }
             if (Module.UserConfig.Json.Packages.Count == 0)
             {
                 Module.DisplayDialog("该配置内没有Package");
                 return false;
             }
-            if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
-            {
-                Module.DisplayDialog("错误：Tags为空");
-                return false;
-            }
-            //检查配置
             if (string.IsNullOrEmpty(Module.UserConfig.Json.PackageMode))
             {
                 Module.DisplayDialog("请设置打包模式");
@@ -72,17 +61,20 @@ namespace EazyBuildPipeline.PackageManager
             switch (Module.UserConfig.Json.PackageMode)
             {
                 case "Addon":
-                    if (string.IsNullOrEmpty(Module.ModuleStateConfig.Json.CurrentAddonVersion))
+                    if (!onlyCheckConfig)
                     {
-                        Module.DisplayDialog("请设置Addon Version");
-                        return false;
-                    }
-                    char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
-                    int index = Module.ModuleStateConfig.Json.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
-                    if (index >= 0)
-                    {
-                        Module.DisplayDialog("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
-                        return false;
+                        if (string.IsNullOrEmpty(Module.ModuleStateConfig.Json.CurrentAddonVersion))
+                        {
+                            Module.DisplayDialog("请设置Addon Version");
+                            return false;
+                        }
+                        char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
+                        int index = Module.ModuleStateConfig.Json.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
+                        if (index >= 0)
+                        {
+                            Module.DisplayDialog("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
+                            return false;
+                        }
                     }
                     foreach (var package in Module.UserConfig.Json.Packages)
                     {
@@ -105,7 +97,16 @@ namespace EazyBuildPipeline.PackageManager
                     Module.DisplayDialog("不能识别模式：" + Module.UserConfig.Json.PackageMode);
                     return false;
             }
-            return true;
+
+            if (!onlyCheckConfig)
+            {
+                if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
+                {
+                    Module.DisplayDialog("错误：Tags为空");
+                    return false;
+                }
+            }
+            return base.Check(onlyCheckConfig);
         }
 
         protected override void RunProcess()

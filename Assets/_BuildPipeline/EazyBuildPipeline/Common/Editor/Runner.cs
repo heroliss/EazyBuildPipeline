@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using EazyBuildPipeline.Common.Configs;
 using UnityEditor;
 
@@ -7,7 +8,7 @@ namespace EazyBuildPipeline
     public interface IRunner
     {
         void Run(bool isPartOfPipeline = false);
-        bool Check();
+        bool Check(bool onlyCheckConfig = false);
     }
 
     public abstract class EBPRunner<TModule, TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass> : IRunner
@@ -51,7 +52,23 @@ namespace EazyBuildPipeline
                 throw e;
             }
         }
-        public abstract bool Check();
+        public virtual bool Check(bool onlyCheckConfig)
+        {
+            if (!onlyCheckConfig)
+            {
+                if (!Module.RootAvailable)
+                {
+                    Module.DisplayDialog(Module.StateConfigLoadFailedMessage);
+                    return false;
+                }
+                if (!Directory.Exists(Module.ModuleConfig.WorkPath)) //这个检查冗余，放在这里为保险起见
+                {
+                    Module.DisplayDialog("工作目录不存在：" + Module.ModuleConfig.WorkPath);
+                    return false;
+                }
+            }
+            return true;
+        }
         protected abstract void PreProcess();
         protected abstract void RunProcess();
         protected abstract void PostProcess();

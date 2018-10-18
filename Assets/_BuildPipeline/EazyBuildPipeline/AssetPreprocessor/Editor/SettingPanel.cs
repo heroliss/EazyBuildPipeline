@@ -88,12 +88,27 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions))
             { ClickedRevert(); return; }
-            if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions))
-            { ClickedApply(); return; }
+            if (G.Module.RootAvailable)
+            {
+                if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions))
+                { ClickedApply(); return; }
+            }
+            else
+            {
+                if (GUILayout.Button(new GUIContent("Check"), buttonStyle, buttonOptions))
+                { ClickedCheck(); return; }
+            }
             EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
         }
 
+        private void ClickedCheck()
+        {
+            if (G.Runner.Check(true))
+            {
+                G.Module.DisplayDialog("检查正常！");
+            }
+        }
         private void ClickedApply()
 		{
             if (!G.Runner.Check()) return;

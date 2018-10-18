@@ -13,6 +13,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         readonly int[] compressionLevelEnum = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         readonly string[] compressionLevelsEnumStr = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
         [SerializeField] int[] selectedTagIndexs;
+        [SerializeField] int selectedBundleConfigIndex;
         [SerializeField] int selectedUserConfigIndex;
         [SerializeField] int selectedPackageModeIndex;
         [SerializeField] int selectedLuaSourceIndex;
@@ -26,15 +27,16 @@ namespace EazyBuildPipeline.PackageManager.Editor
         GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(70) };
         GUILayoutOption[] shortPopupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(80) };
         GUILayoutOption[] miniPopupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
-        GUILayoutOption[] miniButtonOptions = new GUILayoutOption[] { GUILayout.MaxWidth(24) };
         GUILayoutOption[] configNamePopupOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(200) };
         GUILayoutOption[] labelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(100) };
         GUILayoutOption[] shortLabelOptions = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(30) };
         GUILayoutOption[] shortLabelOptions2 = new GUILayoutOption[] { GUILayout.MaxHeight(25), GUILayout.MaxWidth(40) };
 
         [SerializeField] string[] userConfigNames = { };
+        [SerializeField] string[] BundleConfigNames = { };
         [SerializeField] bool creatingNewConfig;
-        [SerializeField] bool loadBundlesFromConfig;
+        public bool LoadBundlesFromConfig = true;
+        public string BundleConfigPath; //仅用于序列化时存储数据再传给BundleTree
 
         private void InitStyles()
         {
@@ -71,7 +73,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUI.BeginDisabledGroup(loadBundlesFromConfig);
+            EditorGUI.BeginDisabledGroup(LoadBundlesFromConfig);
             if (ShowTagsDropdown()) return;
             EditorGUI.EndDisabledGroup();
             GUILayout.FlexibleSpace();
@@ -96,9 +98,16 @@ namespace EazyBuildPipeline.PackageManager.Editor
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.BeginHorizontal();
-            loadBundlesFromConfig = EditorGUILayout.Toggle(GUIContent.none, loadBundlesFromConfig, GUILayout.Width(16));
-            EditorGUI.BeginDisabledGroup(!loadBundlesFromConfig);
-            EditorGUILayout.Popup(0, new[] { "aaaaaaaaaaaaa", "bbb" }, dropdownStyle, configNamePopupOptions);
+            bool result = EditorGUILayout.Toggle(GUIContent.none, LoadBundlesFromConfig, GUILayout.Width(16));
+            if (result != LoadBundlesFromConfig)
+            {
+                LoadBundlesFromConfig = result;
+                G.g.bundleTree.LoadBundlesFromConfig = result;
+                OnChangeBundles();
+                return;
+            }
+            EditorGUI.BeginDisabledGroup(!LoadBundlesFromConfig);
+            if (ShowBundleConfigsDropdown()) return;
             GUILayout.FlexibleSpace();
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.LabelField("Mode:", labelStyle, shortLabelOptions2);
@@ -134,8 +143,16 @@ namespace EazyBuildPipeline.PackageManager.Editor
             GUILayout.Space(20);
             if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions))
             { ClickedRevert(); return; }
-            if (GUILayout.Button(new GUIContent("Build"), buttonStyle, buttonOptions))
-            { ClickedApply(); return; }
+            if (G.Module.RootAvailable && !LoadBundlesFromConfig)
+            {
+                if (GUILayout.Button(new GUIContent("Build"), buttonStyle, buttonOptions))
+                { ClickedApply(); return; }
+            }
+            else
+            {
+                if (GUILayout.Button(new GUIContent("Check"), buttonStyle, buttonOptions))
+                { ClickedCheck(); return; }
+            }
             EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndVertical();
@@ -174,7 +191,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     selectedTagIndexs[i] = selectedIndexs_new[i];
                     G.Module.ModuleStateConfig.Json.CurrentTag[i] = tagType[selectedTagIndexs[i]];
-                    OnChangeTags();
+                    OnChangeBundles();
                     return true;
                 }
                 i++;
@@ -182,7 +199,21 @@ namespace EazyBuildPipeline.PackageManager.Editor
             return false;
         }
 
-        private void OnChangeTags()
+        private bool ShowBundleConfigsDropdown()
+        {
+            int index_new = EditorGUILayout.Popup(selectedBundleConfigIndex, BundleConfigNames, dropdownStyle, configNamePopupOptions);
+            if (selectedBundleConfigIndex != index_new)
+            {
+                selectedBundleConfigIndex = index_new;
+                G.g.bundleTree.BundleConfigPath = BundleConfigPath =
+                     Path.Combine(CommonModule.CommonConfig.UserConfigsFolderPath_BundleManager, BundleConfigNames[index_new] + ".json");
+                OnChangeBundles();
+                return true;
+            }
+            return false;
+        }
+
+        private void OnChangeBundles()
         {
             G.g.bundleTree.Reload();
             G.g.packageTree.ReConnectWithBundleTree();
@@ -207,6 +238,15 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 path = G.Module.ModuleConfig.UserConfigsFolderPath;
             }
             EditorUtility.RevealInFinder(path);
+        }
+
+        private void ClickedCheck()
+        {
+            G.Module.UserConfig.Json.Packages = GetPackageMap(); //从配置现场覆盖当前map
+            if (G.Runner.Check(true) && CheckAllPackageItem())
+            {
+                G.Module.DisplayDialog("检查正常！");
+            }
         }
 
         private void ClickedApply()
@@ -282,22 +322,21 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 if (omittedBundleList.Count != 0)
                 {
-                    if (!EditorUtility.DisplayDialog("提示", "发现" + omittedBundleList.Count + "个遗漏的Bundle，是否继续？", "继续", "返回"))
+                    if (EditorUtility.DisplayDialog("提示", "发现" + omittedBundleList.Count + "个遗漏的Bundle！", "返回查看", "忽略"))
                     { G.g.bundleTree.FrameAndSelectItems(omittedBundleList); return false; }
 
                 }
             }
             if (repeatedBundleList.Count != 0)
             {
-                if (!EditorUtility.DisplayDialog("提示", "发现" + repeatedBundleList.Count + "个重复打包的Bundle，是否继续？", "继续", "返回"))
+                if (EditorUtility.DisplayDialog("提示", "发现" + repeatedBundleList.Count + "个重复打包的Bundle！", "返回查看", "忽略"))
                 { G.g.bundleTree.FrameAndSelectItems(repeatedBundleList); return false; }
             }
 
             //空项提示
             if (emptyItems.Count != 0)
             {
-                if (!EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空文件夹或包，是否继续？",
-                    "继续", "返回"))
+                if (EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空目录或包！", "返回查看", "忽略"))
                 {
                     G.g.packageTree.FrameAndSelectItems(emptyItems);
                     return false;
@@ -348,7 +387,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             G.Module = newModule;
             G.Runner.Module = newModule;
             InitSelectedIndex();
-            LoadUserConfigList();
+            LoadConfigsList();
             ConfigToIndex();
             EBPUtility.HandleApplyingWarning(G.Module);
             OnChangeRootPath();
@@ -363,6 +402,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void InitSelectedIndex()
         {
+            selectedBundleConfigIndex = -1;
             selectedUserConfigIndex = -1;
             selectedLuaSourceIndex = -1;
             selectedPackageModeIndex = -1;
@@ -378,14 +418,15 @@ namespace EazyBuildPipeline.PackageManager.Editor
             CommonModule.LoadCommonConfig();
             G.Module.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath);
             InitSelectedIndex();
-            LoadUserConfigList();
+            LoadConfigsList();
 
             ConfigToIndex();
             EBPUtility.HandleApplyingWarning(G.Module);
         }
 
-        private void LoadUserConfigList()
+        private void LoadConfigsList()
         {
+            BundleConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(CommonModule.CommonConfig.UserConfigsFolderPath_BundleManager);
             userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.ModuleConfig.UserConfigsFolderPath);
         }
 

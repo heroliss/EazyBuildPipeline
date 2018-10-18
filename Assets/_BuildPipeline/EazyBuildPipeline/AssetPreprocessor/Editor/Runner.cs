@@ -120,18 +120,8 @@ namespace EazyBuildPipeline.AssetPreprocessor
             }
         }
 
-        public override bool Check()
+        public override bool Check(bool onlyCheckConfig = false)
         {
-            if (!Module.RootAvailable)
-            {
-                Module.DisplayDialog(Module.StateConfigLoadFailedMessage);
-                return false;
-            }
-            if (!Directory.Exists(Module.ModuleConfig.PreStoredAssetsFolderPath))
-            {
-                Module.DisplayDialog("不能应用配置，找不到目录:" + Module.ModuleConfig.PreStoredAssetsFolderPath);
-                return false;
-            }
             if (Module.UserConfig.Json.Tags.Length == 0)
             {
                 Module.DisplayDialog("错误：Tag不能为为空！");
@@ -148,12 +138,21 @@ namespace EazyBuildPipeline.AssetPreprocessor
                 Module.DisplayDialog("没有此平台：" + targetStr);
                 return false;
             }
-            if (EditorUserBuildSettings.activeBuildTarget != target)
+
+            if (!onlyCheckConfig)
             {
-                Module.DisplayDialog(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
-                return false;
+                if (EditorUserBuildSettings.activeBuildTarget != target)
+                {
+                    Module.DisplayDialog(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
+                    return false;
+                }
+                if (!Directory.Exists(Module.ModuleConfig.PreStoredAssetsFolderPath))
+                {
+                    Module.DisplayDialog("不能应用配置，找不到目录:" + Module.ModuleConfig.PreStoredAssetsFolderPath);
+                    return false;
+                }
             }
-            return true;
+            return base.Check(onlyCheckConfig);
         }
 
         protected override void RunProcess()

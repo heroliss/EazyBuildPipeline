@@ -17,41 +17,34 @@ namespace EazyBuildPipeline.PlayerBuilder
         public Runner(Module module) : base(module)
         {
         }
-        public override bool Check()
+        public override bool Check(bool onlyCheckConfig = false)
         {
-            if (!Module.RootAvailable)
+            if (!onlyCheckConfig)
             {
-                Module.DisplayDialog(Module.StateConfigLoadFailedMessage);
-                return false;
+                if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
+                {
+                    Module.DisplayDialog("错误：Assets Tags为空");
+                    return false;
+                }
+                var target = BuildTarget.NoTarget;
+                string targetStr = Module.ModuleStateConfig.Json.CurrentTag[0];
+                try
+                {
+                    target = (BuildTarget)Enum.Parse(typeof(BuildTarget), targetStr, true);
+                }
+                catch
+                {
+                    Module.DisplayDialog("没有此平台：" + targetStr);
+                    return false;
+                }
+
+                if (EditorUserBuildSettings.activeBuildTarget != target)
+                {
+                    Module.DisplayDialog(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
+                    return false;
+                }
             }
-            if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
-            {
-                Module.DisplayDialog("错误：Assets Tags为空");
-                return false;
-            }
-            //验证根目录
-            if (!Directory.Exists(Module.ModuleConfig.WorkPath))
-            {
-                Module.DisplayDialog("目录不存在：" + Module.ModuleConfig.WorkPath);
-                return false;
-            }
-            var target = BuildTarget.NoTarget;
-            string targetStr = Module.ModuleStateConfig.Json.CurrentTag[0];
-            try
-            {
-                target = (BuildTarget)Enum.Parse(typeof(BuildTarget),targetStr, true);
-            }
-            catch
-            {
-                Module.DisplayDialog("没有此平台：" + targetStr);
-                return false;
-            }
-            if (EditorUserBuildSettings.activeBuildTarget != target)
-            {
-                Module.DisplayDialog(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
-                return false;
-            }
-            return true;
+            return base.Check(onlyCheckConfig);
         }
 
         protected override void RunProcess()

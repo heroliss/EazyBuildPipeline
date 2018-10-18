@@ -456,7 +456,14 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button(new GUIContent("Run Pipeline"))) { ClickedRunPipeline(); return; }
+            if (PlayerBuilder.G.Module.RootAvailable)
+            {
+                if (GUILayout.Button(new GUIContent("Run Pipeline"))) { ClickedRunPipeline(); return; }
+            }
+            else
+            {
+                if (GUILayout.Button(new GUIContent("Check", "检查所有勾选的模块配置"))) { ClickedCheckAll(); return; }
+            }
             EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
 
@@ -522,6 +529,19 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             PlayerBuilder.G.Runner.FetchPlayerSettings(); 
             PlayerBuilder.G.Module.UserConfig.InitAllRepeatList();
             PlayerBuilder.G.Module.IsDirty = true;
+        }
+
+        private void ClickedCheckAll()
+        {
+            foreach (var item in G.Module.Modules)
+            {
+                if (item.Module.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
+                {
+                    if (!item.Runner.Check(true))
+                        return;
+                }
+            }
+            G.Module.DisplayDialog("所有勾选的模块检查正常！");
         }
         private void ClickedApply()
         {
