@@ -12,7 +12,7 @@ namespace EazyBuildPipeline
         /// <summary>
         /// 查找字符串在数组中的索引，若没有则返回-1
         /// </summary>
-        public static int IndexOf(this string[] array, string s)
+        public static int IndexOf<T>(this T[] array, T s)
         {
             if (array == null || s == null)
             {
@@ -20,7 +20,7 @@ namespace EazyBuildPipeline
             }
             for (int i = 0; i < array.Length; i++)
             {
-                if (s == array[i])
+                if (s.Equals(array[i]))
                 {
                     return i;
                 }

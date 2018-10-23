@@ -185,10 +185,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EBPEditorGUILayout.TextField("Product Name", ref ps.General.ProductName, OnValueChanged);
             EditorGUILayout.Separator();
 
-            EditorGUILayout.LabelField("Download Configs & Language", EditorStyles.boldLabel);
-            ps.General.DownloadConfigType = (Configs.UserConfig.PlayerSettings.GeneralSettings.DownloadConfigTypeEnum)EBPEditorGUILayout.EnumPopup("Configs", ps.General.DownloadConfigType, OnValueChanged);
-            ps.General.DownloadLanguageType = (WowGamePlay.LanguageType)EBPEditorGUILayout.EnumPopup("Language", ps.General.DownloadLanguageType, OnValueChanged);
-            EditorGUILayout.Separator();
+            //EditorGUILayout.LabelField("Download Configs & Language", EditorStyles.boldLabel);
+            //ps.General.DownloadConfigType = (Configs.UserConfig.PlayerSettings.GeneralSettings.DownloadConfigTypeEnum)EBPEditorGUILayout.EnumPopup("Configs", ps.General.DownloadConfigType, OnValueChanged);
+            //ps.General.DownloadLanguageType = (WowGamePlay.LanguageType)EBPEditorGUILayout.EnumPopup("Language", ps.General.DownloadLanguageType, OnValueChanged);
+            //EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Build Settings", EditorStyles.boldLabel);
             G.Module.UserConfig.Json.BuildSettings.CompressionMethod =(Configs.UserConfig.BuildSettings.CompressionMethodEnum)EBPEditorGUILayout.EnumPopup("Compression Method", G.Module.UserConfig.Json.BuildSettings.CompressionMethod, OnValueChanged);

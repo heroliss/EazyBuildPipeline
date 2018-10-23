@@ -1,15 +1,15 @@
 ﻿using System;
 using UnityEditor;
 
-namespace EazyBuildPipeline.PipelineTotalControl
+namespace EazyBuildPipeline.SVNUpdate
 {
-    public partial class SVNManager
+    public partial class Runner
     {
-        void PreProcess()
+        protected override void PreProcess()
         {
         }
 
-        void PostProcess()
+        protected override void PostProcess()
         {
             //后处理过程：重新创建Wrap和Lua文件
             EditorUtility.DisplayProgressBar("Clear and Generate Wrap Files...", "", 1);

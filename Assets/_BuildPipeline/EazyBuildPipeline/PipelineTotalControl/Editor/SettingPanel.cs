@@ -12,7 +12,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
     public class SettingPanel
     {
         enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer, Finish }
-        [SerializeField] SVNManager SVNManager;
         [SerializeField] string SVNMessage;
         [SerializeField] Step currentStep = Step.None;
         [SerializeField] double startTime;
@@ -57,7 +56,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         public void Awake()
         {
-            SVNManager = new SVNManager { EnableCheckDiff = G.Module.ModuleConfig.Json.EnableCheckDiff };
             LoadAllConfigs();
             SetIcons();
             InitStyles();
@@ -74,7 +72,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void RunSVNCheckProcess()
         {
             SVNMessage = "正在获取SVN信息...";
-            SVNManager.RunCheckProcess();
+            G.Module.SVNUpdateRunner.RunCheckProcess();
         }
         private void Action_AssetPreprocessor_OnChangeCurrentConfig()
         {
@@ -90,37 +88,37 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void SetupActions()
         {
-            SVNManager.InfoExitedAction += (success) =>
+            G.Module.SVNUpdateRunner.InfoExitedAction += (success) =>
             {
                 SVNMessage = success ? "正在检查本地修改..." : "SVN不可用！";
-                if (!G.Module.ModuleConfig.Json.EnableCheckDiff)
-                    SVNManager.DiffExitedAction(true);
+                if (!G.Module.SVNUpdateModule.ModuleConfig.Json.EnableCheckDiff)
+                    G.Module.SVNUpdateRunner.DiffExitedAction(true);
                 needRepaint = true; //由于非主线程中不能使用 G.g.MainWindow.Repaint(); 所以只能出此下策，用变量标记需要刷新，然后在Update中刷新界面
             };
-            SVNManager.DiffExitedAction += (success) =>
+            G.Module.SVNUpdateRunner.DiffExitedAction += (success) =>
             {
                 if (success)
                 {
-                    switch (SVNManager.VersionState)
+                    switch (G.Module.SVNUpdateRunner.VersionState)
                     {
-                        case SVNManager.VersionStateEnum.Unknow:
+                        case SVNUpdate.Runner.VersionStateEnum.Unknow:
                             SVNMessage = "SVN不可用!";
                             break;
-                        case SVNManager.VersionStateEnum.Obsolete:
+                        case SVNUpdate.Runner.VersionStateEnum.Obsolete:
                             SVNMessage = "需要更新!";
                             break;
-                        case SVNManager.VersionStateEnum.Latest:
+                        case SVNUpdate.Runner.VersionStateEnum.Latest:
                             SVNMessage = "已最新";
                             break;
                     }
-                    if (G.Module.ModuleConfig.Json.EnableCheckDiff)
+                    if (G.Module.SVNUpdateModule.ModuleConfig.Json.EnableCheckDiff)
                     {
-                        switch (SVNManager.LocalChangeState)
+                        switch (G.Module.SVNUpdateRunner.LocalChangeState)
                         {
-                            case SVNManager.ChangeStateEnum.Unknow:
+                            case SVNUpdate.Runner.ChangeStateEnum.Unknow:
                                 SVNMessage = "检查本地修改失败！";
                                 break;
-                            case SVNManager.ChangeStateEnum.Changed:
+                            case SVNUpdate.Runner.ChangeStateEnum.Changed:
                                 SVNMessage = "本地文件有改动！";
                                 break;
                         }
@@ -174,7 +172,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void LoadAllConfigs()
         {
             CommonModule.LoadCommonConfig();
-            G.Module.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath);
+            G.Module.LoadAllModules(CommonModule.CommonConfig.Json.PipelineRootPath);
             InitSelectedIndex();
             LoadAllModulesUserConfigList();
             ConfigToIndex();
@@ -275,8 +273,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //SVN Update
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.SVNUpdate, false, SVNManager.errorMessage);
-            SVNManager.IsPartOfPipeline = GUILayout.Toggle(SVNManager.IsPartOfPipeline, "SVN Update", GUILayout.Width(200)) && SVNManager.Available;
+            FrontIndicator(Step.SVNUpdate, false, G.Module.SVNUpdateRunner.errorMessage);
+            G.Module.SVNUpdateRunner.IsPartOfPipeline = GUILayout.Toggle(G.Module.SVNUpdateRunner.IsPartOfPipeline, "SVN Update", GUILayout.Width(200)) && G.Module.SVNUpdateRunner.Available;
             SVNInfo();
             if (GUILayout.Button(refreshIcon, miniButtonOptions))
             {
@@ -473,33 +471,33 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void SVNInfo()
         {
             GUILayout.BeginHorizontal(GUILayout.Width(155));
-            if (SVNManager.Available)
+            if (G.Module.SVNUpdateRunner.Available)
             {
-                switch (SVNManager.VersionState)
+                switch (G.Module.SVNUpdateRunner.VersionState)
                 {
-                    case SVNManager.VersionStateEnum.Unknow:
-                        GUILayout.Label(new GUIContent(unknowIcon, "版本信息未知！\n错误信息:\n" + SVNManager.InfoErrorMessage), iconOptions);
+                    case SVNUpdate.Runner.VersionStateEnum.Unknow:
+                        GUILayout.Label(new GUIContent(unknowIcon, "版本信息未知！\n错误信息:\n" + G.Module.SVNUpdateRunner.InfoErrorMessage), iconOptions);
                         break;
-                    case SVNManager.VersionStateEnum.Obsolete:
-                        GUILayout.Label(new GUIContent(needUpdateIcon, "版本已过时，需要更新！\n详细信息:\n" + SVNManager.SVNInfo), iconOptions);
+                    case SVNUpdate.Runner.VersionStateEnum.Obsolete:
+                        GUILayout.Label(new GUIContent(needUpdateIcon, "版本已过时，需要更新！\n详细信息:\n" + G.Module.SVNUpdateRunner.SVNInfo), iconOptions);
                         break;
-                    case SVNManager.VersionStateEnum.Latest:
-                        GUILayout.Label(new GUIContent(okIcon, "版本已最新！\n详细信息:\n" + SVNManager.SVNInfo), iconOptions);
+                    case SVNUpdate.Runner.VersionStateEnum.Latest:
+                        GUILayout.Label(new GUIContent(okIcon, "版本已最新！\n详细信息:\n" + G.Module.SVNUpdateRunner.SVNInfo), iconOptions);
                         break;
                     default:
                         break;
                 }
-                if (G.Module.ModuleConfig.Json.EnableCheckDiff)
+                if (G.Module.SVNUpdateModule.ModuleConfig.Json.EnableCheckDiff)
                 {
-                    switch (SVNManager.LocalChangeState)
+                    switch (G.Module.SVNUpdateRunner.LocalChangeState)
                     {
-                        case SVNManager.ChangeStateEnum.Unknow:
-                            GUILayout.Label(new GUIContent(unknowIcon, "本地文件改动情况未知！\n错误信息:\n" + SVNManager.DiffErrorMessage), iconOptions);
+                        case SVNUpdate.Runner.ChangeStateEnum.Unknow:
+                            GUILayout.Label(new GUIContent(unknowIcon, "本地文件改动情况未知！\n错误信息:\n" + G.Module.SVNUpdateRunner.DiffErrorMessage), iconOptions);
                             break;
-                        case SVNManager.ChangeStateEnum.Changed:
-                            GUILayout.Label(new GUIContent(changeIcon, "本地文件有改动！\n有改动的文件：\n" + SVNManager.ChangedFiles), iconOptions);
+                        case SVNUpdate.Runner.ChangeStateEnum.Changed:
+                            GUILayout.Label(new GUIContent(changeIcon, "本地文件有改动！\n有改动的文件：\n" + G.Module.SVNUpdateRunner.ChangedFiles), iconOptions);
                             break;
-                        case SVNManager.ChangeStateEnum.NoChange:
+                        case SVNUpdate.Runner.ChangeStateEnum.NoChange:
                             GUILayout.Label(new GUIContent(okIcon, "本地文件无改动"), iconOptions);
                             break;
                         default:
@@ -509,7 +507,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             else
             {
-                GUILayout.Label(new GUIContent(disableIcon, "SVN不可用！\n错误信息:\n" + SVNManager.InfoErrorMessage), iconOptions);
+                GUILayout.Label(new GUIContent(disableIcon, "SVN不可用！\n错误信息:\n" + G.Module.SVNUpdateRunner.InfoErrorMessage), iconOptions);
             }
             GUILayout.Label(SVNMessage);
             GUILayout.EndHorizontal();
@@ -533,11 +531,11 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void ClickedCheckAll()
         {
-            foreach (var item in G.Module.Modules)
+            foreach (var runner in G.Module.Runners)
             {
-                if (item.Module.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
+                if (runner.BaseModule.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
                 {
-                    if (!item.Runner.Check(true))
+                    if (!runner.Check(true))
                         return;
                 }
             }
@@ -563,36 +561,36 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private bool ReloadAllUserConfigsAndCheck()
         {
-            foreach (var item in G.Module.Modules)
+            foreach (var runner in G.Module.Runners)
             {
-                if (item.Module.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
+                if (runner.BaseModule.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
                 { 
                     //重新加载用户配置
-                    if (item.Module != G.Module.PlayerBuilderModule)//PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载用户配置
+                    if (runner.BaseModule.ModuleName != G.Module.PlayerBuilderModule.ModuleName)//PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载用户配置
                     {
-                        if (!item.Module.LoadUserConfig()) return false;
+                        if (!runner.BaseModule.LoadUserConfig()) return false;
                     }
                     //重设CurrentTag
-                    ResetCurrentTag(item);
+                    ResetCurrentTag(runner.BaseModule);
                     //检查配置
-                    if (!item.Runner.Check()) return false;
+                    if (!runner.Check()) return false;
                 }
             }
             return true;
         }
 
-        private void ResetCurrentTag(Module.ModuleItem item)
+        private void ResetCurrentTag(BaseModule baseModule)
         {
             //重设后续步骤的Tag为
             //将被AssetPreprocessor改变的Tag
             if (G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline)
             {
-                item.Module.BaseModuleStateConfig.BaseJson.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
+                baseModule.BaseModuleStateConfig.BaseJson.CurrentTag = G.Module.AssetPreprocessorModule.UserConfig.Json.Tags.ToArray();
             }
             //当前Assets的Tag
             else
             {
-                item.Module.BaseModuleStateConfig.BaseJson.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
+                baseModule.BaseModuleStateConfig.BaseJson.CurrentTag = CommonModule.CommonConfig.Json.CurrentAssetTag.ToArray();
             }
         }
 
@@ -608,9 +606,9 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                         currentStep = Step.SVNUpdate;
                         break;
                     case Step.SVNUpdate:
-                        if (SVNManager.IsPartOfPipeline)
+                        if (G.Module.SVNUpdateRunner.IsPartOfPipeline)
                         {
-                            SVNManager.Run();
+                            G.Module.SVNUpdateRunner.Run();
                         }
                         currentStep = Step.PreprocessAssets;
                         break;

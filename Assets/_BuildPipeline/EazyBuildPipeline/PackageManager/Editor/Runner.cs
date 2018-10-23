@@ -30,31 +30,31 @@ namespace EazyBuildPipeline.PackageManager
         {
         }
 
-        public override bool Check(bool onlyCheckConfig = false)
+        protected override bool CheckProcess(bool onlyCheckConfig = false)
         {
             if (Module.UserConfig.Json.Packages.Count == 0)
             {
-                Module.DisplayDialog("该配置内没有Package");
+                DisplayDialogOrThrowCheckFailedException("该配置内没有Package");
                 return false;
             }
             if (string.IsNullOrEmpty(Module.UserConfig.Json.PackageMode))
             {
-                Module.DisplayDialog("请设置打包模式");
+                DisplayDialogOrThrowCheckFailedException("请设置打包模式");
                 return false;
             }
             if (string.IsNullOrEmpty(Module.UserConfig.Json.LuaSource))
             {
-                Module.DisplayDialog("请设置Lua源");
+                DisplayDialogOrThrowCheckFailedException("请设置Lua源");
                 return false;
             }
             if (Module.UserConfig.Json.CompressionLevel == -1)
             {
-                Module.DisplayDialog("请设置压缩等级");
+                DisplayDialogOrThrowCheckFailedException("请设置压缩等级");
                 return false;
             }
             if (G.LuaSourceEnum.IndexOf(Module.UserConfig.Json.LuaSource) == -1)
             {
-                Module.DisplayDialog("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
+                DisplayDialogOrThrowCheckFailedException("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
                 return false;
             }
 
@@ -65,14 +65,14 @@ namespace EazyBuildPipeline.PackageManager
                     {
                         if (string.IsNullOrEmpty(Module.ModuleStateConfig.Json.CurrentAddonVersion))
                         {
-                            Module.DisplayDialog("请设置Addon Version");
+                            DisplayDialogOrThrowCheckFailedException("请设置Addon Version");
                             return false;
                         }
                         char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
                         int index = Module.ModuleStateConfig.Json.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
                         if (index >= 0)
                         {
-                            Module.DisplayDialog("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
+                            DisplayDialogOrThrowCheckFailedException("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
                             return false;
                         }
                     }
@@ -80,12 +80,12 @@ namespace EazyBuildPipeline.PackageManager
                     {
                         if (string.IsNullOrEmpty(package.Necessery))
                         {
-                            Module.DisplayDialog("请设置Necessery");
+                            DisplayDialogOrThrowCheckFailedException("请设置Necessery");
                             return false;
                         }
                         if (string.IsNullOrEmpty(package.DeploymentLocation))
                         {
-                            Module.DisplayDialog("请设置Location");
+                            DisplayDialogOrThrowCheckFailedException("请设置Location");
                             return false;
                         }
                         //不能识别Location和Necessery的情况不可能发生，因为该值由枚举中获得
@@ -94,7 +94,7 @@ namespace EazyBuildPipeline.PackageManager
                 case "Patch":
                     break;
                 default:
-                    Module.DisplayDialog("不能识别模式：" + Module.UserConfig.Json.PackageMode);
+                    DisplayDialogOrThrowCheckFailedException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
                     return false;
             }
 
@@ -102,11 +102,11 @@ namespace EazyBuildPipeline.PackageManager
             {
                 if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
                 {
-                    Module.DisplayDialog("错误：Tags为空");
+                    DisplayDialogOrThrowCheckFailedException("错误：Tags为空");
                     return false;
                 }
             }
-            return base.Check(onlyCheckConfig);
+            return base.CheckProcess(onlyCheckConfig);
         }
 
         protected override void RunProcess()

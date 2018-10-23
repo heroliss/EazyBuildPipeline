@@ -3,14 +3,37 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace EazyBuildPipeline.Common.Configs
 {
     [Serializable]
     public class CommonConfig : EBPConfig<CommonConfig.JsonClass>, ISerializationCallbackReceiver
     {
+        public List<string> Args;
+        public List<string> Args_lower;
+        public bool IsBatchMode;
+        public string LogPath;
         public CommonConfig()
         {
+            //获取参数
+            Args = Environment.GetCommandLineArgs().ToList();
+            Args_lower = new List<string>(Args.Count);
+            for (int i = 0; i < Args.Count; i++)
+            {
+                Args_lower.Add(Args[i].ToLower());
+            }
+            if (Args_lower.Contains("-batchmode")) //HACK: Application.isBatchMode(for Unity 2018.3+)
+            {
+                IsBatchMode = true;
+            }
+            //这里不能使用Utility.GetArgValue("LogPath")，因为CommonConfig还没有构建完，任为null
+            int logPathIndex = Args_lower.IndexOf("--logpath") + 1; 
+            if (logPathIndex < Args.Count)
+            {
+                LogPath = Args[logPathIndex];
+            }
+
             Json.TagEnum = new Dictionary<string, string[]> //这里不能在JsonClass里初始化，因为这个东西需要自定义序列化方法来处理
                 { { "Example Group 1:",new []{"example tag1","example tag2","example tag3"} },
                   { "Example Group 2:",new []{"example tag a","example tag b"} } };

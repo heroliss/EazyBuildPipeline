@@ -37,13 +37,16 @@ namespace EazyBuildPipeline.PlayerBuilder
         public override string ModuleName { get { return "PlayerBuilder"; } }
         public UserConfig UserConfig = new UserConfig();
 
-        public override bool LoadAllConfigs(string pipelineRootPath)
+        public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
         {
             bool success =
                 LoadModuleConfig(pipelineRootPath);
             if (LoadModuleStateConfig(pipelineRootPath))
             {
-                LoadUserConfig();
+                if (!NOTLoadUserConfig)
+                {
+                    LoadUserConfig();
+                }
             }
             return success;
         }

@@ -60,5 +60,63 @@ namespace EazyBuildPipeline
                 }
             }
         }
+
+        //获取命令行参数
+        public static string GetArgValue(string argName)
+        {
+            int index = CommonModule.CommonConfig.Args_lower.IndexOf("--" + argName.ToLower());
+            if (index < 0 || index == CommonModule.CommonConfig.Args.Count - 1)
+            {
+                return null;
+            }
+            return CommonModule.CommonConfig.Args[index + 1];
+        }
+        public static string GetArgValueLower(string argName)
+        {
+            int index = CommonModule.CommonConfig.Args_lower.IndexOf("--" + argName.ToLower());
+            if (index < 0 || index == CommonModule.CommonConfig.Args.Count - 1)
+            {
+                return null;
+            }
+            return CommonModule.CommonConfig.Args_lower[index + 1];
+        }
+        public static List<string> GetArgValues(string argName)
+        {
+            List<string> values = new List<string>();
+            int i = 0;
+            while (true)
+            {
+                i = CommonModule.CommonConfig.Args_lower.IndexOf("--" + argName.ToLower(), i);
+                if (i < 0)
+                {
+                    break;
+                }
+                else
+                {
+                    i++;
+                    values.Add(CommonModule.CommonConfig.Args[i]);
+                }
+            }
+            return values;
+        }
+        public static List<string> GetArgValuesLower(string argName)
+        {
+            List<string> values = new List<string>();
+            int i = 0;
+            while (true)
+            {
+                i = CommonModule.CommonConfig.Args_lower.IndexOf("--" + argName.ToLower(), i);
+                if (i < 0)
+                {
+                    break;
+                }
+                else
+                {
+                    i++;
+                    values.Add(CommonModule.CommonConfig.Args_lower[i]);
+                }
+            }
+            return values;
+        }
     }
 }

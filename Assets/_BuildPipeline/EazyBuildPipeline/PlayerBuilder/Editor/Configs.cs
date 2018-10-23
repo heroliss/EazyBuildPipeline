@@ -112,8 +112,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public string ProductName;
 
                 //Extension
-                [JsonConverter(typeof(StringEnumConverter))] public DownloadConfigTypeEnum DownloadConfigType;
-                [JsonConverter(typeof(StringEnumConverter))] public WowGamePlay.LanguageType DownloadLanguageType;
+                //[JsonConverter(typeof(StringEnumConverter))] public DownloadConfigTypeEnum DownloadConfigType;
+                //[JsonConverter(typeof(StringEnumConverter))] public WowGamePlay.LanguageType DownloadLanguageType;
+                
                 //For BuglyInit
                 public string BuglyAppID;
                 public string BuglyAppKey;

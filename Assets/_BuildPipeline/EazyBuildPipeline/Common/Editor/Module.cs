@@ -6,10 +6,8 @@ using EazyBuildPipeline.Common.Configs;
 
 namespace EazyBuildPipeline
 {
-    [Serializable]
     public static class CommonModule
     {
-        [SerializeField]
         public static CommonConfig CommonConfig = new CommonConfig();
         public static string CommonConfigSearchText { get { return "EazyBuildPipeline CommonConfig"; } }
         public static Texture2D GetIcon(string iconFileName)
@@ -31,6 +29,10 @@ namespace EazyBuildPipeline
             }
             catch (Exception e)
             {
+                if (CommonConfig.IsBatchMode)
+                {
+                    throw new EBPException("加载本地公共配置文件时发生错误：" + e.ToString());
+                }
                 EditorUtility.DisplayDialog("EazyBuildPipeline", "加载本地公共配置文件时发生错误：" + e.Message
                                             + "\n加载路径：" + CommonConfig.JsonPath
                                             + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + new CommonConfig(), "确定");
@@ -43,6 +45,10 @@ namespace EazyBuildPipeline
             string userConfigsRootPath = CommonConfig.Json.UserConfigsRootPath;
             if(string.IsNullOrEmpty(userConfigsRootPath) || !Directory.Exists(userConfigsRootPath))
             {
+                if (CommonConfig.IsBatchMode)
+                {
+                    throw new EBPException("用户配置根目录不存在：" + userConfigsRootPath);
+                }
                 EditorUtility.DisplayDialog("Load UserConfig", "用户配置根目录不存在：" + userConfigsRootPath + "\n\n请设置根目录来存放用户配置文件", "设置");
                 string newPath = EditorUtility.OpenFolderPanel("Open UserConfigs Root", userConfigsRootPath, null);
                 if (!string.IsNullOrEmpty(newPath))
@@ -65,15 +71,53 @@ namespace EazyBuildPipeline
 
         public void DisplayDialog(string text)
         {
-            EditorUtility.DisplayDialog(ModuleName, text, "确定");
+            if (CommonModule.CommonConfig.IsBatchMode)
+            {
+                StartLog();
+                Log(text);
+                EndLog();
+                throw new EBPException(text);
+            }
+            else
+            {
+                EditorUtility.DisplayDialog(ModuleName, text, "确定");
+            }
         }
 
         public abstract IModuleConfig BaseModuleConfig { get; }
         public abstract IModuleStateConfig BaseModuleStateConfig { get; }
         public abstract bool LoadModuleConfig(string pipelineRootPath);
         public abstract bool LoadModuleStateConfig(string pipelineRootPath);
-        public abstract bool LoadAllConfigs(string pipelineRootPath);
+        public abstract bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false);
         public abstract bool LoadUserConfig();
+
+        //日志系统
+        private double currentTime;
+        private StreamWriter writer;
+        public void Log(string text)
+        {
+            if (writer != null)
+            {
+                writer.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]  " + text);
+                if (EditorApplication.timeSinceStartup - currentTime > 0.2) //保存日志的最少间隔时间
+                {
+                    writer.Flush();
+                    currentTime = EditorApplication.timeSinceStartup;
+                }
+            }
+        }
+        public void StartLog()
+        {
+            writer = string.IsNullOrEmpty(CommonModule.CommonConfig.LogPath) ? null : new StreamWriter(CommonModule.CommonConfig.LogPath, true);
+        }
+        public void EndLog()
+        {
+            if (writer != null)
+            {
+                writer.Close();
+                writer = null;
+            }
+        }
     }
 
     /// <summary>EazyBuildPipeline模块基类</summary>
@@ -164,6 +208,7 @@ namespace EazyBuildPipeline
             }
             catch (Exception e)
             {
+                
                 StateConfigLoadFailedMessage = "加载模块 " + ModuleName + " 状态配置文件时发生错误：" + e.Message
                             + "\n加载路径：" + ModuleStateConfig.JsonPath
                             + "\n请设置正确的文件路径以及形如以下所示的配置文件：\n" + new TModuleStateConfig();

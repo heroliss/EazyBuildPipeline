@@ -9,6 +9,7 @@ namespace EazyBuildPipeline
     {
         void Run(bool isPartOfPipeline = false);
         bool Check(bool onlyCheckConfig = false);
+        BaseModule BaseModule { get; }
     }
 
     public abstract class EBPRunner<TModule, TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass> : IRunner
@@ -18,59 +19,119 @@ namespace EazyBuildPipeline
         where TModuleStateConfig : ModuleStateConfig<TModuleStateConfigJsonClass>, new()
         where TModuleStateConfigJsonClass : ModuleStateConfigJsonClass, new()
     {
+        public BaseModule BaseModule { get { return Module; } }
         public TModule Module;
+
         public EBPRunner(TModule module)
         {
             Module = module;
         }
+
         public void Run(bool isPartOfPipeline = false)
         {
             var state = Module.ModuleStateConfig.Json;
             try
             {
+                Module.StartLog();
+                Module.Log("## Start Module " + Module.ModuleName + " ##");
                 state.IsPartOfPipeline = isPartOfPipeline;
                 state.Applying = true;
                 state.ErrorMessage = "Unexpected Halt!";
                 state.DetailedErrorMessage = null;
-                Module.ModuleStateConfig.Save(); 
-
+                Module.ModuleStateConfig.Save();
+                Module.Log("# Start PreProcess of " + Module.ModuleName + " #");
                 PreProcess();
+                Module.Log("# Start RunProcess of " + Module.ModuleName + " #");
                 RunProcess();
-                PostProcess(); 
-
+                Module.Log("# Start PostProcess of " + Module.ModuleName + " #");
+                PostProcess();
+                Module.Log("## End Module " + Module.ModuleName + " ##");
                 state.Applying = false;
                 state.ErrorMessage = null;
                 Module.ModuleStateConfig.Save();
-
+                Module.Log("## Refresh Assets ##");
                 AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
+                Module.Log("[Error] " + e.ToString());
                 state.ErrorMessage = e.Message;
                 state.DetailedErrorMessage = e.ToString();
                 Module.ModuleStateConfig.Save();
                 throw e;
             }
+            finally
+            {
+                Module.EndLog();
+            }
         }
-        public virtual bool Check(bool onlyCheckConfig)
+
+        public bool Check(bool onlyCheckConfig = false)
         {
+            try
+            {
+                Module.StartLog();
+                Module.Log("## Start Check " + Module.ModuleName + " ##");
+                if (CheckProcess(onlyCheckConfig))
+                {
+                    Module.Log("## End Check " + Module.ModuleName + " (Success) ##");
+                    return true;
+                }
+                else
+                {
+                    Module.Log("## End Check " + Module.ModuleName + " (Failed) ##"); //TODO:这个分支应该不会出现
+                    return false;
+                }
+            }
+            catch (EBPCheckFailedException e)
+            {
+                Module.Log("[CheckFailed] " + e.Message);
+                throw e;
+            }
+            catch (Exception e)
+            {
+                Module.Log("[Error] " + e.ToString());
+                throw e;
+            }
+            finally
+            {
+                Module.EndLog();
+            }
+        }
+
+        protected virtual bool CheckProcess(bool onlyCheckConfig)
+        {
+            //检查状态配置文件和工作目录
             if (!onlyCheckConfig)
             {
                 if (!Module.RootAvailable)
                 {
-                    Module.DisplayDialog(Module.StateConfigLoadFailedMessage);
+                    DisplayDialogOrThrowCheckFailedException(Module.StateConfigLoadFailedMessage);
                     return false;
                 }
                 if (!Directory.Exists(Module.ModuleConfig.WorkPath)) //这个检查冗余，放在这里为保险起见
                 {
-                    Module.DisplayDialog("工作目录不存在：" + Module.ModuleConfig.WorkPath);
+                    DisplayDialogOrThrowCheckFailedException("工作目录不存在：" + Module.ModuleConfig.WorkPath);
                     return false;
                 }
             }
             return true;
         }
+
         protected abstract void PreProcess();
         protected abstract void RunProcess();
         protected abstract void PostProcess();
+
+        protected void DisplayDialogOrThrowCheckFailedException(string text)
+        {
+            if (CommonModule.CommonConfig.IsBatchMode) //HACK: Application.isBatchMode(for Unity 2018.3+)
+            {
+                throw new EBPCheckFailedException(text);
+            }
+            else
+            {
+                Module.DisplayDialog(text);
+            }
+        }
     }
 }

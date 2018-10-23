@@ -3,11 +3,16 @@ using UnityEditor;
 using System.Diagnostics;
 using System.IO;
 using System;
+using System.Linq;
 
 namespace EazyBuildPipeline.PlayerBuilder
 {
     public partial class Runner
     {
+        public string ConfigURL_Game;
+        public string ConfigURL_Language;
+        public string ConfigURL_LanguageVersion;
+
         protected override void PostProcess()
         {
             EditorUtility.DisplayProgressBar("Renaming OBB File...", "", 0);
@@ -23,9 +28,12 @@ namespace EazyBuildPipeline.PlayerBuilder
             CreateBuildingConfigsClassFile();
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
-            EditorUtility.DisplayProgressBar("Start DownloadConfigs", "", 0);
-            DownLoadConfigs();
-            DownLoadMultiLanguage();
+            if (CommonModule.CommonConfig.Args_lower.Contains("-batchmode")) //HACK: Application.isBatchMode(for Unity 2018.3+)
+            {
+                EditorUtility.DisplayProgressBar("Start DownloadConfigs", "", 0);
+                DownLoadConfigs();
+                DownLoadMultiLanguage();
+            }
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
@@ -56,26 +64,32 @@ namespace EazyBuildPipeline.PlayerBuilder
             string configsPath = Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Configs";
             //WriteToLog("[EazyBuildPipeline] DwonLoad Configs Start.");
 
-            string srcPath = "http://10.1.1.10/configtool/data/" + Module.UserConfig.Json.PlayerSettings.General.DownloadConfigType + ".zip";
+            //string srcPath = "http://10.1.1.10/configtool/data/" + Module.UserConfig.Json.PlayerSettings.General.DownloadConfigType + ".zip";
             NetWorkConnection.ConfigNetworkURL();
 
-            EditorUtility.DisplayProgressBar("Download Configs...", srcPath, 0);
-            DownLoadFile(srcPath, Path.Combine(configsPath, "StaticConfigs.zip"));
+            //EditorUtility.DisplayProgressBar("Download Configs...", srcPath, 0);
+            //DownLoadFile(srcPath, Path.Combine(configsPath, "StaticConfigs.zip"));
+            EditorUtility.DisplayProgressBar("Download Configs...", ConfigURL_Game, 0);
+            DownLoadFile(ConfigURL_Game, Path.Combine(configsPath, "StaticConfigs.zip"));  //TODO:这里的保存的名永远都是StaticConfigs.zip？？
         }
 
-        private void DownLoadMultiLanguage()
+            private void DownLoadMultiLanguage()
         {
             string configsPath = Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Configs";
 
             //WriteToLog("[EazyBuildPipeline] DwonLoad Language Start.");
-            var multiLanType = Module.UserConfig.Json.PlayerSettings.General.DownloadLanguageType;
-            string srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".bbb";
-            EditorUtility.DisplayProgressBar("Download Language...", srcPath, 0);
-            DownLoadFile(srcPath, Path.Combine(configsPath, multiLanType + ".bbb"));
+            //var multiLanType = Module.UserConfig.Json.PlayerSettings.General.DownloadLanguageType;
+            //string srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".bbb";
+            //EditorUtility.DisplayProgressBar("Download Language...", srcPath, 0);
+            //DownLoadFile(srcPath, Path.Combine(configsPath, multiLanType + ".bbb"));
+            EditorUtility.DisplayProgressBar("Download Language...", ConfigURL_Language, 0);
+            DownLoadFile(ConfigURL_Language, Path.Combine(configsPath, Path.GetFileName(ConfigURL_Language)));
 
-            srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".json";
-            EditorUtility.DisplayProgressBar("Download Language...", srcPath, 0);
-            DownLoadFile(srcPath, Path.Combine(configsPath, "locale.json"));
+            //srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".json";
+            //EditorUtility.DisplayProgressBar("Download Language...", srcPath, 0);
+            //DownLoadFile(srcPath, Path.Combine(configsPath, "locale.json"));
+            EditorUtility.DisplayProgressBar("Download Language Version...", ConfigURL_LanguageVersion, 0);
+            DownLoadFile(ConfigURL_LanguageVersion, Path.Combine(configsPath, Path.GetFileName(ConfigURL_LanguageVersion)));
         }
 
         private void DownLoadFile(string srcPath, string targetPath)

@@ -3,17 +3,16 @@ using UnityEditor;
 using System.IO;
 using System;
 using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
+using EazyBuildPipeline.SVNUpdate.Configs;
 
-namespace EazyBuildPipeline.PipelineTotalControl
+namespace EazyBuildPipeline.SVNUpdate
 {
     [Serializable]
-    public partial class SVNManager 
+    public partial class Runner : EBPRunner
+        <Module, ModuleConfig, ModuleConfig.JsonClass,
+        ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
         public bool IsPartOfPipeline = false;
-        public bool EnableCheckDiff = false;
         public enum VersionStateEnum { Unknow, Obsolete, Latest }
         public enum ChangeStateEnum { Unknow, Changed, NoChange }
         //SVNInfo
@@ -34,16 +33,16 @@ namespace EazyBuildPipeline.PipelineTotalControl
         public string message = "";
         public string errorMessage = "";
 
-        public void Run()
+        public Runner(Module module) : base(module)
         {
-            PreProcess();
-            RunProcess();
-            PostProcess();
-
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
-        void RunProcess()
+        protected override bool CheckProcess(bool onlyCheckConfig = false)
+        {
+            return true;
+        }
+
+        protected override void RunProcess()
         {
             int progress = 0;
             message = "";
@@ -135,11 +134,11 @@ namespace EazyBuildPipeline.PipelineTotalControl
             if (Available)
             {
                 ExtractVersionsAndSetVersionState();
-                if (EnableCheckDiff)
+                if (Module.ModuleConfig.Json.EnableCheckDiff)
                 {
                     try
                     {
-                        ExcuteCommand("/bin/bash", Path.Combine(G.Module.ModuleConfig.ModuleRootPath, "SVNDiff.sh"),
+                        ExcuteCommand("/bin/bash", Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNDiff.sh"),
                            OnDiffReceived, OnDiffErrorReceived, OnDiffExited);
                     }
                     catch (Exception err)

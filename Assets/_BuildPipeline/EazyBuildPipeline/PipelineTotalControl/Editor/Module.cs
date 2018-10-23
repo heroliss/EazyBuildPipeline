@@ -34,8 +34,8 @@ namespace EazyBuildPipeline.PipelineTotalControl
         ModuleConfig, ModuleConfig.JsonClass,
         ModuleStateConfig, ModuleStateConfig.JsonClass>, ISerializationCallbackReceiver
     {
-        public override string ModuleName { get { return "TotalControl"; } }
-
+        public SVNUpdate.Module SVNUpdateModule = new SVNUpdate.Module();
+        public SVNUpdate.Runner SVNUpdateRunner;
         public AssetPreprocessor.Module AssetPreprocessorModule = new AssetPreprocessor.Module();
         public AssetPreprocessor.Runner AssetPreprocessorRunner;
         public BundleManager.Module BundleManagerModule = new BundleManager.Module();
@@ -46,26 +46,20 @@ namespace EazyBuildPipeline.PipelineTotalControl
         public PlayerBuilder.Runner PlayerBuilderRunner;
 
         [NonSerialized]
-        public List<ModuleItem> Modules;
-        public struct ModuleItem
-        {
-            public ModuleItem(BaseModule module, IRunner runner)
-            {
-                Module = module;
-                Runner = runner;
-            }
-            public BaseModule Module;
-            public IRunner Runner;
-        }
+        public List<IRunner> Runners;
+
+        public override string ModuleName { get { return "TotalControl"; } }
+
         public void Init()
         {
             InitRunners();
-            Modules = new List<ModuleItem>
+            Runners = new List<IRunner>
             {
-                new ModuleItem(AssetPreprocessorModule, AssetPreprocessorRunner),
-                new ModuleItem(BundleManagerModule, BundleManagerRunner),
-                new ModuleItem(PackageManagerModule, PackageManagerRunner),
-                new ModuleItem(PlayerBuilderModule, PlayerBuilderRunner),
+                SVNUpdateRunner,
+                AssetPreprocessorRunner,
+                BundleManagerRunner,
+                PackageManagerRunner,
+                PlayerBuilderRunner
             };
             //这里需要将静态的Module与TotalControl中的Module同步(用于反序列化时重新指定新的引用)
             PlayerBuilder.G.Module = PlayerBuilderModule;
@@ -76,15 +70,12 @@ namespace EazyBuildPipeline.PipelineTotalControl
             Init();
         }
 
-        public override bool LoadAllConfigs(string pipelineRootPath)
+        public bool LoadAllModules(string pipelineRootPath)
         {
-            if (!LoadModuleConfig(pipelineRootPath)) return false;
-            //这里暂时不需要ModuleStateConfig，所以不加载
-            
             //加载所有模块的模块配置、状态配置、用户配置
-            foreach (var item in Modules)
+            foreach (var item in Runners)
             {
-                item.Module.LoadAllConfigs(pipelineRootPath);
+                item.BaseModule.LoadAllConfigs(pipelineRootPath);
             }
             //这里需要将静态的Module与TotalControl中的Module同步，因为该窗口总控面板与PlayerSetting面板结合了
             PlayerBuilder.G.Module = PlayerBuilderModule;
@@ -94,15 +85,11 @@ namespace EazyBuildPipeline.PipelineTotalControl
 
         public void InitRunners()
         {
+            SVNUpdateRunner = new SVNUpdate.Runner(SVNUpdateModule);
             AssetPreprocessorRunner = new AssetPreprocessor.Runner(AssetPreprocessorModule);
             BundleManagerRunner = new BundleManager.Runner(BundleManagerModule);
             PackageManagerRunner = new PackageManager.Runner(PackageManagerModule);
             PlayerBuilderRunner = new PlayerBuilder.Runner(PlayerBuilderModule);
-        }
-
-        public override bool LoadUserConfig()
-        {
-            throw new NotImplementedException("总控模块当前不存在用户配置，应该避免加载和使用。");
         }
 
         public void OnBeforeSerialize()
@@ -112,6 +99,16 @@ namespace EazyBuildPipeline.PipelineTotalControl
         public void OnAfterDeserialize()
         {
             Init();
+        }
+
+        public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
+        {
+            throw new NotImplementedException("总控模块暂时不需任何配置");
+        }
+
+        public override bool LoadUserConfig()
+        {
+            throw new NotImplementedException("总控模块暂时不需要用户配置");
         }
     }
 }

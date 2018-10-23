@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 
-namespace EazyBuildPipeline.PipelineTotalControl.Configs
+namespace EazyBuildPipeline.SVNUpdate.Configs
 {
-    //暂时无用
     [Serializable]
     public class ModuleConfig : Common.Configs.ModuleConfig<ModuleConfig.JsonClass>
     {
@@ -17,6 +16,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Configs
         [Serializable]
         public class JsonClass : Common.Configs.ModuleConfigJsonClass
         {
+            public bool EnableCheckDiff;
         }
     }
 
