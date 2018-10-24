@@ -14,7 +14,12 @@ namespace EazyBuildPipeline
     {
         public static string GetTagStr(string[] tags)
         {
-            return string.Join("_", tags);
+            string s = null;
+            for (int i = 0; i < tags.Length; i++)
+            {
+                s += "[" + tags[i] + "]";
+            }
+            return s;
         }
 
         /// <summary>

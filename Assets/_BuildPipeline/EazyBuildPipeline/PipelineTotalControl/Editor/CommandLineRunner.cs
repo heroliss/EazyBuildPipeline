@@ -45,7 +45,7 @@ namespace EazyBuildPipeline
                     case "SVNUpdate":
                         break;
                     case "AssetPreprocessor":
-                        runner.BaseModule.BaseModuleStateConfig.BaseJson.CurrentUserConfigName = string.Join("_", assetTag) + ".json";
+                        runner.BaseModule.BaseModuleStateConfig.BaseJson.CurrentUserConfigName = EBPUtility.GetTagStr(assetTag) + ".json";
                         break;
                     case "BundleManager":
                         BuildAssetBundleOptions compressOption = BuildAssetBundleOptions.None;
