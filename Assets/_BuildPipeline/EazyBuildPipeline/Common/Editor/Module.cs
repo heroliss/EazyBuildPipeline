@@ -72,7 +72,7 @@ namespace EazyBuildPipeline
         public void DisplayDialog(string text)
         {
             StartLog();
-            Log(text);
+            Log(text, true);
             EndLog();
             if (CommonModule.CommonConfig.IsBatchMode) //HACK: Application.isBatchMode(for Unity 2018.3+)
             {
@@ -94,12 +94,12 @@ namespace EazyBuildPipeline
         //日志系统
         private double currentTime;
         private StreamWriter writer;
-        public void Log(string text)
+        public void Log(string text, bool forceFlush = false)
         {
             if (writer != null)
             {
                 writer.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]  " + text);
-                if (EditorApplication.timeSinceStartup - currentTime > 0.2) //保存日志的最少间隔时间
+                if (EditorApplication.timeSinceStartup - currentTime > 0.5 || forceFlush) //保存日志的最少间隔时间
                 {
                     writer.Flush();
                     currentTime = EditorApplication.timeSinceStartup;

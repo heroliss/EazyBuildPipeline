@@ -33,28 +33,28 @@ namespace EazyBuildPipeline
             try
             {
                 Module.StartLog();
-                Module.Log("## Start Module " + Module.ModuleName + " ##");
+                Module.Log("## Start Module " + Module.ModuleName + " ##", true);
                 state.IsPartOfPipeline = isPartOfPipeline;
                 state.Applying = true;
                 state.ErrorMessage = "Unexpected Halt!";
                 state.DetailedErrorMessage = null;
                 Module.ModuleStateConfig.Save();
-                Module.Log("# Start PreProcess of " + Module.ModuleName + " #");
+                Module.Log("# Start PreProcess of " + Module.ModuleName + " #", true);
                 PreProcess();
-                Module.Log("# Start RunProcess of " + Module.ModuleName + " #");
+                Module.Log("# Start RunProcess of " + Module.ModuleName + " #", true);
                 RunProcess();
-                Module.Log("# Start PostProcess of " + Module.ModuleName + " #");
+                Module.Log("# Start PostProcess of " + Module.ModuleName + " #", true);
                 PostProcess();
-                Module.Log("## End Module " + Module.ModuleName + " ##");
+                Module.Log("## End Module " + Module.ModuleName + " ##", true);
                 state.Applying = false;
                 state.ErrorMessage = null;
                 Module.ModuleStateConfig.Save();
-                Module.Log("## Refresh Assets ##");
+                Module.Log("## Refresh Assets ##", true);
                 AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             }
             catch (Exception e)
             {
-                Module.Log("[Error] " + e.ToString());
+                Module.Log("[Error] " + e.ToString(), true);
                 state.ErrorMessage = e.Message;
                 state.DetailedErrorMessage = e.ToString();
                 Module.ModuleStateConfig.Save();
@@ -71,26 +71,26 @@ namespace EazyBuildPipeline
             try
             {
                 Module.StartLog();
-                Module.Log("## Start Check " + Module.ModuleName + " ##");
+                Module.Log("## Start Check " + Module.ModuleName + " ##", true);
                 if (CheckProcess(onlyCheckConfig))
                 {
-                    Module.Log("## End Check " + Module.ModuleName + " (Success) ##");
+                    Module.Log("## End Check " + Module.ModuleName + " (Success) ##", true);
                     return true;
                 }
                 else
                 {
-                    Module.Log("## End Check " + Module.ModuleName + " (Failed) ##"); //TODO:这个分支应该不会出现
+                    Module.Log("## End Check " + Module.ModuleName + " (Failed) ##", true); //TODO:这个分支应该不会出现
                     return false;
                 }
             }
             catch (EBPCheckFailedException e)
             {
-                Module.Log("[CheckFailed] " + e.Message);
+                Module.Log("[CheckFailed] " + e.Message, true);
                 throw e;
             }
             catch (Exception e)
             {
-                Module.Log("[Error] " + e.ToString());
+                Module.Log("[Error] " + e.ToString(), true);
                 throw e;
             }
             finally
