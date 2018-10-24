@@ -27,8 +27,8 @@ namespace EazyBuildPipeline.SVNUpdate
         public string DiffErrorMessage = "";
         public Action<bool> DiffExitedAction;
         //Version
+        public string LocalVersion = "";
         public string RepositoryVersion = "";
-        public string LastChangedVersion = "";
         //Update
         public string message = "";
         public string errorMessage = "";
@@ -114,8 +114,8 @@ namespace EazyBuildPipeline.SVNUpdate
             LocalChangeState = ChangeStateEnum.Unknow;
             ChangedFiles = "";
             DiffErrorMessage = "";
+            LocalVersion = "";
             RepositoryVersion = "";
-            LastChangedVersion = "";
             try
             {
                 ExcuteCommand("svn", "info", OnInfoReceived, OnInfoErrorReceived, OnInfoExited);
@@ -133,7 +133,30 @@ namespace EazyBuildPipeline.SVNUpdate
             Available = process.ExitCode == 0;
             if (Available)
             {
-                ExtractVersionsAndSetVersionState();
+                GetRepositoryInfoAndLocalVersion();
+            }
+            else
+            {
+                IsPartOfPipeline = false;
+            }
+            if (InfoExitedAction != null)
+            {
+                InfoExitedAction(Available);
+            }
+        }
+
+        void OnRepositoryInfoExited(object sender, EventArgs e)
+        {
+            Process process = (Process)sender;
+            Available = process.ExitCode == 0;
+            if (Available)
+            {
+                //设置版本状态
+                if (LocalVersion != "" && RepositoryVersion != "")
+                {
+                    VersionState = RepositoryVersion == LocalVersion ? VersionStateEnum.Latest : VersionStateEnum.Obsolete;
+                }
+                //检查本地修改
                 if (Module.ModuleConfig.Json.EnableCheckDiff)
                 {
                     try
@@ -158,26 +181,33 @@ namespace EazyBuildPipeline.SVNUpdate
             }
         }
 
-        void ExtractVersionsAndSetVersionState()
+        void GetRepositoryInfoAndLocalVersion()
         {
-            const string lastChangedVersionName = "Last Changed Rev: ";
-            const string repositoryVersionName = "Revision: ";
+            const string urlName = "URL: ";
+            const string versionName = "Revision: ";
             foreach (var line in SVNInfo.Split('\n'))
             {
-                if (line.Length > lastChangedVersionName.Length &&
-                    line.Substring(0, lastChangedVersionName.Length) == lastChangedVersionName)
+                //获取仓库信息
+                if (line.Length > urlName.Length &&
+                    line.Substring(0, urlName.Length) == urlName)
                 {
-                    LastChangedVersion = line.Substring(lastChangedVersionName.Length);
+                    string repositoryURL = line.Substring(urlName.Length);
+                    try
+                    {
+                        ExcuteCommand("svn", "info " + repositoryURL, OnRepositoryInfoReceived, OnInfoErrorReceived, OnRepositoryInfoExited);
+                    }
+                    catch (Exception err)
+                    {
+                        InfoErrorMessage = err.Message;
+                        InfoExitedAction(false);
+                    }
                 }
-                else if (line.Length > repositoryVersionName.Length &&
-                         line.Substring(0, repositoryVersionName.Length) == repositoryVersionName)
+                //获取本地版本
+                else if (line.Length > versionName.Length &&
+                         line.Substring(0, versionName.Length) == versionName)
                 {
-                    RepositoryVersion = line.Substring(repositoryVersionName.Length);
+                    LocalVersion = line.Substring(versionName.Length);
                 }
-            }
-            if (RepositoryVersion != "" && LastChangedVersion != "")
-            {
-                VersionState = LastChangedVersion == RepositoryVersion ? VersionStateEnum.Latest : VersionStateEnum.Obsolete;
             }
         }
 
@@ -220,7 +250,21 @@ namespace EazyBuildPipeline.SVNUpdate
 
         void OnInfoReceived(object sender, DataReceivedEventArgs e)
         {
-            SVNInfo += e.Data + "\n";
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                SVNInfo += e.Data + "\n";
+            }
+        }
+        void OnRepositoryInfoReceived(object sender, DataReceivedEventArgs e)
+        {
+            const string versionName = "Revision: ";
+            //获取仓库版本号
+            if (e.Data.Length > versionName.Length &&
+                e.Data.Substring(0, versionName.Length) == versionName)
+            {
+                RepositoryVersion = e.Data.Substring(versionName.Length).Trim();
+                SVNInfo += "Repository Version: " + RepositoryVersion + "\n";
+            }
         }
 
         static Process ExcuteCommand(string command, string arguments,
