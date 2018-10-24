@@ -28,8 +28,8 @@ namespace EazyBuildPipeline.Common.Configs
                 IsBatchMode = true;
             }
             //这里不能使用Utility.GetArgValue("LogPath")，因为CommonConfig还没有构建完，任为null
-            int logPathIndex = Args_lower.IndexOf("--logpath") + 1; 
-            if (logPathIndex < Args.Count)
+            int logPathIndex = Args_lower.IndexOf("--logpath") + 1;
+            if (logPathIndex > 0 && logPathIndex < Args.Count)
             {
                 LogPath = Args[logPathIndex];
             }

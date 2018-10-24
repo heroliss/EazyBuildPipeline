@@ -71,11 +71,11 @@ namespace EazyBuildPipeline
 
         public void DisplayDialog(string text)
         {
-            if (CommonModule.CommonConfig.IsBatchMode)
+            StartLog();
+            Log(text);
+            EndLog();
+            if (CommonModule.CommonConfig.IsBatchMode) //HACK: Application.isBatchMode(for Unity 2018.3+)
             {
-                StartLog();
-                Log(text);
-                EndLog();
                 throw new EBPException(text);
             }
             else

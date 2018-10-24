@@ -203,8 +203,9 @@ namespace EazyBuildPipeline.PlayerBuilder
         public void FetchAllScriptDefines()
         {
             var ps = Module.UserConfig.Json.PlayerSettings;
-
+            ps.IOS.ScriptDefines.Remove(ps.IOS.ScriptDefines.Find(x => x.GroupName == "Current Script Defines"));
             ps.IOS.ScriptDefines.Add(FetchScriptDefineGroup(BuildTargetGroup.iOS));
+            ps.Android.ScriptDefines.Remove(ps.Android.ScriptDefines.Find(x => x.GroupName == "Current Script Defines"));
             ps.Android.ScriptDefines.Add(FetchScriptDefineGroup(BuildTargetGroup.Android));
         }
 
