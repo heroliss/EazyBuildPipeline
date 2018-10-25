@@ -59,7 +59,7 @@ namespace EazyBuildPipeline.SVNUpdate
             }
             if (p.ExitCode != 0)
             {
-                throw new ApplicationException("SVN Revert 时发生错误：" + errorMessage);
+                throw new EBPException("SVN Revert 时发生错误：" + errorMessage);
             }
             //Update
             p = ExcuteCommand("svn", "--non-interactive update",
@@ -71,7 +71,7 @@ namespace EazyBuildPipeline.SVNUpdate
             }
             if (p.ExitCode != 0)
             {
-                throw new ApplicationException("SVN Update 时发生错误：" + errorMessage);
+                throw new EBPException("SVN Update 时发生错误：" + errorMessage);
             }
             //Resolve
             p = ExcuteCommand("svn", "--non-interactive resolve --accept theirs-conflict -R",
@@ -83,7 +83,7 @@ namespace EazyBuildPipeline.SVNUpdate
             }
             if (p.ExitCode != 0)
             {
-                throw new ApplicationException("SVN Resolve 时发生错误：" + errorMessage);
+                throw new EBPException("SVN Resolve 时发生错误：" + errorMessage);
             }
             EditorUtility.DisplayProgressBar("SVN", "Finish!", 1);
         }

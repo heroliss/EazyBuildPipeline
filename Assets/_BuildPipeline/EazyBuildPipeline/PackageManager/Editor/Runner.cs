@@ -115,7 +115,7 @@ namespace EazyBuildPipeline.PackageManager
             string bundlesFolderPath = Module.GetBundleFolderPath();
             if (!Directory.Exists(bundlesFolderPath))
             {
-                throw new ApplicationException("Bundles目录不存：" + bundlesFolderPath);
+                throw new EBPException("Bundles目录不存：" + bundlesFolderPath);
             }
             string packagesFolderPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
             int count = 0;
@@ -127,14 +127,14 @@ namespace EazyBuildPipeline.PackageManager
                 total += package.Bundles.Count;
             }
             int packagesCount = packages.Count;
-            
+
             //TODO:构建map改进方法
             //if (Configs.g.bundleTree.BundleBuildMap == null)
             //{
-            //    throw new ApplicationException("BuildMap is null");
+            //    throw new EBPException("BuildMap is null");
             //}
             //string mapContent = JsonConvert.SerializeObject(BuildAsset2BundleMap(Configs.g.bundleTree.BundleBuildMap), Formatting.Indented);
-           
+
             //开始
             double lastTime = EditorApplication.timeSinceStartup;
 
@@ -258,7 +258,7 @@ namespace EazyBuildPipeline.PackageManager
                     progress += 0.1f;
                     break;
                 default:
-                    throw new ApplicationException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
+                    throw new EBPException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
             }
 
             float restProgress = 1 - progress;
@@ -320,7 +320,7 @@ namespace EazyBuildPipeline.PackageManager
                             case "Addon":
                                 break;
                             default:
-                                throw new ApplicationException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
+                                throw new EBPException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
                         }
                     }
                 }
@@ -347,7 +347,7 @@ namespace EazyBuildPipeline.PackageManager
                     AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted64", "Lua/LuaScripts64", buffer, "*.lua");
                     break;
                 default:
-                    throw new ApplicationException("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
+                    throw new EBPException("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
             }
         }
 

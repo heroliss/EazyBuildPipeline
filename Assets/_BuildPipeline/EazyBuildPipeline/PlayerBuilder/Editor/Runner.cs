@@ -89,7 +89,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             var report = BuildPipeline.BuildPlayer(BuildPlayerOptions);
             if (!string.IsNullOrEmpty(report))
             {
-                throw new ApplicationException("BuildPlayer时发生错误：" + report);
+                throw new EBPException("BuildPlayer时发生错误：" + report);
             }
         }
 

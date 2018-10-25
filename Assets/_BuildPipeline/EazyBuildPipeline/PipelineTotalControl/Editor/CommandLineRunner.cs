@@ -28,6 +28,7 @@ namespace EazyBuildPipeline
             //加载和检查每一个模块
             string[] assetTag = new[] { EBPUtility.GetArgValue("Platform"), EBPUtility.GetArgValue("Definition"), EBPUtility.GetArgValue("Language") };
             var disableModules = EBPUtility.GetArgValuesLower("DisableModule");
+            bool checkMode = CommonModule.CommonConfig.Args_lower.Contains("--checkmode");
             foreach (var runner in totalModule.Runners)
             {
                 if (disableModules.Contains(runner.BaseModule.ModuleName.ToLower()))
@@ -116,13 +117,16 @@ namespace EazyBuildPipeline
                     Environment.Exit(942);
             }
             //运行每一个模块
-            foreach (var runner in totalModule.Runners)
+            if (!checkMode)
             {
-                if (disableModules.Contains(runner.BaseModule.ModuleName.ToLower()))
+                foreach (var runner in totalModule.Runners)
                 {
-                    continue; //跳过该模块
+                    if (disableModules.Contains(runner.BaseModule.ModuleName.ToLower()))
+                    {
+                        continue; //跳过该模块
+                    }
+                    runner.Run(true);
                 }
-                runner.Run(true);
             }
         }
     }

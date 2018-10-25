@@ -21,10 +21,13 @@ namespace EazyBuildPipeline
                 string[] guids = AssetDatabase.FindAssets(CommonConfigSearchText);
                 if (guids.Length == 0)
                 {
-                    throw new ApplicationException("未能找到本地公共配置文件! 搜索文本：" + CommonConfigSearchText);
+                    throw new EBPException("未能找到本地公共配置文件! 搜索文本：" + CommonConfigSearchText);
                 }
                 CommonConfig.Load(AssetDatabase.GUIDToAssetPath(guids[0]));
-                CheckAndSetUserConfigsRootPath();
+                if (!CommonConfig.IsBatchMode)
+                {
+                    CheckAndSetUserConfigsRootPath();
+                }
                 return true;
             }
             catch (Exception e)
@@ -45,10 +48,6 @@ namespace EazyBuildPipeline
             string userConfigsRootPath = CommonConfig.Json.UserConfigsRootPath;
             if(string.IsNullOrEmpty(userConfigsRootPath) || !Directory.Exists(userConfigsRootPath))
             {
-                if (CommonConfig.IsBatchMode)
-                {
-                    throw new EBPException("用户配置根目录不存在：" + userConfigsRootPath);
-                }
                 EditorUtility.DisplayDialog("Load UserConfig", "用户配置根目录不存在：" + userConfigsRootPath + "\n\n请设置根目录来存放用户配置文件", "设置");
                 string newPath = EditorUtility.OpenFolderPanel("Open UserConfigs Root", userConfigsRootPath, null);
                 if (!string.IsNullOrEmpty(newPath))
@@ -150,7 +149,7 @@ namespace EazyBuildPipeline
                 string[] guids = AssetDatabase.FindAssets(ModuleConfigSearchText);
                 if (guids.Length == 0)
                 {
-                    throw new ApplicationException("未能找到模块配置文件! 搜索文本：" + ModuleConfigSearchText);
+                    throw new EBPException("未能找到模块配置文件! 搜索文本：" + ModuleConfigSearchText);
                 }
                 ModuleConfig.Load(AssetDatabase.GUIDToAssetPath(guids[0]));
                 return true;

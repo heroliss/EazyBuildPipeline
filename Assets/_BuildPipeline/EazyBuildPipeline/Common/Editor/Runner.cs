@@ -38,7 +38,7 @@ namespace EazyBuildPipeline
                 state.Applying = true;
                 state.ErrorMessage = "Unexpected Halt!";
                 state.DetailedErrorMessage = null;
-                Module.ModuleStateConfig.Save();
+                if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
                 Module.Log("# Start PreProcess of " + Module.ModuleName + " #", true);
                 PreProcess();
                 Module.Log("# Start RunProcess of " + Module.ModuleName + " #", true);
@@ -48,7 +48,7 @@ namespace EazyBuildPipeline
                 Module.Log("## End Module " + Module.ModuleName + " ##", true);
                 state.Applying = false;
                 state.ErrorMessage = null;
-                Module.ModuleStateConfig.Save();
+                if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
                 Module.Log("## Refresh Assets ##", true);
                 AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             }
@@ -57,7 +57,7 @@ namespace EazyBuildPipeline
                 Module.Log("[Error] " + e.ToString(), true);
                 state.ErrorMessage = e.Message;
                 state.DetailedErrorMessage = e.ToString();
-                Module.ModuleStateConfig.Save();
+                if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
                 throw e;
             }
             finally

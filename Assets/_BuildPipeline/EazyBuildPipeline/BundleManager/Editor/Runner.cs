@@ -67,7 +67,7 @@ namespace EazyBuildPipeline.BundleManager
             var manifest = BuildPipeline.BuildAssetBundles(bundlesPath, Module.UserConfig.Json.ToArray(), (BuildAssetBundleOptions)optionsValue, target);
             if (manifest == null)
             {
-                throw new ApplicationException("BuildAssetBundles失败！详情请查看Console面板。");
+                throw new EBPException("BuildAssetBundles失败！详情请查看Console面板。");
             }
             //重命名Bundles清单文件
             RenameMainBundleManifest(bundlesPath);

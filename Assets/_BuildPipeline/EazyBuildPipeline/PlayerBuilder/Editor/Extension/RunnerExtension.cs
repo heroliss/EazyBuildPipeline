@@ -115,7 +115,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             process.WaitForExit();
             if (process.ExitCode != 0)
             {
-                throw new ApplicationException("下载文件" + srcPath + "失败! 错误信息：\n" + process.StandardError.ReadToEnd());
+                throw new EBPException("下载文件" + srcPath + "失败! 错误信息：\n" + process.StandardError.ReadToEnd());
             }
             process.Close();
             //ezDebug.LogError("DownLoadFile Completed");
