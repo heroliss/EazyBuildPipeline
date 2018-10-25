@@ -139,19 +139,12 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
 		private void ChangeRootPath(string path)
         {
-            Module newModule = new Module();
-            if (!newModule.LoadAllConfigs(path))
-            {
-                return;
-            }
             CommonModule.CommonConfig.Json.PipelineRootPath = path;
             CommonModule.CommonConfig.Save();
-            G.Module = newModule;
-            G.Runner.Module = newModule;
+            G.Module.LoadAllConfigs(path);
             InitSelectedIndex();
             ConfigToIndex();
             EBPUtility.HandleApplyingWarning(G.Module);
-
         }
 
         private void InitSelectedIndex()

@@ -531,15 +531,10 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void ClickedCheckAll()
         {
-            foreach (var runner in G.Module.Runners)
+            if (ReloadAllUserConfigsAndCheck(true))
             {
-                if (runner.BaseModule.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
-                {
-                    if (!runner.Check(true))
-                        return;
-                }
+                G.Module.DisplayDialog("所有勾选的模块检查正常！");
             }
-            G.Module.DisplayDialog("所有勾选的模块检查正常！");
         }
         private void ClickedApply()
         {
@@ -548,7 +543,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void ClickedRunPipeline()
         {
-            if (ReloadAllUserConfigsAndCheck())
+            if (ReloadAllUserConfigsAndCheck(false))
             {
                 bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定开始运行管线？", "确定", "取消");
                 if (ensure)
@@ -559,7 +554,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
         }
 
-        private bool ReloadAllUserConfigsAndCheck()
+        private bool ReloadAllUserConfigsAndCheck(bool onlyCheckConfig)
         {
             foreach (var runner in G.Module.Runners)
             {
@@ -573,7 +568,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     //重设CurrentTag
                     ResetCurrentTag(runner.BaseModule);
                     //检查配置
-                    if (!runner.Check()) return false;
+                    if (!runner.Check(onlyCheckConfig)) return false;
                 }
             }
             return true;
@@ -690,15 +685,9 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void ChangeRootPath(string path)
         {
-            Module newModule = new Module();
-            if (!newModule.LoadAllConfigs(path))
-            {
-                return;
-            }
             CommonModule.CommonConfig.Json.PipelineRootPath = path;
             CommonModule.CommonConfig.Save();
-            G.Module = newModule;
-            //G.Runner.Module = newModule; //暂时不需要
+            G.Module.LoadAllModules(path);
             InitSelectedIndex();
             LoadAllModulesUserConfigList();
             ConfigToIndex();
@@ -707,6 +696,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         private void OnChangeRootPath()
         {
+            PlayerBuilder.G.Module.IsDirty = false;
         }
 
         public void OnFocus()
@@ -841,6 +831,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     PlayerBuilder.G.Module.ModuleStateConfig.Json.CurrentUserConfigName = newUserConfigName;
                     PlayerBuilder.G.Module.UserConfig = newUserConfig;
                     playerBuilderUserConfigSelectedIndex = selectedUserConfigIndex_new;
+                    PlayerBuilder.G.Module.IsDirty = false;
                 }
                 catch (Exception e)
                 {

@@ -377,15 +377,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void ChangeRootPath(string path)
         {
-            Module newModule = new Module();
-            if (!newModule.LoadAllConfigs(path))
-            {
-                return;
-            }
             CommonModule.CommonConfig.Json.PipelineRootPath = path;
             CommonModule.CommonConfig.Save();
-            G.Module = newModule;
-            G.Runner.Module = newModule;
+            G.Module.LoadAllConfigs(path);
             InitSelectedIndex();
             LoadConfigsList();
             ConfigToIndex();
@@ -398,6 +392,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //必须bundletree先reload
             G.g.bundleTree.Reload();
             G.g.packageTree.Reload();
+            G.Module.IsDirty = false;
         }
 
         private void InitSelectedIndex()
@@ -419,7 +414,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
             G.Module.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath);
             InitSelectedIndex();
             LoadConfigsList();
-
             ConfigToIndex();
             EBPUtility.HandleApplyingWarning(G.Module);
         }
@@ -501,7 +495,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 G.Module.DisplayDialog("保存配置成功！");
                 G.Module.IsDirty = false; 
                 
-                G.g.OnChangeCurrentConfig(); //总控暂时用不上 设置Dirty也用不上
+                G.g.OnChangeCurrentUserConfig(); //总控暂时用不上 设置Dirty也用不上
             }
 
             catch (Exception e)

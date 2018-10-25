@@ -47,20 +47,16 @@ namespace EazyBuildPipeline.AssetPreprocessor
 
         public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
         {
-            bool success =
-              LoadModuleConfig(pipelineRootPath) &&
-              LoadOptionsEnumConfig();
-            if (LoadModuleStateConfig(pipelineRootPath))
+            bool success = LoadModuleConfig(pipelineRootPath) && LoadOptionsEnumConfig();
+            LoadModuleStateConfig(pipelineRootPath);
+            if (G.OverrideCurrentUserConfigName != null)
             {
-                if (G.OverrideCurrentUserConfigName != null)
-                {
-                    ModuleStateConfig.Json.CurrentUserConfigName = G.OverrideCurrentUserConfigName;
-                    G.OverrideCurrentUserConfigName = null;
-                }
-                if (!NOTLoadUserConfig)
-                {
-                    LoadUserConfig();
-                }
+                ModuleStateConfig.Json.CurrentUserConfigName = G.OverrideCurrentUserConfigName;
+                G.OverrideCurrentUserConfigName = null;
+            }
+            if (!NOTLoadUserConfig && ModuleStateConfig.CurrentUserConfigPath != null)
+            {
+                LoadUserConfig();
             }
             return success;
         }

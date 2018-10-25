@@ -39,14 +39,16 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
         {
-            bool success =
-                LoadModuleConfig(pipelineRootPath);
-            if (LoadModuleStateConfig(pipelineRootPath))
+            bool success = LoadModuleConfig(pipelineRootPath);
+            LoadModuleStateConfig(pipelineRootPath);
+            //if (G.OverrideCurrentUserConfigName != null)
+            //{
+            //    ModuleStateConfig.Json.CurrentUserConfigName = G.OverrideCurrentUserConfigName;
+            //    G.OverrideCurrentUserConfigName = null;
+            //}
+            if (!NOTLoadUserConfig && ModuleStateConfig.CurrentUserConfigPath != null)
             {
-                if (!NOTLoadUserConfig)
-                {
-                    LoadUserConfig();
-                }
+                LoadUserConfig();
             }
             return success;
         }

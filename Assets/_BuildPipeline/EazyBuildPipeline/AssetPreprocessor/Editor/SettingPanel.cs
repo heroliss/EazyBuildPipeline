@@ -314,15 +314,9 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 		private void ChangeRootPath(string path)
         {
-            Module newModule = new Module();
-            if (!newModule.LoadAllConfigs(path))
-            {
-                return;
-            }
             CommonModule.CommonConfig.Json.PipelineRootPath = path;
             CommonModule.CommonConfig.Save();
-            G.Module = newModule;
-            G.Runner.Module = newModule;
+            G.Module.LoadAllConfigs(path);
             G.g.OnChangeCurrentUserConfig();
             selectedUserConfigIndex = userConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.Module.ModuleStateConfig.Json.CurrentUserConfigName));
             EBPUtility.HandleApplyingWarning(G.Module);

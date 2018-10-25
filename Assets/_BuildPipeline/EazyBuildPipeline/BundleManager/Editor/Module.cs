@@ -14,7 +14,7 @@ namespace EazyBuildPipeline.BundleManager
         public static GlobalReference g;
         public class GlobalReference
         {
-            public Action OnChangeCurrentConfig = () => { };
+            public Action OnChangeCurrentUserConfig = () => { };
             public Action OnChangeConfigList = () => { };
             public AssetBundleManagement2.AssetBundleMainWindow mainTab;
         }
@@ -55,12 +55,17 @@ namespace EazyBuildPipeline.BundleManager
 
         public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
         {
-            bool success =
-                LoadModuleConfig(pipelineRootPath);
-            if (LoadModuleStateConfig(pipelineRootPath))
-            {
-                //LoadUserConfig(); //暂时无用
-            }
+            bool success = LoadModuleConfig(pipelineRootPath);
+            LoadModuleStateConfig(pipelineRootPath);
+            //if (G.OverrideCurrentUserConfigName != null)
+            //{
+            //    ModuleStateConfig.Json.CurrentUserConfigName = G.OverrideCurrentUserConfigName;
+            //    G.OverrideCurrentUserConfigName = null;
+            //}
+            //if (!NOTLoadUserConfig && ModuleStateConfig.CurrentUserConfigPath != null)
+            //{
+            //    LoadUserConfig();
+            //}
             return success;
         }
 

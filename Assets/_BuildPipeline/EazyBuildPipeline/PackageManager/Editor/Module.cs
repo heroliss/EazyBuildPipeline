@@ -32,7 +32,7 @@ namespace EazyBuildPipeline.PackageManager
         public static GlobalReference g;
         public class GlobalReference
         {
-            public Action OnChangeCurrentConfig = () => { };
+            public Action OnChangeCurrentUserConfig = () => { };
             public Action OnChangeConfigList = () => { };
             public Editor.PackageTree packageTree;
             public Editor.BundleTree bundleTree;
@@ -77,19 +77,16 @@ namespace EazyBuildPipeline.PackageManager
 
         public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
         {
-            bool success =
-                LoadModuleConfig(pipelineRootPath);
-            if (LoadModuleStateConfig(pipelineRootPath))
+            bool success = LoadModuleConfig(pipelineRootPath);
+            LoadModuleStateConfig(pipelineRootPath);
+            if (G.OverrideCurrentUserConfigName != null)
             {
-                if (G.OverrideCurrentUserConfigName != null)
-                {
-                    ModuleStateConfig.Json.CurrentUserConfigName = G.OverrideCurrentUserConfigName;
-                    G.OverrideCurrentUserConfigName = null;
-                }
-                if (!NOTLoadUserConfig)
-                {
-                    LoadUserConfig();
-                }
+                ModuleStateConfig.Json.CurrentUserConfigName = G.OverrideCurrentUserConfigName;
+                G.OverrideCurrentUserConfigName = null;
+            }
+            if (!NOTLoadUserConfig && ModuleStateConfig.CurrentUserConfigPath != null)
+            {
+                LoadUserConfig();
             }
             return success;
         }
