@@ -107,7 +107,10 @@ namespace EazyBuildPipeline
         }
         public void StartLog()
         {
-            writer = string.IsNullOrEmpty(CommonModule.CommonConfig.LogPath) ? null : new StreamWriter(CommonModule.CommonConfig.LogPath, true);
+            if (writer == null)
+            {
+                writer = string.IsNullOrEmpty(CommonModule.CommonConfig.LogPath) ? null : new StreamWriter(CommonModule.CommonConfig.LogPath, true);
+            }
         }
         public void EndLog()
         {

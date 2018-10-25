@@ -1,9 +1,9 @@
 {
-  "PipelineRootPath": "E:/PipelineRoot",
+  "PipelineRootPath": "",
   "CurrentAssetTag": [
-    "Android",
-    "SD",
-    "EN"
+    "",
+    "",
+    ""
   ],
   "CurrentResourceVersion": 0,
   "TagEnum": {
@@ -23,7 +23,7 @@
     ]
   },
   "IconsFolderRelativePath": "Icons",
-  "UserConfigsRootPath": "E:/UserConfigsRoot",
+  "UserConfigsRootPath": "",
   "UserConfigsFolderName_AssetPreprocessor": "AssetPreprocessConfigs",
   "UserConfigsFolderName_BundleManager": "BundleMaps",
   "UserConfigsFolderName_PackageManager": "PackageMaps",
