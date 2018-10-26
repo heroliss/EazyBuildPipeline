@@ -88,7 +88,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions))
             { ClickedRevert(); return; }
-            if (G.Module.RootAvailable)
+            if (G.Module.StateConfigAvailable)
             {
                 if (GUILayout.Button(new GUIContent("Apply"), buttonStyle, buttonOptions))
                 { ClickedApply(); return; }
@@ -236,12 +236,14 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 					try
 					{
 						string path = Path.Combine(G.Module.ModuleConfig.UserConfigsFolderPath, s + ".json");
-						if (File.Exists(path))
-							EditorUtility.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
-						else
-						{
-							CreateNewUserConfig(s, path);
-						}
+                        if (File.Exists(path))
+                        {
+                            EditorUtility.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
+                        }
+                        else
+                        {
+                            CreateNewUserConfig(s, path);
+                        }
 					}
 					catch (Exception e)
 					{
@@ -255,22 +257,20 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 		private void CreateNewUserConfig(string name, string path)
 		{
             //新建
-            if (!Directory.Exists(CommonModule.CommonConfig.Json.UserConfigsRootPath))
+            if (!Directory.Exists(CommonModule.CommonConfig.UserConfigsRootPath))
             {
-                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.Json.UserConfigsRootPath);
+                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.UserConfigsRootPath);
                 return;
             }
+            //保存
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-			File.Create(path).Close();
-			G.Module.DisplayDialog("创建成功!");
-			//更新列表
-			userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.ModuleConfig.UserConfigsFolderPath);
-			//保存
-			G.Module.ModuleStateConfig.JsonPath = path;
-			G.Module.ModuleStateConfig.Save();
-			//切换
-			G.Module.IsDirty = false;
-			ChangeUserConfig(userConfigNames.IndexOf(name));
+            G.Module.UserConfig.JsonPath = path;
+            SaveUserConfig();
+            //更新列表
+            userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.ModuleConfig.UserConfigsFolderPath);
+            //切换
+            G.Module.IsDirty = false;
+            ChangeUserConfig(userConfigNames.IndexOf(name));
             //用于总控
             G.g.OnChangeConfigList();
         }
@@ -314,9 +314,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 		private void ChangeRootPath(string path)
         {
-            CommonModule.CommonConfig.Json.PipelineRootPath = path;
-            CommonModule.CommonConfig.Save();
-            G.Module.LoadAllConfigs(path);
+            CommonModule.ChangeRootPath(path);
+            G.Module.LoadAllConfigs();
             G.g.OnChangeCurrentUserConfig();
             selectedUserConfigIndex = userConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.Module.ModuleStateConfig.Json.CurrentUserConfigName));
             EBPUtility.HandleApplyingWarning(G.Module);

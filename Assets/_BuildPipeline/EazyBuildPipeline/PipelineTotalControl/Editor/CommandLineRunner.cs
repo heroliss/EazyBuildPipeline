@@ -22,7 +22,6 @@ namespace EazyBuildPipeline
         {
             //加载公共基础配置
             CommonModule.LoadCommonConfig();
-            CommonModule.CommonConfig.Json.UserConfigsRootPath = EBPUtility.GetArgValue("ConfigsRootPath");
             CommonModule.CommonConfig.Json.PipelineRootPath = EBPUtility.GetArgValue("PipelineRootPath");
             PipelineTotalControl.Module totalModule = new PipelineTotalControl.Module();
             //加载和检查每一个模块
@@ -36,7 +35,7 @@ namespace EazyBuildPipeline
                     continue; //跳过该模块
                 }
                 //加载模块配置
-                if (!runner.BaseModule.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath, true))
+                if (!runner.BaseModule.LoadAllConfigs(true))
                     Environment.Exit(940);//函数内部应抛出异常，才能将异常信息发送到命令行。正常情况下不应接收到94x的退出代码
                 //设置Tag
                 runner.BaseModule.BaseModuleStateConfig.BaseJson.CurrentTag = assetTag;

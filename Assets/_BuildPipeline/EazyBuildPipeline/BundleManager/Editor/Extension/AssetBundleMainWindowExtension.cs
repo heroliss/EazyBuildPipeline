@@ -40,9 +40,9 @@ namespace AssetBundleManagement2
         {
             if (EazyBuildPipeline.BundleManager.G.g != null)
             {
-                if (!System.IO.Directory.Exists(EazyBuildPipeline.CommonModule.CommonConfig.Json.UserConfigsRootPath))
+                if (!System.IO.Directory.Exists(EazyBuildPipeline.CommonModule.CommonConfig.UserConfigsRootPath))
                 {
-                    EazyBuildPipeline.BundleManager.G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + EazyBuildPipeline.CommonModule.CommonConfig.Json.UserConfigsRootPath);
+                    EazyBuildPipeline.BundleManager.G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + EazyBuildPipeline.CommonModule.CommonConfig.UserConfigsRootPath);
                 }
                 else
                 {

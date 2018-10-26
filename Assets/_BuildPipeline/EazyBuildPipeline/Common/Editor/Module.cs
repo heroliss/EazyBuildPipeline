@@ -26,7 +26,7 @@ namespace EazyBuildPipeline
                 CommonConfig.Load(AssetDatabase.GUIDToAssetPath(guids[0]));
                 if (!CommonConfig.IsBatchMode)
                 {
-                    CheckAndSetUserConfigsRootPath();
+                    CheckAndSetAllRootPath();
                 }
                 return true;
             }
@@ -43,19 +43,40 @@ namespace EazyBuildPipeline
             }
         }
 
-        public static void CheckAndSetUserConfigsRootPath()
+        public static void ChangeRootPath(string path)
         {
-            string userConfigsRootPath = CommonConfig.Json.UserConfigsRootPath;
-            if(string.IsNullOrEmpty(userConfigsRootPath) || !Directory.Exists(userConfigsRootPath))
+            CommonConfig.Json.PipelineRootPath = path;
+            CommonConfig.Save();
+            CheckAndSetAllRootPath();
+        }
+
+        public static void CheckAndSetAllRootPath()
+        {
+            CheckAndResetRootPath(CommonConfig.UserConfigsRootPath);
+            CheckAndResetRootPath(CommonConfig.DataRootPath);
+            CheckAndResetRootPath(CommonConfig.LogsRootPath);
+        }
+
+        static bool CheckAndResetRootPath(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
             {
-                EditorUtility.DisplayDialog("Load UserConfig", "用户配置根目录不存在：" + userConfigsRootPath + "\n\n请设置根目录来存放用户配置文件", "设置");
-                string newPath = EditorUtility.OpenFolderPanel("Open UserConfigs Root", userConfigsRootPath, null);
-                if (!string.IsNullOrEmpty(newPath))
+                if (EditorUtility.DisplayDialog("检查目录结构", "Pipeline根目录（" + CommonConfig.Json.PipelineRootPath +
+                    "）中缺少子目录：" + path + "\n\n请重置根目录，程序将自动补全目录结构。", "选择根目录并重置", "取消"))
                 {
-                    CommonConfig.Json.UserConfigsRootPath = newPath;
-                    CommonConfig.Save();
+                    string newPath = EditorUtility.OpenFolderPanel("Open Pipeline Root", CommonConfig.Json.PipelineRootPath, null);
+                    if (!string.IsNullOrEmpty(newPath))
+                    {
+                        CommonConfig.Json.PipelineRootPath = newPath;
+                        CommonConfig.Save();
+                        Directory.CreateDirectory(CommonConfig.DataRootPath);
+                        Directory.CreateDirectory(CommonConfig.UserConfigsRootPath);
+                        Directory.CreateDirectory(CommonConfig.LogsRootPath);
+                    }
                 }
+                return false;
             }
+            return true;
         }
     }
 
@@ -63,7 +84,7 @@ namespace EazyBuildPipeline
     public abstract class BaseModule
     {
         public bool IsDirty; //用来表示子类中自定义配置是否被修改，该变量与这个类所有内容都无关
-        public bool RootAvailable;
+        public bool StateConfigAvailable;
         public string StateConfigLoadFailedMessage;
         public abstract string ModuleName { get; }
         public string ModuleConfigSearchText { get { return "EazyBuildPipeline ModuleConfig " + ModuleName; } }
@@ -85,9 +106,9 @@ namespace EazyBuildPipeline
 
         public abstract IModuleConfig BaseModuleConfig { get; }
         public abstract IModuleStateConfig BaseModuleStateConfig { get; }
-        public abstract bool LoadModuleConfig(string pipelineRootPath);
-        public abstract bool LoadModuleStateConfig(string pipelineRootPath);
-        public abstract bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false);
+        public abstract bool LoadModuleConfig();
+        public abstract bool LoadModuleStateConfig();
+        public abstract bool LoadAllConfigs(bool NOTLoadUserConfig = false);
         public abstract bool LoadUserConfig();
 
         //日志系统
@@ -145,7 +166,7 @@ namespace EazyBuildPipeline
         public override IModuleConfig BaseModuleConfig { get { return ModuleConfig; } }
         public override IModuleStateConfig BaseModuleStateConfig { get { return ModuleStateConfig; } }
 
-        public override bool LoadModuleConfig(string pipelineRootPath)
+        public override bool LoadModuleConfig()
         {
             try
             {
@@ -166,55 +187,36 @@ namespace EazyBuildPipeline
             }
         }
 
-        public override bool LoadModuleStateConfig(string pipelineRootPath)
+        public override bool LoadModuleStateConfig()
         {
-            string rootPath = pipelineRootPath;
             ModuleStateConfig.UserConfigsFolderPath = ModuleConfig.UserConfigsFolderPath; //拷贝配置项
             try
             {
-                if (Directory.Exists(rootPath)) //根目录是否存在
+                ModuleStateConfig.JsonPath = ModuleConfig.StateConfigPath;
+                Directory.CreateDirectory(Path.GetDirectoryName(ModuleStateConfig.JsonPath)); //Create _Configs目录
+                if (!File.Exists(ModuleStateConfig.JsonPath)) //状态配置文件是否存在
                 {
-                    ModuleStateConfig.JsonPath = ModuleConfig.StateConfigPath;
-                    if (Directory.Exists(Path.GetDirectoryName(ModuleStateConfig.JsonPath))) //_Configs目录是否存在
-                    {
-                        if (!File.Exists(ModuleStateConfig.JsonPath)) //状态配置文件是否存在
-                        {
-                            ModuleStateConfig.Save();
-                        }
-                        else
-                        {
-                            ModuleStateConfig.Load();
-                        }
-                        //if (G.OverrideCurrentSavedConfigName != null) //用于总控
-                        //{
-                        //    CurrentConfig.Json.CurrentSavedConfigName = G.OverrideCurrentSavedConfigName;
-                        //    G.OverrideCurrentSavedConfigName = null;
-                        //}
-                    }
-                    else
-                    {
-                        StateConfigLoadFailedMessage = "不是有效的Pipeline根目录:" + rootPath +
-                       "\n\n若要新建一个此工具可用的Pipeline根目录，确保存在如下目录即可：" + Path.GetDirectoryName(ModuleStateConfig.JsonPath);
-                        RootAvailable = false;
-                        return false;
-                    }
+                    ModuleStateConfig.Save();
                 }
                 else
                 {
-                    StateConfigLoadFailedMessage = "根目录不存在:" + rootPath;
-                    RootAvailable = false;
-                    return false;
+                    ModuleStateConfig.Load();
                 }
-                RootAvailable = true;
+                //if (G.OverrideCurrentSavedConfigName != null) //用于总控
+                //{
+                //    CurrentConfig.Json.CurrentSavedConfigName = G.OverrideCurrentSavedConfigName;
+                //    G.OverrideCurrentSavedConfigName = null;
+                //}
+                StateConfigAvailable = true;
                 return true;
             }
             catch (Exception e)
             {
-                
                 StateConfigLoadFailedMessage = "加载模块 " + ModuleName + " 状态配置文件时发生错误：" + e.Message
                             + "\n加载路径：" + ModuleStateConfig.JsonPath
                             + "\n请设置正确的文件路径以及形如以下所示的配置文件：\n" + new TModuleStateConfig();
-                RootAvailable = false;
+                DisplayDialog(StateConfigLoadFailedMessage);
+                StateConfigAvailable = false;
                 return false;
             }
         }

@@ -102,7 +102,7 @@ namespace EazyBuildPipeline
             //检查状态配置文件和工作目录
             if (!onlyCheckConfig)
             {
-                if (!Module.RootAvailable)
+                if (!Module.StateConfigAvailable)
                 {
                     DisplayDialogOrThrowCheckFailedException(Module.StateConfigLoadFailedMessage);
                     return false;

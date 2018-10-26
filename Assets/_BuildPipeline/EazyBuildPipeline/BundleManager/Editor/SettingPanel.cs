@@ -65,7 +65,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
                 selectedCompressionIndex = selectedCompressionIndex_new;
                 return;
             }
-            if (G.Module.RootAvailable)
+            if (G.Module.StateConfigAvailable)
             {
                 if (GUILayout.Button(new GUIContent("Build Bundles"), buttonStyle, defaultOptions))
                 { ClickedApply(); return; }
@@ -139,9 +139,8 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
 		private void ChangeRootPath(string path)
         {
-            CommonModule.CommonConfig.Json.PipelineRootPath = path;
-            CommonModule.CommonConfig.Save();
-            G.Module.LoadAllConfigs(path);
+            CommonModule.ChangeRootPath(path);
+            G.Module.LoadAllConfigs();
             InitSelectedIndex();
             ConfigToIndex();
             EBPUtility.HandleApplyingWarning(G.Module);
@@ -161,7 +160,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
         private void LoadAllConfigs()
         {
             CommonModule.LoadCommonConfig();
-            G.Module.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath);
+            G.Module.LoadAllConfigs();
             InitSelectedIndex();
             ConfigToIndex();
             EBPUtility.HandleApplyingWarning(G.Module);

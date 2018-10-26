@@ -11,7 +11,7 @@ namespace EazyBuildPipeline
         static GUILayoutOption[] miniButtonOptions = { GUILayout.MaxHeight(18), GUILayout.MaxWidth(22) };
         public static void RootSettingLine(BaseModule module, Action<string> ChangeRootPath)
         {
-            bool rootAvailable = module.RootAvailable;
+            bool rootAvailable = module.StateConfigAvailable;
             errorStyle.normal.textColor = Color.red; //TODO: 暂时把初始化放在这里
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(new GUIContent("Root:", rootAvailable ? null : module.StateConfigLoadFailedMessage),

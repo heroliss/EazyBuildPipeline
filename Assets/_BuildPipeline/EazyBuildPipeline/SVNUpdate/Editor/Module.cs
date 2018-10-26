@@ -12,9 +12,9 @@ namespace EazyBuildPipeline.SVNUpdate
         ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
         public override string ModuleName { get { return "SVNUpdate"; } }
-        public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
+        public override bool LoadAllConfigs(bool NOTLoadUserConfig = false)
         {
-            if (!LoadModuleConfig(pipelineRootPath)) return false;
+            if (!LoadModuleConfig()) return false;
             //暂时不需要ModuleStateConfig，所以不加载
             return true;
         }

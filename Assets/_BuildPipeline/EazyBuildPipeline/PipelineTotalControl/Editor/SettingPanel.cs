@@ -172,7 +172,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void LoadAllConfigs()
         {
             CommonModule.LoadCommonConfig();
-            G.Module.LoadAllModules(CommonModule.CommonConfig.Json.PipelineRootPath);
+            G.Module.LoadAllModules();
             InitSelectedIndex();
             LoadAllModulesUserConfigList();
             ConfigToIndex();
@@ -454,7 +454,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
             GUILayout.FlexibleSpace();
-            if (PlayerBuilder.G.Module.RootAvailable)
+            if (PlayerBuilder.G.Module.StateConfigAvailable)
             {
                 if (GUILayout.Button(new GUIContent("Run Pipeline"))) { ClickedRunPipeline(); return; }
             }
@@ -685,9 +685,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void ChangeRootPath(string path)
         {
-            CommonModule.CommonConfig.Json.PipelineRootPath = path;
-            CommonModule.CommonConfig.Save();
-            G.Module.LoadAllModules(path);
+            CommonModule.ChangeRootPath(path);
+            G.Module.LoadAllModules();
             InitSelectedIndex();
             LoadAllModulesUserConfigList();
             ConfigToIndex();
@@ -719,7 +718,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 catch { }
                 if (result == true)
                 {
-                    SaveCurrentPlayerSetting();
+                    SaveUserConfig();
                 }
             }
         }
@@ -795,21 +794,22 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void CreateNewBuildSetting(string name, string path)
         {
             //新建
-            if (!Directory.Exists(CommonModule.CommonConfig.Json.UserConfigsRootPath))
+            if (!Directory.Exists(CommonModule.CommonConfig.UserConfigsRootPath))
             {
-                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.Json.UserConfigsRootPath);
+                PlayerBuilder.G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.UserConfigsRootPath);
                 return;
             }
+            //保存
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.Create(path).Close();
-            G.Module.DisplayDialog("创建成功!");
+            PlayerBuilder.G.Module.UserConfig.JsonPath = path;
+            SaveUserConfig();
             //更新列表
             userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(PlayerBuilder.G.Module.ModuleConfig.UserConfigsFolderPath);
-            //保存
-            PlayerBuilder.G.Module.UserConfig.JsonPath = path;
-            SaveCurrentPlayerSetting();
             //切换
+            PlayerBuilder.G.Module.IsDirty = false;
             ChangeUserConfig(userConfigNames.IndexOf(name));
+            //用于总控
+            //G.g.OnChangeConfigList();
         }
 
         private void ChangeUserConfig(int selectedUserConfigIndex_new)
@@ -863,10 +863,10 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             }
             if (!ensure) return;
 
-            SaveCurrentPlayerSetting();
+            SaveUserConfig();
         }
 
-        private void SaveCurrentPlayerSetting()
+        private void SaveUserConfig()
         {
             try
             {

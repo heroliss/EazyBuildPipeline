@@ -75,10 +75,10 @@ namespace EazyBuildPipeline.PackageManager
 
         public UserConfig UserConfig = new UserConfig();
 
-        public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
+        public override bool LoadAllConfigs(bool NOTLoadUserConfig = false)
         {
-            bool success = LoadModuleConfig(pipelineRootPath);
-            LoadModuleStateConfig(pipelineRootPath);
+            bool success = LoadModuleConfig();
+            LoadModuleStateConfig();
             if (G.OverrideCurrentUserConfigName != null)
             {
                 ModuleStateConfig.Json.CurrentUserConfigName = G.OverrideCurrentUserConfigName;

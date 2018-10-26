@@ -70,12 +70,12 @@ namespace EazyBuildPipeline.PipelineTotalControl
             Init();
         }
 
-        public bool LoadAllModules(string pipelineRootPath)
+        public bool LoadAllModules()
         {
             //加载所有模块的模块配置、状态配置、用户配置
             foreach (var item in Runners)
             {
-                item.BaseModule.LoadAllConfigs(pipelineRootPath);
+                item.BaseModule.LoadAllConfigs();
             }
             //这里需要将静态的Module与TotalControl中的Module同步，因为该窗口总控面板与PlayerSetting面板结合了
             PlayerBuilder.G.Module = PlayerBuilderModule;
@@ -101,7 +101,7 @@ namespace EazyBuildPipeline.PipelineTotalControl
             Init();
         }
 
-        public override bool LoadAllConfigs(string pipelineRootPath, bool NOTLoadUserConfig = false)
+        public override bool LoadAllConfigs(bool NOTLoadUserConfig = false)
         {
             throw new NotImplementedException("总控模块暂时不需任何配置");
         }

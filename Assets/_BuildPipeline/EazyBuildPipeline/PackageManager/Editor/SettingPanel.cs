@@ -143,7 +143,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             GUILayout.Space(20);
             if (GUILayout.Button(new GUIContent("Revert"), buttonStyle, buttonOptions))
             { ClickedRevert(); return; }
-            if (G.Module.RootAvailable && !LoadBundlesFromConfig)
+            if (G.Module.StateConfigAvailable && !LoadBundlesFromConfig)
             {
                 if (GUILayout.Button(new GUIContent("Build"), buttonStyle, buttonOptions))
                 { ClickedApply(); return; }
@@ -377,9 +377,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
         private void ChangeRootPath(string path)
         {
-            CommonModule.CommonConfig.Json.PipelineRootPath = path;
-            CommonModule.CommonConfig.Save();
-            G.Module.LoadAllConfigs(path);
+            CommonModule.ChangeRootPath(path);
+            G.Module.LoadAllConfigs();
             InitSelectedIndex();
             LoadConfigsList();
             ConfigToIndex();
@@ -411,7 +410,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private void LoadAllConfigs()
         {
             CommonModule.LoadCommonConfig();
-            G.Module.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath);
+            G.Module.LoadAllConfigs();
             InitSelectedIndex();
             LoadConfigsList();
             ConfigToIndex();
@@ -482,10 +481,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
             if (!ensure) return;
 
-            SaveCurrentMap();
+            SaveUserConfig();
         }
 
-        private void SaveCurrentMap()
+        private void SaveUserConfig()
         {
             try
             {
@@ -572,7 +571,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                             G.Module.DisplayDialog("创建新文件失败，该名称已存在！");
                         else
                         {
-                            CreateNewMap(s, path);
+                            CreateNewUserConfig(s, path);
                         }
                     }
                     catch (Exception e)
@@ -584,22 +583,20 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
         }
 
-        private void CreateNewMap(string name, string path)
+        private void CreateNewUserConfig(string name, string path)
         {
             //新建
-            if (!Directory.Exists(CommonModule.CommonConfig.Json.UserConfigsRootPath))
+            if (!Directory.Exists(CommonModule.CommonConfig.UserConfigsRootPath))
             {
-                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.Json.UserConfigsRootPath);
+                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.UserConfigsRootPath);
                 return;
-            }
+            }   
+            //保存
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.Create(path).Close();
-            G.Module.DisplayDialog("创建成功!");
+            G.Module.UserConfig.JsonPath = path;
+            SaveUserConfig();
             //更新列表
             userConfigNames = EBPUtility.FindFilesRelativePathWithoutExtension(G.Module.ModuleConfig.UserConfigsFolderPath);
-            //保存
-            G.Module.UserConfig.JsonPath = path;
-            SaveCurrentMap();
             //切换
             G.Module.IsDirty = false;
             ChangeUserConfig(userConfigNames.IndexOf(name));
@@ -653,7 +650,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 catch { }
                 if (result == true)
                 {
-                    SaveCurrentMap();
+                    SaveUserConfig();
                 }
             }
         }

@@ -40,7 +40,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             G.Init();
 
             CommonModule.LoadCommonConfig();
-            G.Module.LoadAllConfigs(CommonModule.CommonConfig.Json.PipelineRootPath);
+            G.Module.LoadAllConfigs();
 
             settingPanel = new SettingPanel();
             tagsPanel = new TagsPanel();

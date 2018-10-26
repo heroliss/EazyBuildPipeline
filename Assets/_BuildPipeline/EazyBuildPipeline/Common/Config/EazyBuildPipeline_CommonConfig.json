@@ -23,7 +23,9 @@
     ]
   },
   "IconsFolderRelativePath": "Icons",
-  "UserConfigsRootPath": "",
+  "DataRootName": "Data",
+  "LogsRootName": "Logs",
+  "UserConfigsRootName": "Configs",
   "UserConfigsFolderName_AssetPreprocessor": "AssetPreprocessConfigs",
   "UserConfigsFolderName_BundleManager": "BundleMaps",
   "UserConfigsFolderName_PackageManager": "PackageMaps",
