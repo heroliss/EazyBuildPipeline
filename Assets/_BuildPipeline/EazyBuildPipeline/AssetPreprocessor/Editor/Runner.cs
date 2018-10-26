@@ -209,14 +209,17 @@ namespace EazyBuildPipeline.AssetPreprocessor
             RunShell_ShowProgress_WaitForExit(copyFileArgs, "正在从PreStoredAssets里查找文件...", "第1步(共2步) 从PreStoredAssets拷贝文件至Assets目录");
             if (process.ExitCode != 0) //第一步出错
             {
-                return;
+                throw new EBPException("第一步CopyFile时发生错误：" + errorMessage);
             }
             if (changeMetaArgs.Length != changeMetaArgsLength) //第二步勾选
             {
                 currentShellIndex++;
                 RunShell_ShowProgress_WaitForExit(changeMetaArgs, "正在查找.meta文件...", "第2步(共2步) 修改meta文件");
             }
-
+            if (process.ExitCode != 0) //第二步出错
+            {
+                throw new EBPException("第二步ChangeMeta时发生错误：" + errorMessage);
+            }
             CommonModule.CommonConfig.Json.CurrentAssetTag = Module.UserConfig.Json.Tags;
             CommonModule.CommonConfig.Save();
         }

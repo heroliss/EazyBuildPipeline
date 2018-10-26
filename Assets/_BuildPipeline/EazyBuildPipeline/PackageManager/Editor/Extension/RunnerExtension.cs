@@ -11,6 +11,7 @@ namespace EazyBuildPipeline.PackageManager
 
         protected override void PreProcess()
         {
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
     }
 }

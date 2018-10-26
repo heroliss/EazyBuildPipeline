@@ -49,8 +49,6 @@ namespace EazyBuildPipeline
                 state.Applying = false;
                 state.ErrorMessage = null;
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
-                Module.Log("## Refresh Assets ##", true);
-                AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             }
             catch (Exception e)
             {

@@ -21,6 +21,8 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         protected override void PreProcess()
         {
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+
             ApplyPlayerSettingsAndScriptDefines();
             EditorUtility.DisplayProgressBar("Applying IOS PostProcess Settings", "", 0);
             ApplyIOSPostProcessSettings();
@@ -28,13 +30,12 @@ namespace EazyBuildPipeline.PlayerBuilder
             CreateBuildingConfigsClassFile();
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
-            if (CommonModule.CommonConfig.Args_lower.Contains("-batchmode")) //HACK: Application.isBatchMode(for Unity 2018.3+)
+            if (CommonModule.CommonConfig.IsBatchMode)
             {
                 EditorUtility.DisplayProgressBar("Start DownloadConfigs", "", 0);
                 DownLoadConfigs();
                 DownLoadMultiLanguage();
             }
-
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
