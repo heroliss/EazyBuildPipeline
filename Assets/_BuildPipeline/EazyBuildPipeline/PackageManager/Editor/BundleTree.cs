@@ -89,7 +89,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 			base.multiColumnHeader.sortedColumnIndex = -1;
 			//base.multiColumnHeader.sortingChanged += OnSortingChanged;
 			#endregion
-            
+
 			bundleDic = new BundleTreeItemDictionary();
 			folderDic = new BundleTreeItemDictionary();
 			checkFailedItems = new List<BundleTreeItem>();
@@ -122,7 +122,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
 		protected override TreeViewItem BuildRoot()
 		{
-			loadFileProgressCount = 0; 
+			loadFileProgressCount = 0;
 			checkFailedItems.Clear();
 			bundleDic.Clear();
 			folderDic.Clear();

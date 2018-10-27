@@ -19,7 +19,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         int folderID = 0;
         int bundleID = 0;
         int packageCount, folderCount, bundleCount;
-        GUIStyle labelErrorStyle; 
+        GUIStyle labelErrorStyle;
         GUIStyle inDropDownStyle;
         GUIStyle inToggleStyle;
 
@@ -241,7 +241,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private void BuildPackageTree_lostItems(Configs.UserConfig.JsonClass.Package package, PackageTreeItem p)
         {
             //遍历bundles数组添加所有丢失的bundle
-            foreach (string bundlePath in package.Bundles) 
+            foreach (string bundlePath in package.Bundles)
             {
                 string[] folderNames = bundlePath.Split('/'); //路径字符串中必须全部为/ 不能有\
                 PackageTreeItem parent = p;

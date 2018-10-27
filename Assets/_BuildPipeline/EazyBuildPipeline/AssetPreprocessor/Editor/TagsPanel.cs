@@ -28,14 +28,14 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             G.g.OnChangeCurrentUserConfig += Reset;
         }
-        
+
         public void Reset()
         {
             Dirty = false;
             PullCurrentTags();
             selectedTagIndexs_origin = selectedTagIndexs.ToArray();
         }
- 
+
         public void OnGUI(float panelWidth)
         {
             EditorGUILayout.BeginHorizontal();

@@ -59,7 +59,7 @@ namespace EazyBuildPipeline.PlayerBuilder
         }
 
 
-        
+
         private void DownLoadConfigs()
         {
             string configsPath = Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Configs";

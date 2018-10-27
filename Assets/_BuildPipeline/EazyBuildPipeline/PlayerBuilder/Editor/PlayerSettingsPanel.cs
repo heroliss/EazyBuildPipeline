@@ -171,7 +171,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EBPEditorGUILayout.TextField("Export Ipa Path", ref ps.IOS.ExportIpaPath, OnValueChanged);
             EBPEditorGUILayout.TextField("TaskPath", ref ps.IOS.TaskPath, OnValueChanged);
             EditorGUI.EndDisabledGroup();
-    
+
             EditorGUILayout.EndScrollView();
         }
 

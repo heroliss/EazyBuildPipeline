@@ -117,7 +117,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, string.Format("确定应用当前配置？\n\n" +
                 "目标平台: {0}\n 输出路径: {1} \n Resources Version: {2} \n 参数: {3}",
                 target, tagPath, resourceVersion, optionsValue), "确定", "取消");
-            //开始应用          
+            //开始应用
             if (ensure)
             {
                 try

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 srcPath=$1
 targetPath=$2
 

@@ -9,7 +9,7 @@ namespace EazyBuildPipeline.SVNUpdate
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
-            //删除lua的生成文件      
+            //删除lua的生成文件
             EditorUtility.DisplayProgressBar("Clear Wrap Files...", "", 0);
             AssetDatabase.DeleteAsset("Assets/ToLua/ToLua/Source/Generate");
         }

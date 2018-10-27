@@ -287,7 +287,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //AssetPreprocessor
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.PreprocessAssets, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.Applying, 
+            FrontIndicator(Step.PreprocessAssets, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.Applying,
                            G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                 assetPreprocessorContent, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline);
@@ -327,7 +327,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             GUILayout.FlexibleSpace();
 
-            //BundleManager     
+            //BundleManager
             EditorGUILayout.BeginHorizontal();
             FrontIndicator(Step.BuildBundles, G.Module.BundleManagerModule.ModuleStateConfig.Json.Applying,
                            G.Module.BundleManagerModule.ModuleStateConfig.Json.ErrorMessage);
@@ -381,7 +381,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //PackageManager
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.BuildPackages, G.Module.PackageManagerModule.ModuleStateConfig.Json.Applying, 
+            FrontIndicator(Step.BuildPackages, G.Module.PackageManagerModule.ModuleStateConfig.Json.Applying,
                           G.Module.PackageManagerModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                    packageManagerContent, G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline);
@@ -425,7 +425,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //BuildPlayer
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.BuildPlayer, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying, 
+            FrontIndicator(Step.BuildPlayer, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying,
                           G.Module.PlayerBuilderModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                   playerBuilderContent, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline);
@@ -524,7 +524,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         private void FetchSettings()
         {
             //由于这些功能逻辑上属于PlayerSetting而非TotalControl,因此使用PlayerBuilder.G来访问
-            PlayerBuilder.G.Runner.FetchPlayerSettings(); 
+            PlayerBuilder.G.Runner.FetchPlayerSettings();
             PlayerBuilder.G.Module.UserConfig.InitAllRepeatList();
             PlayerBuilder.G.Module.IsDirty = true;
         }
@@ -559,7 +559,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             foreach (var runner in G.Module.Runners)
             {
                 if (runner.BaseModule.BaseModuleStateConfig.BaseJson.IsPartOfPipeline)
-                { 
+                {
                     //重新加载用户配置
                     if (runner.BaseModule.ModuleName != G.Module.PlayerBuilderModule.ModuleName)//PlayerBuilder镶嵌在TotalControl中，可以实时获得最新参数，因此不需要重载用户配置
                     {

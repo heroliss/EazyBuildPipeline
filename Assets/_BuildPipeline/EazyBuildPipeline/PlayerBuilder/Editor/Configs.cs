@@ -114,7 +114,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 //Extension
                 //[JsonConverter(typeof(StringEnumConverter))] public DownloadConfigTypeEnum DownloadConfigType;
                 //[JsonConverter(typeof(StringEnumConverter))] public WowGamePlay.LanguageType DownloadLanguageType;
-                
+
                 //For BuglyInit
                 public string BuglyAppID;
                 public string BuglyAppKey;

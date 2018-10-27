@@ -22,7 +22,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Configs
 
     //暂时无用
     [Serializable]
-    public class ModuleStateConfig : Common.Configs.ModuleStateConfig<ModuleStateConfig.JsonClass> 
+    public class ModuleStateConfig : Common.Configs.ModuleStateConfig<ModuleStateConfig.JsonClass>
     {
         [Serializable]
         public class JsonClass : Common.Configs.ModuleStateConfigJsonClass

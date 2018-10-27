@@ -109,7 +109,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     groupPanels[g0][g1].Add(g2, optionsPanel);
                 }
             }
-        }        
+        }
 
         private void OnGUI()
         {

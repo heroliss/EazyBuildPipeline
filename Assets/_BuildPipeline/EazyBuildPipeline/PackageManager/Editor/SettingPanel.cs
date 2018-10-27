@@ -492,8 +492,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 G.Module.UserConfig.Save();
 
                 G.Module.DisplayDialog("保存配置成功！");
-                G.Module.IsDirty = false; 
-                
+                G.Module.IsDirty = false;
+
                 G.g.OnChangeCurrentUserConfig(); //总控暂时用不上 设置Dirty也用不上
             }
 
@@ -590,7 +590,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.UserConfigsRootPath);
                 return;
-            }   
+            }
             //保存
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             G.Module.UserConfig.JsonPath = path;

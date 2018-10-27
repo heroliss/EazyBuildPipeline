@@ -12,7 +12,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
         private AssetBundleManagement2.AssetBundleMainWindow mainTab;
         private SettingPanel settingPanel;
         private float settingPanelHeight = 70;
-        
+
         [MenuItem("Window/EazyBuildPipeline/BundleManager")]
         static void ShowWindow()
         {

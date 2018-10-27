@@ -94,7 +94,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                         UpdateCurrentConfig();
                         OnToggleChanged();
                     }
-                    
+
                 }
                 sumWidth += width;
                 if (sumWidth > panelWidth - width)

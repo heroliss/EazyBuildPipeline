@@ -16,12 +16,12 @@ namespace EazyBuildPipeline.PackageManager
         ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
         struct BundleVersionStruct { public string BundleName; public string Version; };
-        struct PackageManifestStruct 
-        { 
-            public int flag_; 
+        struct PackageManifestStruct
+        {
+            public int flag_;
             public string name_;
-            public int location_; 
-            public bool hasDownloaded_; 
+            public int location_;
+            public bool hasDownloaded_;
         };
 
         public int ResourceVersion;
@@ -297,7 +297,7 @@ namespace EazyBuildPipeline.PackageManager
                         {
                             zipStream.PutNextEntry(new ZipEntry(package.EmptyFolders[i] + "/") { });
                         }
-                        
+
                         //构建bundle_version
                         BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, ResourceVersion, package.Bundles, zipStream);
 

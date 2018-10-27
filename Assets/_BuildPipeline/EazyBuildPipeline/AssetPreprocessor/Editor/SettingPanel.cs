@@ -185,7 +185,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			int selectedIndex_new = EditorGUILayout.Popup(selectedUserConfigIndex, userConfigNames.ToArray(), popupStyle, popupOptions);
 			if (G.Module.IsDirty && selectedUserConfigIndex != -1)
 				userConfigNames[selectedUserConfigIndex] = userConfigNames[selectedUserConfigIndex].Remove(userConfigNames[selectedUserConfigIndex].Length - 1);
-            
+
 			if (selectedIndex_new != selectedUserConfigIndex)
 			{
 				ChangeUserConfig(selectedIndex_new);
@@ -289,7 +289,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			if (!ensure) return;
 
 			SaveUserConfig();
-            
+
         }
 
 		private void SaveUserConfig()
