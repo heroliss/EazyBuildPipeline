@@ -5,7 +5,7 @@ function Log()
 }
 
 if (( $# < 4 ));then echo "Need at least 4 Parameters"; exit 0;fi
-if [ ! -d $1 ];then mkdir -p $1;fi
+#if [ ! -d $1 ];then mkdir -p $1;fi
 #logFilePath="$1/[$(date '+%y-%m-%d_%H.%M.%S')]CopyFile.txt"
 logFilePath=$1
 targetRoot=$2

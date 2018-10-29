@@ -87,12 +87,9 @@ namespace EazyBuildPipeline
         {
             try
             {
-                if (!onlyCheckConfig)
-                {
-                    CreateLogFolder();
-                }
                 if (!onlyCheckConfig) //这个变量说明是否是Run前检查，若是则记录日志，否则不记录日志
                 {
+                    CreateLogFolder();
                     Module.StartLog();
                     Module.Log("## Check " + Module.ModuleName + " ##", true);
                 }
