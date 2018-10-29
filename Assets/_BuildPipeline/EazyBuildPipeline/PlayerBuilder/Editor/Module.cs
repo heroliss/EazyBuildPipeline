@@ -65,7 +65,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             }
             catch (Exception e)
             {
-                DisplayDialog("载入用户配置文件：" + UserConfig.JsonPath + " 时发生错误：" + e.Message);
+                DisplayOrLogAndThrowError("载入用户配置文件：" + UserConfig.JsonPath + " 时发生错误：" + e.Message, e);
                 return false;
             }
         }

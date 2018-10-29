@@ -7,8 +7,6 @@ namespace EazyBuildPipeline.SVNUpdate
     {
         protected override void PreProcess()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-
             //删除lua的生成文件
             EditorUtility.DisplayProgressBar("Clear Wrap Files...", "", 0);
             AssetDatabase.DeleteAsset("Assets/ToLua/ToLua/Source/Generate");
@@ -16,11 +14,9 @@ namespace EazyBuildPipeline.SVNUpdate
 
         protected override void PostProcess()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             //重新创建Wrap和Lua文件
             EditorUtility.DisplayProgressBar("Clear and Generate Wrap Files...", "", 0.2f);
             ToLuaMenu.ClearWrapFilesAndCreate();
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
             //LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { }); //下面三步代替这一步
             EditorUtility.DisplayProgressBar("Clear Lua Files...", "", 0.4f);

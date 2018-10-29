@@ -243,20 +243,35 @@ namespace EazyBuildPipeline.PackageManager.Editor
         private void ClickedCheck()
         {
             G.Module.UserConfig.Json.Packages = GetPackageMap(); //从配置现场覆盖当前map
-            if (G.Runner.Check(true) && CheckAllPackageItem())
+            try
             {
-                G.Module.DisplayDialog("检查正常！");
+                G.Runner.Check(true);
+                if (CheckAllPackageItem())
+                {
+                    G.Module.DisplayDialog("检查正常！");
+                }
+            }
+            catch (EBPCheckFailedException e)
+            {
+                G.Module.DisplayDialog(e.Message);
             }
         }
 
         private void ClickedApply()
         {
             G.Module.UserConfig.Json.Packages = GetPackageMap(); //从配置现场覆盖当前map
-            if (!G.Runner.Check()) return;
+            try
+            {
+                G.Runner.Check();
+            }
+            catch (EBPCheckFailedException e)
+            {
+                G.Module.DisplayDialog(e.Message);
+                return;
+            }
             if (!CheckAllPackageItem()) return;
 
-            bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, string.Format("确定应用当前配置？"),
-                "确定", "取消");
+            bool ensure = G.Module.DisplayDialog("确定应用当前配置？", "确定", "取消");
             if (ensure)
             {
                 try
@@ -267,7 +282,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     G.Runner.Run();
 
                     TimeSpan time = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
-                    if (EditorUtility.DisplayDialog(G.Module.ModuleName, "打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
+                    if (G.Module.DisplayDialog("打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                         "显示文件", "关闭"))
                     {
                         string firstPackagePath = Path.Combine(G.Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(G.Module.ModuleStateConfig.Json.CurrentTag) +
@@ -275,13 +290,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
                         EditorUtility.RevealInFinder(firstPackagePath);
                     }
                 }
-                catch (Exception e)
+                catch
                 {
-                    G.Module.DisplayDialog("打包时发生错误：" + e.Message);
-                }
-                finally
-                {
-                    EditorUtility.ClearProgressBar();
+                    G.Module.DisplayRunError();
                 }
             }
         }
@@ -299,7 +310,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //缺失提示
             if (wrongItems.Count != 0)
             {
-                EditorUtility.DisplayDialog("提示", "发现" + wrongItems.Count + "个有问题的项，请修复后再应用", "确定");
+                G.Module.DisplayDialog("发现" + wrongItems.Count + "个有问题的项，请修复后再应用");
                 G.g.packageTree.FrameAndSelectItems(wrongItems);
                 return false;
             }
@@ -322,21 +333,21 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 if (omittedBundleList.Count != 0)
                 {
-                    if (EditorUtility.DisplayDialog("提示", "发现" + omittedBundleList.Count + "个遗漏的Bundle！", "返回查看", "忽略"))
+                    if (G.Module.DisplayDialog("发现" + omittedBundleList.Count + "个遗漏的Bundle！", "返回查看", "忽略"))
                     { G.g.bundleTree.FrameAndSelectItems(omittedBundleList); return false; }
 
                 }
             }
             if (repeatedBundleList.Count != 0)
             {
-                if (EditorUtility.DisplayDialog("提示", "发现" + repeatedBundleList.Count + "个重复打包的Bundle！", "返回查看", "忽略"))
+                if (G.Module.DisplayDialog("发现" + repeatedBundleList.Count + "个重复打包的Bundle！", "返回查看", "忽略"))
                 { G.g.bundleTree.FrameAndSelectItems(repeatedBundleList); return false; }
             }
 
             //空项提示
             if (emptyItems.Count != 0)
             {
-                if (EditorUtility.DisplayDialog("提示", "发现" + emptyItems.Count + "个空目录或包！", "返回查看", "忽略"))
+                if (G.Module.DisplayDialog("发现" + emptyItems.Count + "个空目录或包！", "返回查看", "忽略"))
                 {
                     G.g.packageTree.FrameAndSelectItems(emptyItems);
                     return false;
@@ -382,7 +393,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             InitSelectedIndex();
             LoadConfigsList();
             ConfigToIndex();
-            EBPUtility.HandleApplyingWarning(G.Module);
+            //G.Module.DisplayRunError();
             OnChangeRootPath();
         }
 
@@ -414,7 +425,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             InitSelectedIndex();
             LoadConfigsList();
             ConfigToIndex();
-            EBPUtility.HandleApplyingWarning(G.Module);
+            //G.Module.DisplayRunError();
         }
 
         private void LoadConfigsList()
@@ -477,7 +488,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             bool ensure = true;
             if (G.Module.IsDirty)
             {
-                ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "是否保存并覆盖原配置：" + userConfigNames[selectedUserConfigIndex], "覆盖保存", "取消");
+                ensure = G.Module.DisplayDialog("是否保存并覆盖原配置：" + userConfigNames[selectedUserConfigIndex], "覆盖保存", "取消");
             }
             if (!ensure) return;
 
@@ -644,8 +655,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 bool result = false;
                 try
                 {
-                    result = EditorUtility.DisplayDialog(G.Module.ModuleName,
-                        "当前配置未保存，是否保存并覆盖 \" " + userConfigNames[selectedUserConfigIndex] + " \" ?", "保存并退出", "直接退出");
+                    result = G.Module.DisplayDialog("当前配置未保存，是否保存并覆盖 \" " + userConfigNames[selectedUserConfigIndex] + " \" ?", "保存并退出", "直接退出");
                 }
                 catch { }
                 if (result == true)
@@ -660,11 +670,11 @@ namespace EazyBuildPipeline.PackageManager.Editor
             bool ensureLoad = true;
             if (G.Module.IsDirty)
             {
-                ensureLoad = EditorUtility.DisplayDialog("切换配置", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
+                ensureLoad = G.Module.DisplayDialog("更改未保存，是否要放弃更改？", "放弃保存", "返回");
             }
             if (ensureLoad)
             {
-                //try
+                try
                 {
                     var newUserConfig = new Configs.UserConfig();
                     string newUserConfigFileName = userConfigNames[selectedUserConfigIndex_new] + ".json";
@@ -678,10 +688,10 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     ConfigToIndex();
                     OnChangeUserConfig();
                 }
-                //catch (Exception e)
-                //{
-                //    EditorUtility.DisplayDialog("切换map", "切换用户配置时发生错误：" + e.Message, "确定");
-                //}
+                catch (Exception e)
+                {
+                    G.Module.DisplayDialog("切换用户配置时发生错误：" + e.Message);
+                }
             }
         }
 

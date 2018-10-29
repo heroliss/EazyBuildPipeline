@@ -10,6 +10,7 @@ namespace EazyBuildPipeline
     class EBPException : ApplicationException
     {
         public EBPException(string message) : base(message) { }
+        public EBPException(string message, Exception innerException) : base(message, innerException) { }
     }
     class EBPCheckFailedException : EBPException
     {
@@ -35,8 +36,7 @@ namespace EazyBuildPipeline
                     continue; //跳过该模块
                 }
                 //加载模块配置
-                if (!runner.BaseModule.LoadAllConfigs(true))
-                    Environment.Exit(940);//函数内部应抛出异常，才能将异常信息发送到命令行。正常情况下不应接收到94x的退出代码
+                runner.BaseModule.LoadAllConfigs(true);
                 //设置Tag
                 runner.BaseModule.BaseModuleStateConfig.BaseJson.CurrentTag = assetTag;
                 //覆盖当前状态配置
@@ -75,8 +75,7 @@ namespace EazyBuildPipeline
                         break;
                 }
                 //加载用户配置
-                if (!runner.BaseModule.LoadUserConfig())
-                    Environment.Exit(941);
+                runner.BaseModule.LoadUserConfig();
                 //覆盖用户配置
                 switch (runner.BaseModule.ModuleName)
                 {
@@ -112,8 +111,7 @@ namespace EazyBuildPipeline
                         break;
                 }
                 //检查配置
-                if (!runner.Check())
-                    Environment.Exit(942);
+                runner.Check();
             }
             //运行每一个模块
             if (!checkMode)

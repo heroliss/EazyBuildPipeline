@@ -103,7 +103,7 @@ namespace EazyBuildPipeline.PackageManager
             }
             catch (Exception e)
             {
-                DisplayDialog("载入用户配置文件：" + ModuleStateConfig.CurrentUserConfigPath + " 时发生错误：" + e.Message);
+                DisplayOrLogAndThrowError("载入用户配置文件：" + ModuleStateConfig.CurrentUserConfigPath + " 时发生错误：" + e.Message, e);
                 return false;
             }
         }

@@ -297,7 +297,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     bool ensure = true;
                     if (group.Defines.Count > 0)
                     {
-                        ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定要删除宏定义组“" + group.GroupName + "”及其所有内容？", "确定", "取消");
+                        ensure = G.Module.DisplayDialog("确定要删除宏定义组“" + group.GroupName + "”及其所有内容？", "确定", "取消");
                     }
                     if (ensure)
                     {
@@ -355,7 +355,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         bool ensure = true;
                         if (define.Define != "")
                         {
-                            ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定要删除宏定义“" + define.Define + "”?", "确定", "取消");
+                            ensure = G.Module.DisplayDialog("确定要删除宏定义“" + define.Define + "”?", "确定", "取消");
                         }
                         if (ensure)
                         {

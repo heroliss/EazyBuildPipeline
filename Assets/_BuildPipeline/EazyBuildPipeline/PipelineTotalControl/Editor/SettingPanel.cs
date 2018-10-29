@@ -545,7 +545,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         {
             if (ReloadAllUserConfigsAndCheck(false))
             {
-                bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定开始运行管线？", "确定", "取消");
+                bool ensure = G.Module.DisplayDialog("确定开始运行管线？", "确定", "取消");
                 if (ensure)
                 {
                     //开始执行
@@ -568,7 +568,15 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     //重设CurrentTag
                     ResetCurrentTag(runner.BaseModule);
                     //检查配置
-                    if (!runner.Check(onlyCheckConfig)) return false;
+                    try
+                    {
+                        runner.Check(onlyCheckConfig);
+                    }
+                    catch (EBPCheckFailedException e)
+                    {
+                        runner.BaseModule.DisplayDialog(e.Message);
+                        return false;
+                    }
                 }
             }
             return true;
@@ -613,7 +621,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                         {
                             G.Module.AssetPreprocessorRunner.Run(true);
                         }
-                        else if(!string.IsNullOrEmpty(state.Json.CurrentUserConfigName))
+                        else if (!string.IsNullOrEmpty(state.Json.CurrentUserConfigName))
                         {
                             state.Load(); //TODO:为什么要load？
                             state.Json.IsPartOfPipeline = false;
@@ -627,7 +635,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                         {
                             G.Module.BundleManagerRunner.Run(true);
                         }
-                        else if(!string.IsNullOrEmpty(state2.Json.CurrentUserConfigName))
+                        else if (!string.IsNullOrEmpty(state2.Json.CurrentUserConfigName))
                         {
                             state2.Load();
                             state2.Json.IsPartOfPipeline = false;
@@ -642,7 +650,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                             G.Module.PackageManagerRunner.ResourceVersion = G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion;
                             G.Module.PackageManagerRunner.Run(true);
                         }
-                        else if(!string.IsNullOrEmpty(state3.Json.CurrentUserConfigName))
+                        else if (!string.IsNullOrEmpty(state3.Json.CurrentUserConfigName))
                         {
                             state3.Load();
                             state3.Json.IsPartOfPipeline = false;
@@ -656,7 +664,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                         {
                             G.Module.PlayerBuilderRunner.Run(true);
                         }
-                        else if(!string.IsNullOrEmpty(state4.Json.CurrentUserConfigName))
+                        else if (!string.IsNullOrEmpty(state4.Json.CurrentUserConfigName))
                         {
                             state4.Load();
                             state4.Json.IsPartOfPipeline = false;
@@ -674,12 +682,40 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             catch (Exception e)
             {
                 TimeSpan endTime = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
-                G.Module.DisplayDialog(string.Format("管线运行时发生错误! 用时：{0}时 {1}分 {2}秒 \n错误信息：{3}", endTime.Hours, endTime.Minutes, endTime.Seconds, e.Message));
+                BaseModule currentModule = null;
+                switch (currentStep)
+                {
+                    case Step.SVNUpdate:
+                        currentModule = G.Module.SVNUpdateModule;
+                        break;
+                    case Step.PreprocessAssets:
+                        currentModule = G.Module.AssetPreprocessorModule;
+                        break;
+                    case Step.BuildBundles:
+                        currentModule = G.Module.BundleManagerModule;
+                        break;
+                    case Step.BuildPackages:
+                        currentModule = G.Module.PackageManagerModule;
+                        break;
+                    case Step.BuildPlayer:
+                        currentModule = G.Module.PlayerBuilderModule;
+                        break;
+                    default:
+                        break;
+                }
+                string timeInfo = string.Format("用时：{0}时 {1}分 {2}秒\n", endTime.Hours, endTime.Minutes, endTime.Seconds);
+                if (currentModule == null)
+                {
+                    G.Module.DisplayDialog("管线运行时发生错误!" + timeInfo + "错误信息：" + e.ToString());
+                }
+                else
+                {
+                    currentModule.DisplayRunError(timeInfo);
+                }
                 currentStep = Step.None;
             }
             finally
             {
-                EditorUtility.ClearProgressBar();
                 G.g.MainWindow.Repaint();
             }
         }
@@ -711,8 +747,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 bool result = false;
                 try
                 {
-                    result = EditorUtility.DisplayDialog(
-                        G.Module.ModuleName, "当前配置未保存，是否保存并覆盖 \" " +
+                    result = G.Module.DisplayDialog("当前配置未保存，是否保存并覆盖 \" " +
                         userConfigNames[playerBuilderUserConfigSelectedIndex] + " \" ?", "保存并退出", "直接退出");
                 }
                 catch { }
@@ -817,7 +852,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             bool ensureLoad = true;
             if (PlayerBuilder.G.Module.IsDirty)
             {
-                ensureLoad = EditorUtility.DisplayDialog(G.Module.ModuleName, "更改未保存，是否要放弃更改？", "放弃保存", "返回");
+                ensureLoad = G.Module.DisplayDialog("更改未保存，是否要放弃更改？", "放弃保存", "返回");
             }
             if (ensureLoad)
             {
@@ -859,7 +894,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             bool ensure = true;
             if (PlayerBuilder.G.Module.IsDirty && playerBuilderUserConfigSelectedIndex >= 0)
             {
-                ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "是否保存并覆盖原配置：" + userConfigNames[playerBuilderUserConfigSelectedIndex], "覆盖保存", "取消");
+                ensure = G.Module.DisplayDialog("是否保存并覆盖原配置：" + userConfigNames[playerBuilderUserConfigSelectedIndex], "覆盖保存", "取消");
             }
             if (!ensure) return;
 

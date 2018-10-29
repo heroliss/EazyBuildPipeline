@@ -120,12 +120,11 @@ namespace EazyBuildPipeline.AssetPreprocessor
             }
         }
 
-        protected override bool CheckProcess(bool onlyCheckConfig = false)
+        protected override void CheckProcess(bool onlyCheckConfig = false)
         {
             if (Module.UserConfig.Json.Tags.Length == 0)
             {
-                DisplayDialogOrThrowCheckFailedException("错误：Tag不能为为空！");
-                return false;
+                throw new EBPCheckFailedException("错误：Tag不能为为空！");
             }
             var target = BuildTarget.NoTarget;
             string targetStr = Module.UserConfig.Json.Tags[0];
@@ -135,24 +134,21 @@ namespace EazyBuildPipeline.AssetPreprocessor
             }
             catch
             {
-                DisplayDialogOrThrowCheckFailedException("没有此平台：" + targetStr);
-                return false;
+                throw new EBPCheckFailedException("没有此平台：" + targetStr);
             }
 
             if (!onlyCheckConfig)
             {
                 if (EditorUserBuildSettings.activeBuildTarget != target)
                 {
-                    DisplayDialogOrThrowCheckFailedException(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
-                    return false;
+                    throw new EBPCheckFailedException(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
                 }
                 if (!Directory.Exists(Module.ModuleConfig.PreStoredAssetsFolderPath))
                 {
-                    DisplayDialogOrThrowCheckFailedException("不能应用配置，找不到目录:" + Module.ModuleConfig.PreStoredAssetsFolderPath);
-                    return false;
+                    throw new EBPCheckFailedException("不能应用配置，找不到目录:" + Module.ModuleConfig.PreStoredAssetsFolderPath);
                 }
             }
-            return base.CheckProcess(onlyCheckConfig);
+            base.CheckProcess(onlyCheckConfig);
         }
 
         protected override void RunProcess()
@@ -167,8 +163,10 @@ namespace EazyBuildPipeline.AssetPreprocessor
             platform = "iPhone";
 #endif
             //TODO:这里能否再优化一下结构？
-            string copyFileArgs = Path.Combine(Module.ModuleConfig.ShellsFolderPath, "CopyFile.sh") + " " + Module.ModuleConfig.LogsFolderPath + " Assets " + Module.ModuleConfig.PreStoredAssetsFolderPath;
-            string changeMetaArgs = Path.Combine(Module.ModuleConfig.ShellsFolderPath, "ModifyMeta.sh") + " " + Module.ModuleConfig.LogsFolderPath + " Assets " + platform;
+            string copyFileArgs = Path.Combine(Module.ModuleConfig.ShellsFolderPath, "CopyFile.sh") + " "
+                + Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "CopyFileLog.txt") + " Assets " + Module.ModuleConfig.PreStoredAssetsFolderPath;
+            string changeMetaArgs = Path.Combine(Module.ModuleConfig.ShellsFolderPath, "ModifyMeta.sh") + " "
+                + Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "ModifyMetaLog.txt") + " Assets " + platform;
             int changeMetaArgsLength = changeMetaArgs.Length;
             foreach (var group in Module.UserConfig.Json.Groups)
             {

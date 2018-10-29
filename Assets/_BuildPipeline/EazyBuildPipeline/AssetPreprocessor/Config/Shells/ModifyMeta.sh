@@ -6,7 +6,8 @@ function Log()
 
 if (( $# < 6 ));then echo "Need at least 6 Parameters"; exit 0;fi
 if [ ! -d $1 ];then mkdir -p $1;fi
-logFilePath="$1/$(date '+%Y-%m-%d_%H.%M.%S')_ModifyMeta.txt"
+#logFilePath="$1/[$(date '+%y-%m-%d_%H.%M.%S')]ModifyMeta.txt"
+logFilePath=$1
 rootPath=$2
 platform=$3
 startIndex=4

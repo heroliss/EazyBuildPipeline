@@ -24,9 +24,13 @@ namespace EazyBuildPipeline
                     throw new EBPException("未能找到本地公共配置文件! 搜索文本：" + CommonConfigSearchText);
                 }
                 CommonConfig.Load(AssetDatabase.GUIDToAssetPath(guids[0]));
-                if (!CommonConfig.IsBatchMode)
+                if (CommonConfig.IsBatchMode)
                 {
-                    CheckAndSetAllRootPath();
+                    CommonConfig.CurrentLogFolderPath = EBPUtility.GetArgValue("LogPath"); //只有batchmode才开启自定义日志路径
+                }
+                else
+                {
+                    CheckAndSetAllRootPath(); //只有非batchmode才开启根目录检查和自动创建
                 }
                 return true;
             }
@@ -57,12 +61,12 @@ namespace EazyBuildPipeline
             CheckAndResetRootPath(CommonConfig.LogsRootPath);
         }
 
-        static bool CheckAndResetRootPath(string path)
+        static void CheckAndResetRootPath(string path)
         {
             if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
             {
                 if (EditorUtility.DisplayDialog("检查目录结构", "Pipeline根目录（" + CommonConfig.Json.PipelineRootPath +
-                    "）中缺少子目录：" + path + "\n\n请重置根目录，程序将自动补全目录结构。", "选择根目录并重置", "取消"))
+                    "）中缺少子目录：" + path, "创建新的根目录", "忽略"))
                 {
                     string newPath = EditorUtility.OpenFolderPanel("Open Pipeline Root", CommonConfig.Json.PipelineRootPath, null);
                     if (!string.IsNullOrEmpty(newPath))
@@ -74,9 +78,7 @@ namespace EazyBuildPipeline
                         Directory.CreateDirectory(CommonConfig.LogsRootPath);
                     }
                 }
-                return false;
             }
-            return true;
         }
     }
 
@@ -89,21 +91,6 @@ namespace EazyBuildPipeline
         public abstract string ModuleName { get; }
         public string ModuleConfigSearchText { get { return "EazyBuildPipeline ModuleConfig " + ModuleName; } }
 
-        public void DisplayDialog(string text)
-        {
-            StartLog();
-            Log(text, true);
-            EndLog();
-            if (CommonModule.CommonConfig.IsBatchMode) //HACK: Application.isBatchMode(for Unity 2018.3+)
-            {
-                throw new EBPException(text);
-            }
-            else
-            {
-                EditorUtility.DisplayDialog(ModuleName, text, "确定");
-            }
-        }
-
         public abstract IModuleConfig BaseModuleConfig { get; }
         public abstract IModuleStateConfig BaseModuleStateConfig { get; }
         public abstract bool LoadModuleConfig();
@@ -111,36 +98,97 @@ namespace EazyBuildPipeline
         public abstract bool LoadAllConfigs(bool NOTLoadUserConfig = false);
         public abstract bool LoadUserConfig();
 
-        //日志系统
+        #region 对话框和进度条
+        public void DisplayDialog(string message)
+        {
+            if (!CommonModule.CommonConfig.IsBatchMode)
+            {
+                EditorUtility.DisplayDialog(ModuleName, message, "确定");
+            }
+        }
+
+        public bool DisplayDialog(string message, string ok, string cancel)
+        {
+            if (CommonModule.CommonConfig.IsBatchMode)
+            {
+                throw new EBPException("BatchMode时不应显示该对话框!");
+            }
+            return EditorUtility.DisplayDialog(ModuleName, message, ok, cancel);
+        }
+
+        public void DisplayProgressBar(string title, float progress)
+        {
+            if (!CommonModule.CommonConfig.IsBatchMode)
+            {
+                EditorUtility.DisplayProgressBar(title, null, progress);
+            }
+        }
+
+        public void DisplayProgressBar(string title, string info, float progress)
+        {
+            if (!CommonModule.CommonConfig.IsBatchMode)
+            {
+                EditorUtility.DisplayProgressBar(title, info, progress);
+            }
+        }
+
+        public void DisplayRunError(string preText = null)
+        {
+            if (BaseModuleStateConfig.BaseJson.Applying)
+            {
+                if (DisplayDialog(preText + "运行过程中发生错误：" + BaseModuleStateConfig.BaseJson.ErrorMessage, "详细信息", "确定"))
+                {
+                    System.Diagnostics.Process.Start(BaseModuleStateConfig.JsonPath);
+                }
+            }
+        }
+        #endregion
+
+        #region 日志系统
         private double currentTime;
-        private StreamWriter writer;
+        private StreamWriter logWriter;
         public void Log(string text, bool forceFlush = false)
         {
-            if (writer != null)
+            if (logWriter != null)
             {
-                writer.WriteLine("[" + DateTime.Now.ToLongTimeString() + "]  " + text);
+                logWriter.WriteLine(DateTime.Now.ToString("[HH:mm:ss] ") + text);
                 if (EditorApplication.timeSinceStartup - currentTime > 0.5 || forceFlush) //保存日志的最少间隔时间
                 {
-                    writer.Flush();
+                    logWriter.Flush();
                     currentTime = EditorApplication.timeSinceStartup;
                 }
             }
         }
         public void StartLog()
         {
-            if (writer == null)
+            if (logWriter == null)
             {
-                writer = string.IsNullOrEmpty(CommonModule.CommonConfig.LogPath) ? null : new StreamWriter(CommonModule.CommonConfig.LogPath, true);
+                logWriter = string.IsNullOrEmpty(CommonModule.CommonConfig.PipelineLogPath) ? null : new StreamWriter(CommonModule.CommonConfig.PipelineLogPath, true);
             }
         }
         public void EndLog()
         {
-            if (writer != null)
+            if (logWriter != null)
             {
-                writer.Close();
-                writer = null;
+                logWriter.Close();
+                logWriter = null;
             }
         }
+        public void DisplayOrLogAndThrowError(string customMessage, Exception e)
+        {
+            if (CommonModule.CommonConfig.IsBatchMode)
+            {
+                StartLog();
+                Log(customMessage + "\n[Exception] " + e.ToString());
+                EndLog();
+                throw e;
+            }
+            else
+            {
+                DisplayDialog(customMessage);
+            }
+        }
+        #endregion
     }
 
     /// <summary>EazyBuildPipeline模块基类</summary>
@@ -180,9 +228,9 @@ namespace EazyBuildPipeline
             }
             catch (Exception e)
             {
-                DisplayDialog("加载模块 " + ModuleName + " 配置文件时发生错误：" + e.Message
+                DisplayOrLogAndThrowError("加载模块 " + ModuleName + " 配置文件时发生错误：" + e.Message
                             + "\n加载路径：" + ModuleConfig.JsonPath
-                            + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + new TModuleConfig());
+                            + "\n请设置正确的文件名以及形如以下所示的配置文件：\n" + new TModuleConfig(), e);
                 return false;
             }
         }
@@ -193,29 +241,38 @@ namespace EazyBuildPipeline
             try
             {
                 ModuleStateConfig.JsonPath = ModuleConfig.StateConfigPath;
-                Directory.CreateDirectory(Path.GetDirectoryName(ModuleStateConfig.JsonPath)); //Create _Configs目录
-                if (!File.Exists(ModuleStateConfig.JsonPath)) //状态配置文件是否存在
+                if (Directory.Exists(CommonModule.CommonConfig.DataRootPath))
                 {
-                    ModuleStateConfig.Save();
+                    Directory.CreateDirectory(Path.GetDirectoryName(ModuleStateConfig.JsonPath)); //Create _Configs目录
+                    if (!File.Exists(ModuleStateConfig.JsonPath)) //状态配置文件是否存在
+                    {
+                        ModuleStateConfig.Save();
+                    }
+                    else
+                    {
+                        ModuleStateConfig.Load();
+                    }
+                    StateConfigAvailable = true;
+                    return true;
                 }
                 else
                 {
-                    ModuleStateConfig.Load();
+                    StateConfigAvailable = false;
+                    return false;
                 }
                 //if (G.OverrideCurrentSavedConfigName != null) //用于总控
                 //{
                 //    CurrentConfig.Json.CurrentSavedConfigName = G.OverrideCurrentSavedConfigName;
                 //    G.OverrideCurrentSavedConfigName = null;
                 //}
-                StateConfigAvailable = true;
-                return true;
+
             }
             catch (Exception e)
             {
                 StateConfigLoadFailedMessage = "加载模块 " + ModuleName + " 状态配置文件时发生错误：" + e.Message
                             + "\n加载路径：" + ModuleStateConfig.JsonPath
                             + "\n请设置正确的文件路径以及形如以下所示的配置文件：\n" + new TModuleStateConfig();
-                DisplayDialog(StateConfigLoadFailedMessage);
+                DisplayOrLogAndThrowError(StateConfigLoadFailedMessage, e);
                 StateConfigAvailable = false;
                 return false;
             }

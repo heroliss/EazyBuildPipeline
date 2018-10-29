@@ -13,7 +13,6 @@ namespace EazyBuildPipeline.Common.Configs
         public List<string> Args;
         public List<string> Args_lower;
         public bool IsBatchMode;
-        public string LogPath;
         public CommonConfig()
         {
             //获取参数
@@ -27,17 +26,13 @@ namespace EazyBuildPipeline.Common.Configs
             {
                 IsBatchMode = true;
             }
-            //这里不能使用Utility.GetArgValue("LogPath")，因为CommonConfig还没有构建完，任为null
-            int logPathIndex = Args_lower.IndexOf("--logpath") + 1;
-            if (logPathIndex > 0 && logPathIndex < Args.Count)
-            {
-                LogPath = Args[logPathIndex];
-            }
 
             Json.TagEnum = new Dictionary<string, string[]> //这里不能在JsonClass里初始化，因为这个东西需要自定义序列化方法来处理
                 { { "Example Group 1:",new []{"example tag1","example tag2","example tag3"} },
                   { "Example Group 2:",new []{"example tag a","example tag b"} } };
         }
+        public string CurrentLogFolderPath; //日志目录路径，可由命令行参数赋值
+        public string PipelineLogPath { get { return string.IsNullOrEmpty(CurrentLogFolderPath) || string.IsNullOrEmpty(Json.PipelineLogFileName) ? null : Path.Combine(CurrentLogFolderPath, Json.PipelineLogFileName); } }
         public string IconsFolderPath { get { return Path.Combine(CommonConfigRootPath, Json.IconsFolderRelativePath); } }
         public string CommonConfigRootPath { get { return Path.GetDirectoryName(JsonPath); } }
         public string UserConfigsFolderPath_AssetPreprocessor { get { return Path.Combine(UserConfigsRootPath, Json.UserConfigsFolderName_AssetPreprocessor); } }
@@ -57,6 +52,7 @@ namespace EazyBuildPipeline.Common.Configs
             public Dictionary<string, string[]> TagEnum;
             public string IconsFolderRelativePath;
 
+            public string PipelineLogFileName;
             public string DataRootName;
             public string LogsRootName;
             public string UserConfigsRootName;

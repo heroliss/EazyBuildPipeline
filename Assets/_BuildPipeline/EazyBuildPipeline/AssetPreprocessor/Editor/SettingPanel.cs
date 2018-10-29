@@ -30,7 +30,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 selectedUserConfigIndex = userConfigNames.IndexOf(currentUserConfigName.Remove(
                     currentUserConfigName.Length - extension.Length, extension.Length));
             }
-            EBPUtility.HandleApplyingWarning(G.Module);
+            //G.Module.DisplayRunError();
         }
 
         private void InitStyles()
@@ -104,28 +104,38 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void ClickedCheck()
         {
-            if (G.Runner.Check(true))
+            try
             {
+                G.Runner.Check(true);
                 G.Module.DisplayDialog("检查正常！");
+            }
+            catch(EBPCheckFailedException e)
+            {
+                G.Module.DisplayDialog(e.Message);
             }
         }
         private void ClickedApply()
 		{
-            if (!G.Runner.Check()) return;
-			bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "确定应用当前配置？应用过程不可中断。", "确定", "取消");
+            try
+            {
+                G.Runner.Check();
+            }
+            catch(EBPCheckFailedException e)
+            {
+                G.Module.DisplayDialog(e.Message);
+                return;
+            }
+			bool ensure = G.Module.DisplayDialog("确定应用当前配置？应用过程不可中断。", "确定", "取消");
 			if (ensure)
             {
                 try
                 {
                     G.Runner.Run();
                 }
-                catch (Exception e)
+                catch
                 {
-                    G.Module.DisplayDialog("应用配置时发生错误：" + e);
-                }
-                finally
-                {
-                    EditorUtility.ClearProgressBar();
+                    G.Module.DisplayRunError();
+                    return;
                 }
 
 				string s = "转换完成！\n";
@@ -145,7 +155,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 					s += "\n第二步未执行";
 				}
 
-				if (EditorUtility.DisplayDialog(G.Module.ModuleName, s, "查看日志文件", "关闭"))
+				if (G.Module.DisplayDialog(s, "查看日志文件", "关闭"))
 				{
 					foreach (string logFilePath in G.Runner.LogFilePathList)
 					{
@@ -199,7 +209,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			bool ensureLoad = true;
 			if (G.Module.IsDirty)
 			{
-                ensureLoad = EditorUtility.DisplayDialog("切换配置", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
+                ensureLoad = G.Module.DisplayDialog("更改未保存，是否要放弃更改？", "放弃保存", "返回");
 			}
 			if (ensureLoad)
 			{
@@ -217,7 +227,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 				}
 				catch (Exception e)
 				{
-					EditorUtility.DisplayDialog("切换配置", "切换配置时发生错误：" + e.Message, "确定");
+					G.Module.DisplayDialog("切换配置时发生错误：" + e.Message);
 				}
 			}
 		}
@@ -238,7 +248,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 						string path = Path.Combine(G.Module.ModuleConfig.UserConfigsFolderPath, s + ".json");
                         if (File.Exists(path))
                         {
-                            EditorUtility.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
+                            G.Module.DisplayDialog("创建失败", "创建新文件失败，该名称已存在！", "确定");
                         }
                         else
                         {
@@ -247,7 +257,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 					}
 					catch (Exception e)
 					{
-						EditorUtility.DisplayDialog("创建失败", "创建时发生错误：" + e.Message, "确定");
+                        G.Module.DisplayDialog("创建时发生错误：" + e.Message);
 					}
 				}
 				creatingNewConfig = false;
@@ -259,7 +269,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             //新建
             if (!Directory.Exists(CommonModule.CommonConfig.UserConfigsRootPath))
             {
-                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：" + CommonModule.CommonConfig.UserConfigsRootPath);
+                G.Module.DisplayDialog("创建失败！用户配置根目录不存在：");
                 return;
             }
             //保存
@@ -284,7 +294,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			bool ensure = true;
 			if (G.Module.IsDirty)
 			{
-				ensure = EditorUtility.DisplayDialog("保存", "是否保存并覆盖原配置：" + userConfigNames[selectedUserConfigIndex], "覆盖保存", "取消");
+				ensure = G.Module.DisplayDialog("是否保存并覆盖原配置：" + userConfigNames[selectedUserConfigIndex], "覆盖保存", "取消");
 			}
 			if (!ensure) return;
 
@@ -297,12 +307,12 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			try
 			{
 				G.Module.UserConfig.Save();
-				EditorUtility.DisplayDialog("保存配置", "保存成功！", "确定");
+				G.Module.DisplayDialog("保存成功！");
 				G.g.OnChangeCurrentUserConfig(); //用于刷新dirty 和 总控事件
 			}
 			catch (Exception e)
 			{
-				EditorUtility.DisplayDialog("保存配置", "保存配置时发生错误：" + e.Message, "确定");
+				G.Module.DisplayDialog("保存配置时发生错误：" + e.Message);
 			}
 		}
 
@@ -318,19 +328,18 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
             G.Module.LoadAllConfigs();
             G.g.OnChangeCurrentUserConfig();
             selectedUserConfigIndex = userConfigNames.IndexOf(Path.GetFileNameWithoutExtension(G.Module.ModuleStateConfig.Json.CurrentUserConfigName));
-            EBPUtility.HandleApplyingWarning(G.Module);
+            //G.Module.DisplayRunError();
         }
         double lastTime;
 		private void ClickedSyncDirectory()
 		{
 			if (!Directory.Exists(Path.GetDirectoryName(G.Module.ModuleConfig.PreStoredAssetsFolderPath)))
 			{
-				EditorUtility.DisplayDialog("同步目录", "同步失败，找不到目录:" +
-											Path.GetDirectoryName(G.Module.ModuleConfig.PreStoredAssetsFolderPath), "确定");
+                G.Module.DisplayDialog("同步失败，找不到目录:" + Path.GetDirectoryName(G.Module.ModuleConfig.PreStoredAssetsFolderPath));
                 return;
             }
 
-			bool ensure = EditorUtility.DisplayDialog("同步目录", "确定要同步Assets的完整目录结构到PreStoredAssets下？（仅添加）", "同步", "取消");
+			bool ensure = G.Module.DisplayDialog("确定要同步Assets的完整目录结构到PreStoredAssets下？（仅添加）", "同步", "取消");
             if (ensure)
             {
                 EditorUtility.DisplayProgressBar("同步目录", "正在读取Assets目录信息", 0);
@@ -361,8 +370,8 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 		{
 			if (G.Module.IsDirty && selectedUserConfigIndex != -1)
 			{
-				bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, "修改未保存！是否保存修改并覆盖原配置：“" +
-					userConfigNames[selectedUserConfigIndex] + "”？", "保存并退出", "直接退出");
+                bool ensure = G.Module.DisplayDialog("修改未保存！是否保存修改并覆盖原配置：“" +
+                    userConfigNames[selectedUserConfigIndex] + "”？", "保存并退出", "直接退出");
 				if (ensure)
 				{
 					SaveUserConfig();

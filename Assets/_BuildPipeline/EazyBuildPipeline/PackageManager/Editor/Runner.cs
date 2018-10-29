@@ -30,32 +30,27 @@ namespace EazyBuildPipeline.PackageManager
         {
         }
 
-        protected override bool CheckProcess(bool onlyCheckConfig = false)
+        protected override void CheckProcess(bool onlyCheckConfig = false)
         {
             if (Module.UserConfig.Json.Packages.Count == 0)
             {
-                DisplayDialogOrThrowCheckFailedException("该配置内没有Package");
-                return false;
+                throw new EBPCheckFailedException("该配置内没有Package");
             }
             if (string.IsNullOrEmpty(Module.UserConfig.Json.PackageMode))
             {
-                DisplayDialogOrThrowCheckFailedException("请设置打包模式");
-                return false;
+                throw new EBPCheckFailedException("请设置打包模式");
             }
             if (string.IsNullOrEmpty(Module.UserConfig.Json.LuaSource))
             {
-                DisplayDialogOrThrowCheckFailedException("请设置Lua源");
-                return false;
+                throw new EBPCheckFailedException("请设置Lua源");
             }
             if (Module.UserConfig.Json.CompressionLevel == -1)
             {
-                DisplayDialogOrThrowCheckFailedException("请设置压缩等级");
-                return false;
+                throw new EBPCheckFailedException("请设置压缩等级");
             }
             if (G.LuaSourceEnum.IndexOf(Module.UserConfig.Json.LuaSource) == -1)
             {
-                DisplayDialogOrThrowCheckFailedException("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
-                return false;
+                throw new EBPCheckFailedException("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
             }
 
             switch (Module.UserConfig.Json.PackageMode)
@@ -65,28 +60,24 @@ namespace EazyBuildPipeline.PackageManager
                     {
                         if (string.IsNullOrEmpty(Module.ModuleStateConfig.Json.CurrentAddonVersion))
                         {
-                            DisplayDialogOrThrowCheckFailedException("请设置Addon Version");
-                            return false;
+                            throw new EBPCheckFailedException("请设置Addon Version");
                         }
                         char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
                         int index = Module.ModuleStateConfig.Json.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
                         if (index >= 0)
                         {
-                            DisplayDialogOrThrowCheckFailedException("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
-                            return false;
+                            throw new EBPCheckFailedException("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
                         }
                     }
                     foreach (var package in Module.UserConfig.Json.Packages)
                     {
                         if (string.IsNullOrEmpty(package.Necessery))
                         {
-                            DisplayDialogOrThrowCheckFailedException("请设置Necessery");
-                            return false;
+                            throw new EBPCheckFailedException("请设置Necessery");
                         }
                         if (string.IsNullOrEmpty(package.DeploymentLocation))
                         {
-                            DisplayDialogOrThrowCheckFailedException("请设置Location");
-                            return false;
+                            throw new EBPCheckFailedException("请设置Location");
                         }
                         //不能识别Location和Necessery的情况不可能发生，因为该值由枚举中获得
                     }
@@ -94,19 +85,17 @@ namespace EazyBuildPipeline.PackageManager
                 case "Patch":
                     break;
                 default:
-                    DisplayDialogOrThrowCheckFailedException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
-                    return false;
+                    throw new EBPCheckFailedException("不能识别模式：" + Module.UserConfig.Json.PackageMode);
             }
 
             if (!onlyCheckConfig)
             {
                 if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
                 {
-                    DisplayDialogOrThrowCheckFailedException("错误：Tags为空");
-                    return false;
+                    throw new EBPCheckFailedException("错误：Tags为空");
                 }
             }
-            return base.CheckProcess(onlyCheckConfig);
+            base.CheckProcess(onlyCheckConfig);
         }
 
         protected override void RunProcess()

@@ -23,19 +23,22 @@ namespace EazyBuildPipeline.PlayerBuilder
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
+            EditorUtility.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", "", 0.1f);
             ApplyPlayerSettingsAndScriptDefines();
-            EditorUtility.DisplayProgressBar("Applying IOS PostProcess Settings", "", 0);
+
+            EditorUtility.DisplayProgressBar("Applying IOS PostProcess Settings", "", 0.2f);
             ApplyIOSPostProcessSettings();
-            EditorUtility.DisplayProgressBar("Creating Building Configs Class File", "", 0);
+
+            EditorUtility.DisplayProgressBar("Creating Building Configs Class File", "", 0.3f);
             CreateBuildingConfigsClassFile();
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
             if (CommonModule.CommonConfig.IsBatchMode)
             {
-                EditorUtility.DisplayProgressBar("Start DownloadConfigs", "", 0);
+                EditorUtility.DisplayProgressBar("Start DownloadConfigs", "", 0.35f);
                 DownLoadConfigs();
                 DownLoadMultiLanguage();
             }
+
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
@@ -70,7 +73,7 @@ namespace EazyBuildPipeline.PlayerBuilder
 
             //EditorUtility.DisplayProgressBar("Download Configs...", srcPath, 0);
             //DownLoadFile(srcPath, Path.Combine(configsPath, "StaticConfigs.zip"));
-            EditorUtility.DisplayProgressBar("Download Configs...", ConfigURL_Game, 0);
+            EditorUtility.DisplayProgressBar("Download Game Config...", ConfigURL_Game, 0.4f);
             DownLoadFile(ConfigURL_Game, Path.Combine(configsPath, "StaticConfigs.zip"));  //TODO:这里的保存的名永远都是StaticConfigs.zip？？
         }
 
@@ -83,13 +86,13 @@ namespace EazyBuildPipeline.PlayerBuilder
             //string srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".bbb";
             //EditorUtility.DisplayProgressBar("Download Language...", srcPath, 0);
             //DownLoadFile(srcPath, Path.Combine(configsPath, multiLanType + ".bbb"));
-            EditorUtility.DisplayProgressBar("Download Language...", ConfigURL_Language, 0);
+            EditorUtility.DisplayProgressBar("Download Language Config...", ConfigURL_Language, 0.6f);
             DownLoadFile(ConfigURL_Language, Path.Combine(configsPath, Path.GetFileName(ConfigURL_Language)));
 
             //srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".json";
             //EditorUtility.DisplayProgressBar("Download Language...", srcPath, 0);
             //DownLoadFile(srcPath, Path.Combine(configsPath, "locale.json"));
-            EditorUtility.DisplayProgressBar("Download Language Version...", ConfigURL_LanguageVersion, 0);
+            EditorUtility.DisplayProgressBar("Download Language Version Config...", ConfigURL_LanguageVersion, 0.8f);
             DownLoadFile(ConfigURL_LanguageVersion, Path.Combine(configsPath, Path.GetFileName(ConfigURL_LanguageVersion)));
         }
 

@@ -46,7 +46,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
             catch (Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "加载Icon时发生错误：" + e.Message, "确定");
+                G.Module.DisplayDialog("加载Icon时发生错误：" + e.Message);
             }
         }
 
@@ -232,7 +232,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             string assetBundlesFolderPath = G.Module.ModuleConfig.BundleWorkFolderPath;
             if (!Directory.Exists(assetBundlesFolderPath))
             {
-                EditorUtility.DisplayDialog("错误", "AssetBundles目录不存在：" + assetBundlesFolderPath, "确定");
+                G.Module.DisplayDialog("AssetBundles目录不存在：" + assetBundlesFolderPath);
                 BundleTreeItem root = new BundleTreeItem()
                 {
                     id = 0,
@@ -267,8 +267,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             //检查
             if (checkFailedItems.Count > 0)
             {
-                EditorUtility.DisplayDialog("提示", "有 " + checkFailedItems.Count +
-                    " 个manifest文件缺少对应的bundle文件！\n（这些项已标记为警告色:黄色）", "确定");
+                G.Module.DisplayDialog("有 " + checkFailedItems.Count +
+                    " 个manifest文件缺少对应的bundle文件！\n（这些项已标记为警告色:黄色）");
             }
             LoadBundleInfo(); //加载信息文件
             return rootFolderItem;
@@ -393,9 +393,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 Versions = JsonConvert.DeserializeObject<VersionsStruct>(File.ReadAllText(versionPath));
                 //BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
             }
-            catch //(Exception e)
+            catch (Exception e)
             {
-                //EditorUtility.DisplayDialog("错误", "在" + Configs.configs.BundleInfoPath + "中加载信息时发生错误：" + e.Message, "确定");
+                G.Module.DisplayDialog("加载BundleInfo时发生错误：" + e.Message);
             }
         }
         void AddDirectories(BundleTreeItem parent)
@@ -495,7 +495,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 		{
 			if (args.draggedItemIDs.Count > 1000)
 			{
-				EditorUtility.DisplayDialog("提示", "拖动的项太多了！请尽量折叠文件夹后拖拽", "确定");
+                G.Module.DisplayDialog("拖动的项太多了！请尽量折叠文件夹后拖拽");
 				return;
 			}
 			DragAndDrop.PrepareStartDrag();

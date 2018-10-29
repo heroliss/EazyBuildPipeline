@@ -17,14 +17,13 @@ namespace EazyBuildPipeline.PlayerBuilder
         public Runner(Module module) : base(module)
         {
         }
-        protected override bool CheckProcess(bool onlyCheckConfig = false)
+        protected override void CheckProcess(bool onlyCheckConfig = false)
         {
             if (!onlyCheckConfig)
             {
                 if (Module.ModuleStateConfig.Json.CurrentTag.Length == 0)
                 {
-                    DisplayDialogOrThrowCheckFailedException("错误：Assets Tags为空");
-                    return false;
+                    throw new EBPCheckFailedException("错误：Assets Tags为空");
                 }
                 var target = BuildTarget.NoTarget;
                 string targetStr = Module.ModuleStateConfig.Json.CurrentTag[0];
@@ -34,17 +33,15 @@ namespace EazyBuildPipeline.PlayerBuilder
                 }
                 catch
                 {
-                    DisplayDialogOrThrowCheckFailedException("没有此平台：" + targetStr);
-                    return false;
+                    throw new EBPCheckFailedException("没有此平台：" + targetStr);
                 }
 
                 if (EditorUserBuildSettings.activeBuildTarget != target)
                 {
-                    DisplayDialogOrThrowCheckFailedException(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
-                    return false;
+                    throw new EBPCheckFailedException(string.Format("当前平台({0})与设置的平台({1})不一致，请改变设置或切换平台。", EditorUserBuildSettings.activeBuildTarget, target));
                 }
             }
-            return base.CheckProcess(onlyCheckConfig);
+            base.CheckProcess(onlyCheckConfig);
         }
 
         protected override void RunProcess()

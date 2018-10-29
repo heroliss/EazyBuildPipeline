@@ -23,6 +23,7 @@
     ]
   },
   "IconsFolderRelativePath": "Icons",
+  "PipelineLogFileName": "PipelineLog.txt",
   "DataRootName": "Data",
   "LogsRootName": "Logs",
   "UserConfigsRootName": "Configs",

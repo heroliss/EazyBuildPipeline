@@ -37,9 +37,8 @@ namespace EazyBuildPipeline.SVNUpdate
         {
         }
 
-        protected override bool CheckProcess(bool onlyCheckConfig = false)
+        protected override void CheckProcess(bool onlyCheckConfig = false)
         {
-            return true;
         }
 
         protected override void RunProcess()

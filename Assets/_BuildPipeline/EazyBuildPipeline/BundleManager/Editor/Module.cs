@@ -81,7 +81,7 @@ namespace EazyBuildPipeline.BundleManager
             }
             catch (Exception e)
             {
-                DisplayDialog("加载用户配置时发生错误：" + e.Message + "\n加载路径：" + UserConfig.JsonPath);
+                DisplayOrLogAndThrowError("加载用户配置时发生错误：" + e.Message + "\n加载路径：" + UserConfig.JsonPath, e);
                 return false;
             }
         }

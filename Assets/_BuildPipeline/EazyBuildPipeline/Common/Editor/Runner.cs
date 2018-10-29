@@ -8,7 +8,7 @@ namespace EazyBuildPipeline
     public interface IRunner
     {
         void Run(bool isPartOfPipeline = false);
-        bool Check(bool onlyCheckConfig = false);
+        void Check(bool onlyCheckConfig = false);
         BaseModule BaseModule { get; }
     }
 
@@ -32,27 +32,32 @@ namespace EazyBuildPipeline
             var state = Module.ModuleStateConfig.Json;
             try
             {
+                CreateLogFolder();
                 Module.StartLog();
                 Module.Log("## Start Module " + Module.ModuleName + " ##", true);
+
                 state.IsPartOfPipeline = isPartOfPipeline;
                 state.Applying = true;
                 state.ErrorMessage = "Unexpected Halt!";
                 state.DetailedErrorMessage = null;
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
-                Module.Log("# Start PreProcess of " + Module.ModuleName + " #", true);
+
+                Module.Log("# PreProcess of " + Module.ModuleName + " #", true);
                 PreProcess();
-                Module.Log("# Start RunProcess of " + Module.ModuleName + " #", true);
+                Module.Log("# RunProcess of " + Module.ModuleName + " #", true);
                 RunProcess();
-                Module.Log("# Start PostProcess of " + Module.ModuleName + " #", true);
+                Module.Log("# PostProcess of " + Module.ModuleName + " #", true);
                 PostProcess();
                 Module.Log("## End Module " + Module.ModuleName + " ##", true);
+
                 state.Applying = false;
                 state.ErrorMessage = null;
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
             }
             catch (Exception e)
             {
-                Module.Log("[Error] " + e.ToString(), true);
+                CommonModule.CommonConfig.CurrentLogFolderPath = null;
+                Module.Log(e.ToString());
                 state.ErrorMessage = e.Message;
                 state.DetailedErrorMessage = e.ToString();
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
@@ -61,75 +66,83 @@ namespace EazyBuildPipeline
             finally
             {
                 Module.EndLog();
+                EditorUtility.ClearProgressBar();
+                if (!isPartOfPipeline) //若为管线一部分时，让所有模块使用相同的CurrentLogFolderPath
+                {
+                    CommonModule.CommonConfig.CurrentLogFolderPath = null; //赋值为null，会让下次Run时产生新的目录名（根据时间）
+                }
             }
         }
 
-        public bool Check(bool onlyCheckConfig = false)
+        private static void CreateLogFolder()
+        {
+            if (CommonModule.CommonConfig.CurrentLogFolderPath == null)
+            {
+                CommonModule.CommonConfig.CurrentLogFolderPath = Path.Combine(CommonModule.CommonConfig.LogsRootPath, DateTime.Now.ToString("[yy-MM-dd_HH.mm.ss]"));
+                Directory.CreateDirectory(CommonModule.CommonConfig.CurrentLogFolderPath);
+            }
+        }
+
+        public void Check(bool onlyCheckConfig = false)
         {
             try
             {
-                Module.StartLog();
-                Module.Log("## Start Check " + Module.ModuleName + " ##", true);
-                if (CheckProcess(onlyCheckConfig))
+                if (!onlyCheckConfig)
                 {
-                    Module.Log("## End Check " + Module.ModuleName + " (Success) ##", true);
-                    return true;
+                    CreateLogFolder();
                 }
-                else
+                if (!onlyCheckConfig) //这个变量说明是否是Run前检查，若是则记录日志，否则不记录日志
                 {
-                    Module.Log("## End Check " + Module.ModuleName + " (Failed) ##", true); //TODO:这个分支应该不会出现
-                    return false;
+                    Module.StartLog();
+                    Module.Log("## Check " + Module.ModuleName + " ##", true);
                 }
+                CheckProcess(onlyCheckConfig);
             }
             catch (EBPCheckFailedException e)
             {
-                Module.Log("[CheckFailed] " + e.Message, true);
+                if (!onlyCheckConfig)
+                {
+                    CommonModule.CommonConfig.CurrentLogFolderPath = null;
+                    Module.Log("[CheckFailed] " + e.Message);
+                }
                 throw e;
             }
             catch (Exception e)
             {
-                Module.Log("[Error] " + e.ToString(), true);
+                if (!onlyCheckConfig)
+                {
+                    CommonModule.CommonConfig.CurrentLogFolderPath = null;
+                    Module.Log(e.ToString());
+                }
                 throw e;
             }
             finally
             {
-                Module.EndLog();
+                if (!onlyCheckConfig)
+                {
+                    Module.EndLog();
+                }
             }
         }
 
-        protected virtual bool CheckProcess(bool onlyCheckConfig)
+        protected virtual void CheckProcess(bool onlyCheckConfig)
         {
             //检查状态配置文件和工作目录
             if (!onlyCheckConfig)
             {
                 if (!Module.StateConfigAvailable)
                 {
-                    DisplayDialogOrThrowCheckFailedException(Module.StateConfigLoadFailedMessage);
-                    return false;
+                    throw new EBPCheckFailedException(Module.StateConfigLoadFailedMessage);
                 }
                 if (!Directory.Exists(Module.ModuleConfig.WorkPath)) //这个检查冗余，放在这里为保险起见
                 {
-                    DisplayDialogOrThrowCheckFailedException("工作目录不存在：" + Module.ModuleConfig.WorkPath);
-                    return false;
+                    throw new EBPCheckFailedException("工作目录不存在：" + Module.ModuleConfig.WorkPath);
                 }
             }
-            return true;
         }
 
         protected abstract void PreProcess();
         protected abstract void RunProcess();
         protected abstract void PostProcess();
-
-        protected void DisplayDialogOrThrowCheckFailedException(string text)
-        {
-            if (CommonModule.CommonConfig.IsBatchMode) //HACK: Application.isBatchMode(for Unity 2018.3+)
-            {
-                throw new EBPCheckFailedException(text);
-            }
-            else
-            {
-                Module.DisplayDialog(text);
-            }
-        }
     }
 }

@@ -344,7 +344,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             }
             catch(Exception e)
             {
-                EditorUtility.DisplayDialog("错误", "加载Icon时发生错误：" + e.Message, "确定");
+                G.Module.DisplayDialog("加载Icon时发生错误：" + e.Message);
             }
         }
         #endregion
@@ -361,7 +361,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 int invalidCharsIndex = args.newName.IndexOfAny(invalidChars);
                 if (invalidCharsIndex >= 0)
                 {
-                    EditorUtility.DisplayDialog("重命名", "新包名：" + args.newName + " 包含非法字符！", "确定");
+                    G.Module.DisplayDialog("新包名：" + args.newName + " 包含非法字符！");
                     return;
                 }
                 string newName = args.newName;
@@ -369,7 +369,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 while (!CheckName(newName, args.itemID)) newName = args.newName + " " + ++i;
                 if (i > 0)
                 {
-                    EditorUtility.DisplayDialog("重命名", "包名：" + args.newName + " 已存在! 自动改为：\n" + newName, "确定");
+                    G.Module.DisplayDialog("包名：" + args.newName + " 已存在! 自动改为：\n" + newName);
                 }
                 PackageTreeItem item = FindItem(args.itemID, rootItem) as PackageTreeItem;
                 item.displayName = newName;
@@ -693,7 +693,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
         {
             if (string.IsNullOrEmpty(G.Module.ModuleStateConfig.Json.CurrentUserConfigName))
             {
-                EditorUtility.DisplayDialog("创建Package", "请先选择配置或创建一个空配置", "确定");
+                G.Module.DisplayDialog("请先选择配置或创建一个空配置");
                 return;
             }
             G.Module.IsDirty = true;

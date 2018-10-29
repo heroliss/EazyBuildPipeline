@@ -6,7 +6,8 @@ function Log()
 
 if (( $# < 4 ));then echo "Need at least 4 Parameters"; exit 0;fi
 if [ ! -d $1 ];then mkdir -p $1;fi
-logFilePath="$1/$(date '+%Y-%m-%d_%H.%M.%S')_CopyFile.txt"
+#logFilePath="$1/[$(date '+%y-%m-%d_%H.%M.%S')]CopyFile.txt"
+logFilePath=$1
 targetRoot=$2
 originRoot=$3
 matchTags="find ${originRoot} -type f -name '*\[$4\]*'"

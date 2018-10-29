@@ -98,23 +98,37 @@ namespace EazyBuildPipeline.BundleManager.Editor
 
         private void ClickedCheck()
         {
-            if (G.Runner.Check(true))
+            try
             {
+                G.Runner.Check();
                 G.Module.DisplayDialog("检查正常！");
+            }
+            catch (EBPCheckFailedException e)
+            {
+                G.Module.DisplayDialog(e.Message);
+                return;
             }
         }
         private void ClickedApply()
         {
             G.Module.ModuleStateConfig.Json.CurrentUserConfigName = Path.GetFileName(AssetBundleManagement2.AssetBundleModel.BuildMapPath) + ".json"; //TODO: 覆盖当前map文件名，BundleMaster的特殊处理
             G.Module.UserConfig.Json = G.g.mainTab.GetBuildMap_extension().ToList(); //从配置现场覆盖当前map
-            if (!G.Runner.Check()) return;
+            try
+            {
+                G.Runner.Check();
+            }
+            catch (EBPCheckFailedException e)
+            {
+                G.Module.DisplayDialog(e.Message);
+                return;
+            }
             //确认信息
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), G.Module.ModuleStateConfig.Json.CurrentTag[0], true);
             int optionsValue = G.Module.ModuleStateConfig.Json.CurrentBuildAssetBundleOptionsValue;
             int resourceVersion = G.Module.ModuleStateConfig.Json.CurrentResourceVersion;
             string tagPath = Path.Combine(G.Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(G.Module.ModuleStateConfig.Json.CurrentTag));
 
-            bool ensure = EditorUtility.DisplayDialog(G.Module.ModuleName, string.Format("确定应用当前配置？\n\n" +
+            bool ensure = G.Module.DisplayDialog(string.Format("确定应用当前配置？\n\n" +
                 "目标平台: {0}\n 输出路径: {1} \n Resources Version: {2} \n 参数: {3}",
                 target, tagPath, resourceVersion, optionsValue), "确定", "取消");
             //开始应用
@@ -126,13 +140,9 @@ namespace EazyBuildPipeline.BundleManager.Editor
                     G.Runner.Run();
                     G.Module.DisplayDialog("创建AssetBundles成功！");
                 }
-                catch (Exception e)
+                catch
                 {
-                    G.Module.DisplayDialog("创建AssetBundles时发生错误：" + e.Message);
-                }
-                finally
-                {
-                    EditorUtility.ClearProgressBar();
+                    G.Module.DisplayRunError();
                 }
             }
         }
@@ -143,7 +153,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             G.Module.LoadAllConfigs();
             InitSelectedIndex();
             ConfigToIndex();
-            EBPUtility.HandleApplyingWarning(G.Module);
+            //G.Module.DisplayRunError();
         }
 
         private void InitSelectedIndex()
@@ -163,7 +173,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             G.Module.LoadAllConfigs();
             InitSelectedIndex();
             ConfigToIndex();
-            EBPUtility.HandleApplyingWarning(G.Module);
+            //G.Module.DisplayRunError();
         }
 
         private void ConfigToIndex()

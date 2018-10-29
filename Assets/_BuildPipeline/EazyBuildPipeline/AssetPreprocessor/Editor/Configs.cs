@@ -12,7 +12,6 @@ namespace EazyBuildPipeline.AssetPreprocessor.Configs
         public string ShellsFolderPath { get { return Path.Combine(ModuleRootPath, Json.ShellsFolderRelativePath); } }
         //Pipeline配置路径
         public string PreStoredAssetsFolderPath { get { return Path.Combine(WorkPath, Json.PreStoredAssetsFolderRelativePath); } }
-        public string LogsFolderPath { get { return Path.Combine(WorkPath, Json.LogsFolderRelativePath); } }
 
         public override string UserConfigsFolderPath { get { return CommonModule.CommonConfig.UserConfigsFolderPath_AssetPreprocessor; } }
 
@@ -22,7 +21,6 @@ namespace EazyBuildPipeline.AssetPreprocessor.Configs
             public string OptionsEnumConfigRelativePath;
             public string ShellsFolderRelativePath;
             public string PreStoredAssetsFolderRelativePath;
-            public string LogsFolderRelativePath;
         }
     }
 

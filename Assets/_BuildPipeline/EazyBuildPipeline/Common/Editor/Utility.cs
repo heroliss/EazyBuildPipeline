@@ -54,18 +54,6 @@ namespace EazyBuildPipeline
             }
         }
 
-        public static void HandleApplyingWarning(BaseModule module)
-        {
-            var stateConfig = module.BaseModuleStateConfig;
-            if (stateConfig.BaseJson.Applying)
-            {
-                if (EditorUtility.DisplayDialog(module.ModuleName, "上次运行时发生错误：" + stateConfig.BaseJson.ErrorMessage, "详细信息", "确定"))
-                {
-                    System.Diagnostics.Process.Start(stateConfig.JsonPath);
-                }
-            }
-        }
-
         //获取命令行参数
         public static string GetArgValue(string argName)
         {

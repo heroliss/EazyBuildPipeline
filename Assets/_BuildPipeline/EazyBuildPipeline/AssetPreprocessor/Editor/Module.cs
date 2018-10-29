@@ -70,9 +70,9 @@ namespace EazyBuildPipeline.AssetPreprocessor
             }
             catch (Exception e)
             {
-                DisplayDialog("加载选项配置文件时发生错误：" + e.Message
+                DisplayOrLogAndThrowError("加载选项配置文件时发生错误：" + e.Message
                     + "\n加载路径：" + OptionsEnumConfig.JsonPath
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + new OptionsEnumConfig());
+                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + new OptionsEnumConfig(), e);
                 return false;
             }
         }
@@ -89,8 +89,8 @@ namespace EazyBuildPipeline.AssetPreprocessor
             }
             catch (Exception e)
             {
-                DisplayDialog("加载当前用户配置时发生错误：" + e.Message
-                    + "\n加载路径：" + UserConfig.JsonPath);
+                DisplayOrLogAndThrowError("加载当前用户配置时发生错误：" + e.Message
+                    + "\n加载路径：" + UserConfig.JsonPath, e);
                 return false;
             }
         }
