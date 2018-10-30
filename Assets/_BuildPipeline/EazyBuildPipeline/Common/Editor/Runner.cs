@@ -78,7 +78,7 @@ namespace EazyBuildPipeline
         {
             if (CommonModule.CommonConfig.CurrentLogFolderPath == null)
             {
-                CommonModule.CommonConfig.CurrentLogFolderPath = Path.Combine(CommonModule.CommonConfig.LogsRootPath, DateTime.Now.ToString("[yy-MM-dd_HH.mm.ss]"));
+                CommonModule.CommonConfig.CurrentLogFolderPath = Path.Combine(CommonModule.CommonConfig.LogsRootPath, DateTime.Now.ToString("[yyyyMMddHHmmss]"));
                 Directory.CreateDirectory(CommonModule.CommonConfig.CurrentLogFolderPath);
             }
         }
