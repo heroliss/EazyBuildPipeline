@@ -15,7 +15,7 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         protected override void PostProcess()
         {
-            EditorUtility.DisplayProgressBar("Renaming OBB File...", "", 0);
+            Module.DisplayProgressBar("Renaming OBB File...", 0, true);
             RenameOBBFile();
         }
 
@@ -23,18 +23,18 @@ namespace EazyBuildPipeline.PlayerBuilder
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
-            EditorUtility.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", "", 0.1f);
+            Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.1f, true);
             ApplyPlayerSettingsAndScriptDefines();
 
-            EditorUtility.DisplayProgressBar("Applying IOS PostProcess Settings", "", 0.2f);
+            Module.DisplayProgressBar("Applying IOS PostProcess Settings", 0.2f, true);
             ApplyIOSPostProcessSettings();
 
-            EditorUtility.DisplayProgressBar("Creating Building Configs Class File", "", 0.3f);
+            Module.DisplayProgressBar("Creating Building Configs Class File", 0.3f, true);
             CreateBuildingConfigsClassFile();
 
             if (CommonModule.CommonConfig.IsBatchMode)
             {
-                EditorUtility.DisplayProgressBar("Start DownloadConfigs", "", 0.35f);
+                Module.DisplayProgressBar("Start DownloadConfigs", 0.35f, true);
                 DownLoadConfigs();
                 DownLoadMultiLanguage();
             }
@@ -71,9 +71,9 @@ namespace EazyBuildPipeline.PlayerBuilder
             //string srcPath = "http://10.1.1.10/configtool/data/" + Module.UserConfig.Json.PlayerSettings.General.DownloadConfigType + ".zip";
             NetWorkConnection.ConfigNetworkURL();
 
-            //EditorUtility.DisplayProgressBar("Download Configs...", srcPath, 0);
+            //Module.DisplayProgressBar("Download Configs...", srcPath, 0, true);
             //DownLoadFile(srcPath, Path.Combine(configsPath, "StaticConfigs.zip"));
-            EditorUtility.DisplayProgressBar("Download Game Config...", ConfigURL_Game, 0.4f);
+            Module.DisplayProgressBar("Download Game Config...", ConfigURL_Game, 0.4f, true);
             DownLoadFile(ConfigURL_Game, Path.Combine(configsPath, "StaticConfigs.zip"));  //TODO:这里的保存的名永远都是StaticConfigs.zip？？
         }
 
@@ -84,15 +84,15 @@ namespace EazyBuildPipeline.PlayerBuilder
             //WriteToLog("[EazyBuildPipeline] DwonLoad Language Start.");
             //var multiLanType = Module.UserConfig.Json.PlayerSettings.General.DownloadLanguageType;
             //string srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".bbb";
-            //EditorUtility.DisplayProgressBar("Download Language...", srcPath, 0);
+            //Module.DisplayProgressBar("Download Language...", srcPath, 0, true);
             //DownLoadFile(srcPath, Path.Combine(configsPath, multiLanType + ".bbb"));
-            EditorUtility.DisplayProgressBar("Download Language Config...", ConfigURL_Language, 0.6f);
+            Module.DisplayProgressBar("Download Language Config...", ConfigURL_Language, 0.6f, true);
             DownLoadFile(ConfigURL_Language, Path.Combine(configsPath, Path.GetFileName(ConfigURL_Language)));
 
             //srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".json";
-            //EditorUtility.DisplayProgressBar("Download Language...", srcPath, 0);
+            //Module.DisplayProgressBar("Download Language...", srcPath, 0, true);
             //DownLoadFile(srcPath, Path.Combine(configsPath, "locale.json"));
-            EditorUtility.DisplayProgressBar("Download Language Version Config...", ConfigURL_LanguageVersion, 0.8f);
+            Module.DisplayProgressBar("Download Language Version Config...", ConfigURL_LanguageVersion, 0.8f, true);
             DownLoadFile(ConfigURL_LanguageVersion, Path.Combine(configsPath, Path.GetFileName(ConfigURL_LanguageVersion)));
         }
 

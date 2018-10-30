@@ -124,6 +124,9 @@ namespace EazyBuildPipeline
                     }
                     runner.Run(true);
                 }
+                totalModule.StartLog();
+                totalModule.Log("[BuildPipeline Running Successfully]");
+                totalModule.EndLog();
             }
         }
     }

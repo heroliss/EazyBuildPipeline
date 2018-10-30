@@ -116,19 +116,27 @@ namespace EazyBuildPipeline
             return EditorUtility.DisplayDialog(ModuleName, message, ok, cancel);
         }
 
-        public void DisplayProgressBar(string title, float progress)
+        public void DisplayProgressBar(string title, float progress, bool log = false)
         {
             if (!CommonModule.CommonConfig.IsBatchMode)
             {
                 EditorUtility.DisplayProgressBar(title, null, progress);
             }
+            if (log)
+            {
+                Log(title, true);
+            }
         }
 
-        public void DisplayProgressBar(string title, string info, float progress)
+        public void DisplayProgressBar(string title, string info, float progress, bool log = false)
         {
             if (!CommonModule.CommonConfig.IsBatchMode)
             {
                 EditorUtility.DisplayProgressBar(title, info, progress);
+            }
+            if (log)
+            {
+                Log(title + " : " + info, true);
             }
         }
 

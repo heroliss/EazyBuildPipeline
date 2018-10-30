@@ -136,7 +136,6 @@ namespace EazyBuildPipeline.BundleManager.Editor
             {
                 try
                 {
-                    EditorUtility.DisplayProgressBar("Build Bundles", "Getting Bunild Maps...", 0);
                     G.Runner.Run();
                     G.Module.DisplayDialog("创建AssetBundles成功！");
                 }

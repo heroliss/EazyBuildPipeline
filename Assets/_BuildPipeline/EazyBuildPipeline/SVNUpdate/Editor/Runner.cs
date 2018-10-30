@@ -46,14 +46,14 @@ namespace EazyBuildPipeline.SVNUpdate
             int progress = 0;
             message = "";
             errorMessage = "";
-            EditorUtility.DisplayProgressBar("SVN Update Starting...", "", 0);
+            Module.DisplayProgressBar("SVN Update Starting...", 0, true);
             Process p;
             //Revert
             p = ExcuteCommand("svn", "--non-interactive revert -R .",
                                       OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
-                EditorUtility.DisplayProgressBar("SVN Revert", message, (float)(progress++ % 1000) / 1000);
+                Module.DisplayProgressBar("SVN Revert", message, (float)(progress++ % 1000) / 1000);
                 System.Threading.Thread.Sleep(50);
             }
             if (p.ExitCode != 0)
@@ -65,7 +65,7 @@ namespace EazyBuildPipeline.SVNUpdate
                                       OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
-                EditorUtility.DisplayProgressBar("SVN Update", message, (float)(progress++ % 600) / 600);
+                Module.DisplayProgressBar("SVN Update", message, (float)(progress++ % 600) / 600);
                 System.Threading.Thread.Sleep(50);
             }
             if (p.ExitCode != 0)
@@ -77,14 +77,14 @@ namespace EazyBuildPipeline.SVNUpdate
                                                  OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
-                EditorUtility.DisplayProgressBar("SVN Resolve", message, (float)(progress++ % 600) / 600);
+                Module.DisplayProgressBar("SVN Resolve", message, (float)(progress++ % 600) / 600);
                 System.Threading.Thread.Sleep(50);
             }
             if (p.ExitCode != 0)
             {
                 throw new EBPException("SVN Resolve 时发生错误：" + errorMessage);
             }
-            EditorUtility.DisplayProgressBar("SVN", "Finish!", 1);
+            Module.DisplayProgressBar("SVN", "Finish!", 1, true);
         }
 
         void OnExited(object sender, EventArgs e)
@@ -102,6 +102,7 @@ namespace EazyBuildPipeline.SVNUpdate
         void OnReceived(object sender, DataReceivedEventArgs e)
         {
             message = e.Data;
+            Module.Log(message);
         }
 
         public void RunCheckProcess()

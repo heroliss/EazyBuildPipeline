@@ -40,10 +40,10 @@ namespace EazyBuildPipeline.AssetPreprocessor
             while (RuningShellCount > 0)
             {
                 string s = string.Format("({0}/{1})", applyingID, totalApplyCount);
-                EditorUtility.DisplayProgressBar(titleMessage + s, applyingFile, (float)applyingID / totalApplyCount);
+                Module.DisplayProgressBar(titleMessage + s, applyingFile, (float)applyingID / totalApplyCount);
                 System.Threading.Thread.Sleep(50);
             }
-            EditorUtility.DisplayProgressBar(titleMessage, "Finish!", 1);
+            Module.DisplayProgressBar(titleMessage, "Finish!", 1, true);
         }
 
         string Arguments(params string[] arguments)

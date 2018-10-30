@@ -47,7 +47,7 @@ namespace EazyBuildPipeline.PlayerBuilder
         protected override void RunProcess()
         {
             //准备BuildOptions
-            EditorUtility.DisplayProgressBar("Preparing BuildOptions", "", 0);
+            Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
             BuildOptions buildOptions =
                 (Module.ModuleStateConfig.Json.DevelopmentBuild ? BuildOptions.Development : BuildOptions.None) |
                 (Module.ModuleStateConfig.Json.ConnectWithProfiler ? BuildOptions.ConnectWithProfiler : BuildOptions.None) |
@@ -75,14 +75,14 @@ namespace EazyBuildPipeline.PlayerBuilder
                 options = buildOptions
             };
             //重建目录
-            EditorUtility.DisplayProgressBar("正在重建目录", tagsPath, 0);
+            Module.DisplayProgressBar("正在重建目录", tagsPath, 0, true);
             if (Directory.Exists(tagsPath))
             {
                 Directory.Delete(tagsPath, true);
             }
             Directory.CreateDirectory(tagsPath);
             //Build Player
-            EditorUtility.DisplayProgressBar("Starting BuildPlayer...", "", 0);
+            Module.DisplayProgressBar("Starting BuildPlayer...", 0, true);
             var report = BuildPipeline.BuildPlayer(BuildPlayerOptions);
             if (!string.IsNullOrEmpty(report))
             {

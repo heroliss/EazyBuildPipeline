@@ -50,7 +50,7 @@ namespace EazyBuildPipeline.BundleManager
             string tagPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
 
             //创建目录
-            EditorUtility.DisplayProgressBar("Build Bundles", "正在重建目录:" + tagPath, 0.02f);
+            Module.DisplayProgressBar("正在重建目录:" + tagPath, 0.02f, true);
             if (Directory.Exists(tagPath))
             {
                 Directory.Delete(tagPath, true); //清空目录
@@ -60,16 +60,17 @@ namespace EazyBuildPipeline.BundleManager
             Directory.CreateDirectory(infoPath);
             Directory.CreateDirectory(bundlesPath);
             //创建Bundles
-            EditorUtility.DisplayProgressBar("Build Bundles", "开始创建AssetBundles...", 0.1f);
+            Module.DisplayProgressBar("Start Build AssetBundles...", 0.1f, true);
             var manifest = BuildPipeline.BuildAssetBundles(bundlesPath, Module.UserConfig.Json.ToArray(), (BuildAssetBundleOptions)optionsValue, target);
             if (manifest == null)
             {
                 throw new EBPException("BuildAssetBundles失败！详情请查看Console面板。");
             }
             //重命名Bundles清单文件
+            Module.DisplayProgressBar("Renaming assetbundlemanifest...", 0.92f, true);
             RenameMainBundleManifest(bundlesPath);
             //创建json文件
-            EditorUtility.DisplayProgressBar("Build Bundles", "Creating Info Files...", 0.95f);
+            Module.DisplayProgressBar("Creating Info Files...", 0.95f, true);
             File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(Module.UserConfig.Json, Formatting.Indented));
             File.WriteAllText(Path.Combine(infoPath, "Versions.json"), JsonConvert.SerializeObject(new Dictionary<string, int> {
                 { "ResourceVersion", resourceVersion } }, Formatting.Indented));

@@ -9,7 +9,7 @@ namespace EazyBuildPipeline.SVNUpdate
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             //删除lua的生成文件
-            EditorUtility.DisplayProgressBar("Clear Wrap Files...", "", 0);
+            Module.DisplayProgressBar("Clear Wrap Files...", 0, true);
             AssetDatabase.DeleteAsset("Assets/ToLua/ToLua/Source/Generate");
         }
 
@@ -17,19 +17,19 @@ namespace EazyBuildPipeline.SVNUpdate
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             //重新创建Wrap和Lua文件
-            EditorUtility.DisplayProgressBar("Clear and Generate Wrap Files...", "", 0.2f);
+            Module.DisplayProgressBar("Clear and Generate Wrap Files...", 0.2f, true);
             ToLuaMenu.ClearWrapFilesAndCreate();
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             //LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { }); //下面三步代替这一步
-            EditorUtility.DisplayProgressBar("Clear Lua Files...", "", 0.4f);
+            Module.DisplayProgressBar("Clear Lua Files...", 0.4f, true);
             LuaScriptsPreProcessor.Clean();
-            EditorUtility.DisplayProgressBar("Translate Lua to ByteFile...", "", 0.6f);
+            Module.DisplayProgressBar("Translate Lua to ByteFile...", 0.6f, true);
             LuaScriptsPreProcessor.DoByteCodeTranslationJob();
-            EditorUtility.DisplayProgressBar("Encrypt Lua ByteFile...", "", 0.8f);
+            Module.DisplayProgressBar("Encrypt Lua ByteFile...", 0.8f, true);
             LuaScriptsPreProcessor.DoTheEncryptionJob();
 
-            EditorUtility.DisplayProgressBar("Clear and Generate Wrap and Lua Files Finished!", "", 1);
+            Module.DisplayProgressBar("Clear and Generate Wrap and Lua Files Finished!", 1, true);
         }
     }
 }

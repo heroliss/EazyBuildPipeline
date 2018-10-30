@@ -426,7 +426,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
 			{
                 if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
 				{
-					EditorUtility.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
+					G.Module.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
 					    loadFileProgressCount,G.Module.ModuleConfig.Json.CheckBundle), filePath,
 					    (float)loadFileProgressCount % 100000 / 100000);
                     lastTime = EditorApplication.timeSinceStartup;

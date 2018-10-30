@@ -342,7 +342,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 			bool ensure = G.Module.DisplayDialog("确定要同步Assets的完整目录结构到PreStoredAssets下？（仅添加）", "同步", "取消");
             if (ensure)
             {
-                EditorUtility.DisplayProgressBar("同步目录", "正在读取Assets目录信息", 0);
+                G.Module.DisplayProgressBar("同步目录", "正在读取Assets目录信息", 0);
                 if (!Directory.Exists(G.Module.ModuleConfig.PreStoredAssetsFolderPath))
                 {
                     Directory.CreateDirectory(G.Module.ModuleConfig.PreStoredAssetsFolderPath);
@@ -358,7 +358,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 					Directory.CreateDirectory(path);
                     if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
 					{
-						EditorUtility.DisplayProgressBar("同步目录", path, (float)i / total);
+						G.Module.DisplayProgressBar("同步目录", path, (float)i / total);
                         lastTime = EditorApplication.timeSinceStartup;
 					}
 				}

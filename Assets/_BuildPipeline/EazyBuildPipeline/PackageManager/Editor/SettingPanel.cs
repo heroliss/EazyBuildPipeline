@@ -276,7 +276,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             {
                 try
                 {
-                    EditorUtility.DisplayProgressBar("Build Packages", "Starting...", 0);
+                    G.Module.DisplayProgressBar("Build Packages", "Starting...", 0);
                     double startTime = EditorApplication.timeSinceStartup;
                     G.Runner.ResourceVersion = G.g.bundleTree.Versions.ResourceVersion;
                     G.Runner.Run();

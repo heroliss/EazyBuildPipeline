@@ -128,7 +128,7 @@ namespace EazyBuildPipeline.PackageManager
             double lastTime = EditorApplication.timeSinceStartup;
 
             //重建目录
-            EditorUtility.DisplayProgressBar("正在重建Package目录", packagesFolderPath, progress); progress += 0.01f;
+            Module.DisplayProgressBar("正在重建Package目录", packagesFolderPath, progress, true); progress += 0.01f;
             if (Directory.Exists(packagesFolderPath))
             {
                 Directory.Delete(packagesFolderPath, true);
@@ -154,7 +154,7 @@ namespace EazyBuildPipeline.PackageManager
                     CommonModule.CommonConfig.Json.CurrentResourceVersion = ResourceVersion;
                     CommonModule.CommonConfig.Save();
 
-                    EditorUtility.DisplayProgressBar("正在获取需要拷贝到Streaming中的Bundles信息", "", progress); progress += 0.01f;
+                    Module.DisplayProgressBar("正在获取需要拷贝到Streaming中的Bundles信息", progress, true); progress += 0.01f;
                     //得到需要拷贝到Streaming中的Bundles
                     List<string> bundlesCopyToStreaming = new List<string>();
                     //List<string> bundlesCopyToStreaming_all = new List<string>();
@@ -169,7 +169,7 @@ namespace EazyBuildPipeline.PackageManager
                     }
 
                     //重建StreamingAssets/AssetBundles/[Platform]目录
-                    EditorUtility.DisplayProgressBar("正在重建StreamingAssets目录:", "Assets/StreamingAssets/AssetBundles", progress); progress += 0.01f;
+                    Module.DisplayProgressBar("正在重建StreamingAssets目录:", "Assets/StreamingAssets/AssetBundles", progress, true); progress += 0.01f;
                     if (Directory.Exists("Assets/StreamingAssets/AssetBundles"))
                     {
                         Directory.Delete("Assets/StreamingAssets/AssetBundles", true);
@@ -177,7 +177,7 @@ namespace EazyBuildPipeline.PackageManager
                     Directory.CreateDirectory(streamingPath);
 
                     //构建PackageManifest.json
-                    EditorUtility.DisplayProgressBar("正在StreamingAssets中构建文件", "PackageManifest.json", progress); progress += 0.01f;
+                    Module.DisplayProgressBar("正在StreamingAssets中构建文件", "PackageManifest.json", progress, true); progress += 0.01f;
                     List<PackageManifestStruct> packageManifest = new List<PackageManifestStruct>();
                     //单独加一个核心包的配置信息
                     string corePackageName = string.Join("_", new string[]{
@@ -209,7 +209,7 @@ namespace EazyBuildPipeline.PackageManager
 
                     //构建核心包
                     string corePackagePath = Path.Combine(streamingPath, corePackageName);
-                    EditorUtility.DisplayProgressBar("正在向StreamingAssets中构建CorePackage", corePackagePath, progress); progress += 0.01f;
+                    Module.DisplayProgressBar("正在向StreamingAssets中构建CorePackage", corePackagePath, progress, true); progress += 0.01f;
                     using (FileStream zipFileStream = new FileStream(corePackagePath, FileMode.Create))
                     {
                         using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
@@ -235,7 +235,7 @@ namespace EazyBuildPipeline.PackageManager
                         string bundle = bundlesCopyToStreaming[i];
                         if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
                         {
-                            EditorUtility.DisplayProgressBar(string.Format("正在向StreamingAssets中拷贝Bundles({0}/{1})",
+                            Module.DisplayProgressBar(string.Format("正在向StreamingAssets中拷贝Bundles({0}/{1})",
                                 i + 1, bundlesCopyToStreamingCount),
                                 bundle, progress + (float)i / bundlesCopyToStreamingCount * 0.1f);//拷贝Assetbundle过程占整个过程的10%
                             lastTime = EditorApplication.timeSinceStartup;
@@ -268,7 +268,7 @@ namespace EazyBuildPipeline.PackageManager
                             string bundlePath = Path.Combine(bundlesFolderPath, bundleRelativePath);
                             if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
                             {
-                                EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                                Module.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
                                     package.PackageName, pi + 1, packagesCount, i + 1, bundlesCount, count + 1, total),
                                     bundleRelativePath, progress + (float)count / total * restProgress);
                                 lastTime = EditorApplication.timeSinceStartup;
@@ -279,9 +279,9 @@ namespace EazyBuildPipeline.PackageManager
 
                         //构建空目录
                         int emptyFolderCount = package.EmptyFolders.Count;
-                        EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                        Module.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
                                 package.PackageName, pi + 1, packagesCount, bundlesCount, bundlesCount, count, total),
-                                string.Format("Empty Folders (Total:{0})", emptyFolderCount), progress + (float)count / total * restProgress);
+                                string.Format("Empty Folders (Total:{0})", emptyFolderCount), progress + (float)count / total * restProgress, true);
                         for (int i = 0; i < emptyFolderCount; i++)
                         {
                             zipStream.PutNextEntry(new ZipEntry(package.EmptyFolders[i] + "/") { });
@@ -295,14 +295,14 @@ namespace EazyBuildPipeline.PackageManager
                         {
                             case "Patch":
                                 //构建map
-                                EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                                Module.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
                                     package.PackageName, pi + 1, packagesCount, bundlesCount, bundlesCount, count, total),
-                                    "Building Map...", progress + (float)count / total * restProgress);
+                                    "Building Map...", progress + (float)count / total * restProgress, true);
                                 BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
                                 //添加Lua
-                                EditorUtility.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                                Module.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
                                     package.PackageName, pi + 1, packagesCount, bundlesCount, bundlesCount, count, total),
-                                    "Adding Lua...", progress + (float)count / total * restProgress);
+                                    "Adding Lua...", progress + (float)count / total * restProgress, true);
                                 BuildLuaInZipStream(buffer, zipStream);
                                 break;
 
