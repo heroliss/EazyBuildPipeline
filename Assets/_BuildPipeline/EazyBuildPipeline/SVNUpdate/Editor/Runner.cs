@@ -48,7 +48,8 @@ namespace EazyBuildPipeline.SVNUpdate
             errorMessage = "";
             Module.DisplayProgressBar("SVN Update Starting...", 0, true);
             Process p;
-            p = ExcuteCommand("/bin/bash", Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNUpdate.sh"),
+            p = ExcuteCommand("/bin/bash", Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNUpdate.sh") + " "
+                            + Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "SVNUpdateLog.txt"),
                                                  OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
