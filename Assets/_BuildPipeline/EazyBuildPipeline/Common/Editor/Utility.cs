@@ -17,7 +17,7 @@ namespace EazyBuildPipeline
             string s = null;
             for (int i = 0; i < tags.Length; i++)
             {
-                s += "[" + tags[i] + "]";
+                s += "[" + tags[i].ToLower() + "]";
             }
             return s;
         }
