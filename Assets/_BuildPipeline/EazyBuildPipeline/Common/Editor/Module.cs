@@ -57,8 +57,8 @@ namespace EazyBuildPipeline
         public static void CheckAndSetAllRootPath()
         {
             CheckAndResetRootPath(CommonConfig.UserConfigsRootPath);
-            CheckAndResetRootPath(CommonConfig.DataRootPath);
-            CheckAndResetRootPath(CommonConfig.LogsRootPath);
+            //CheckAndResetRootPath(CommonConfig.DataRootPath);
+            //CheckAndResetRootPath(CommonConfig.LogsRootPath);
         }
 
         static void CheckAndResetRootPath(string path)

@@ -26,7 +26,13 @@ namespace EazyBuildPipeline
             CommonModule.CommonConfig.Json.PipelineRootPath = EBPUtility.GetArgValue("PipelineRootPath");
             PipelineTotalControl.Module totalModule = new PipelineTotalControl.Module();
             //加载和检查每一个模块
-            string[] assetTag = new[] { EBPUtility.GetArgValue("Platform"), EBPUtility.GetArgValue("Definition"), EBPUtility.GetArgValue("Language") };
+            string platform = EBPUtility.GetArgValue("Platform");
+            switch (platform.ToLower())
+            {
+                case "android": platform = "Android"; break;
+                case "ios": platform = "iOS"; break;
+            }
+            string[] assetTag = new[] { platform, EBPUtility.GetArgValue("Definition").ToUpper(), EBPUtility.GetArgValue("Language").ToUpper() };
             var disableModules = EBPUtility.GetArgValuesLower("DisableModule");
             bool checkMode = CommonModule.CommonConfig.Args_lower.Contains("--checkmode");
             foreach (var runner in totalModule.Runners)
