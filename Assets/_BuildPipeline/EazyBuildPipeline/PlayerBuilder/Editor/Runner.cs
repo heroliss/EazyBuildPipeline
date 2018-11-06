@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using EazyBuildPipeline.PlayerBuilder.Editor;
 using EazyBuildPipeline.PlayerBuilder.Configs;
+using System.Linq;
 
 namespace EazyBuildPipeline.PlayerBuilder
 {
@@ -65,7 +66,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     break;
             }
             //获取场景
-            string[] scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes);
+            string[] scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes).Take(2).ToArray(); //Hack: 只获取头两个场景
             //构成BuildPlayerOptions
             BuildPlayerOptions = new BuildPlayerOptions
             {
@@ -191,6 +192,10 @@ namespace EazyBuildPipeline.PlayerBuilder
                     //TODO：未找到：16.	Android GamePad Support
                     PlayerSettings.stripEngineCode = ps.Android.StripEngineCode;
                     PlayerSettings.Android.useAPKExpansionFiles = ps.Android.UseObbMode;
+                    PlayerSettings.Android.keystoreName = ps.Android.KeystoreName;
+                    PlayerSettings.Android.keystorePass = ps.Android.KeystorePass;
+                    PlayerSettings.Android.keyaliasName = ps.Android.KeyaliasName;
+                    PlayerSettings.Android.keyaliasPass = ps.Android.KeyaliasPass;
                     break;
                 default:
                     break;

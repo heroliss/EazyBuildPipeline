@@ -188,6 +188,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 [JsonConverter(typeof(StringEnumConverter))] public AndroidTargetDevice DeviceFilter;
                 public string PackageName;
                 public bool UseObbMode;
+                public string KeystoreName;
+                public string KeystorePass;
+                public string KeyaliasName;
+                public string KeyaliasPass;
             }
 
             [Serializable]

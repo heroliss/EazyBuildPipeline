@@ -17,6 +17,7 @@ namespace EazyBuildPipeline.PlayerBuilder
         {
             Module.DisplayProgressBar("Renaming OBB File...", 0, true);
             RenameOBBFile();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
         protected override void PreProcess()

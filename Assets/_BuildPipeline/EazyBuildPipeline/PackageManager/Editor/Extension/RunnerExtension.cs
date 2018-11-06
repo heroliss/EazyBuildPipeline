@@ -7,6 +7,7 @@ namespace EazyBuildPipeline.PackageManager
     {
         protected override void PostProcess()
         {
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
         protected override void PreProcess()

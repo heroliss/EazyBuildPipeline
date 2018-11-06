@@ -101,6 +101,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             ps.Android.TargetAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Target API Level", ps.Android.TargetAPILevel, OnValueChanged);
             EditorGUILayout.Separator();
             EBPEditorGUILayout.Toggle("Use OBB Mode", ref ps.Android.UseObbMode, OnValueChanged);
+            EBPEditorGUILayout.TextField("Keystore Name", ref ps.Android.KeystoreName, OnValueChanged);
+            EBPEditorGUILayout.TextField("Keystore Pass", ref ps.Android.KeystorePass, OnValueChanged);
+            EBPEditorGUILayout.TextField("Keyalias Name", ref ps.Android.KeyaliasName, OnValueChanged);
+            EBPEditorGUILayout.TextField("Keyalias Pass", ref ps.Android.KeyaliasPass, OnValueChanged);
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Support", EditorStyles.boldLabel);

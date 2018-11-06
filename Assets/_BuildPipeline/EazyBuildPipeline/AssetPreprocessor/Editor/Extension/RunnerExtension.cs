@@ -14,6 +14,7 @@ namespace EazyBuildPipeline.AssetPreprocessor
 
         protected override void PostProcess()
         {
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
     }
 }

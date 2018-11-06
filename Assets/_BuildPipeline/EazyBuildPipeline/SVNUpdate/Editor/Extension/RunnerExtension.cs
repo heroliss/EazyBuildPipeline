@@ -30,6 +30,7 @@ namespace EazyBuildPipeline.SVNUpdate
             LuaScriptsPreProcessor.DoTheEncryptionJob();
 
             Module.DisplayProgressBar("Clear and Generate Wrap and Lua Files Finished!", 1, true);
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
     }
 }
