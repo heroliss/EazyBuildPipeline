@@ -318,7 +318,7 @@ namespace EazyBuildPipeline.PackageManager
 
         private void BuildLuaInZipStream(byte[] buffer, ZipOutputStream zipStream)
         {
-            //AddDirectoryToZipStream(zipStream, "Assets/StreamingAssets/Lua", "Lua/Lua", buffer, "*.lua"); //TODO: 重复的Lua库，可删
+            AddDirectoryToZipStream(zipStream, "Assets/StreamingAssets/Lua", "Lua/Lua", buffer, "*.lua"); //Hack: 重复的Lua库，但是Android包中需要
             switch (Module.UserConfig.Json.LuaSource)
             {
                 case "None":
