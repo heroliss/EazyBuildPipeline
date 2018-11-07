@@ -40,6 +40,11 @@ namespace EazyBuildPipeline.PlayerBuilder
                 DownLoadMultiLanguage();
             }
 
+            //重新创建Wrap和Lua文件
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            Module.DisplayProgressBar("Clear and Generate Wrap Files...", 0.9f, true);
+            ToLuaMenu.ClearWrapFilesAndCreate();
+
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
