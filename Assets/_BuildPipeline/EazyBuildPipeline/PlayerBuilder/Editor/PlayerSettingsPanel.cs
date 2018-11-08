@@ -170,11 +170,11 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
             EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
             EBPEditorGUILayout.TextField("Third FrameWork Path", ref ps.IOS.ThirdFrameWorkPath, OnValueChanged);
-            EBPEditorGUILayout.Toggle("IsBuildArchive", ref ps.IOS.IsBuildArchive, OnValueChanged);
-            EditorGUI.BeginDisabledGroup(!ps.IOS.IsBuildArchive);
-            EBPEditorGUILayout.TextField("Export Ipa Path", ref ps.IOS.ExportIpaPath, OnValueChanged);
-            EBPEditorGUILayout.TextField("TaskPath", ref ps.IOS.TaskPath, OnValueChanged);
-            EditorGUI.EndDisabledGroup();
+            //EBPEditorGUILayout.Toggle("IsBuildArchive", ref ps.IOS.IsBuildArchive, OnValueChanged);
+            //EditorGUI.BeginDisabledGroup(!ps.IOS.IsBuildArchive);
+            //EBPEditorGUILayout.TextField("Export Ipa Path", ref ps.IOS.ExportIpaPath, OnValueChanged);
+            //EBPEditorGUILayout.TextField("TaskPath", ref ps.IOS.TaskPath, OnValueChanged);
+            //EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.EndScrollView();
         }

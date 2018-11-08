@@ -106,7 +106,8 @@ namespace EazyBuildPipeline.PackageManager
             {
                 throw new EBPException("Bundles目录不存：" + bundlesFolderPath);
             }
-            string packagesFolderPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
+            string packagesFolderPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag)
+                + "/" + Module.UserConfig.Json.PackageMode);
             int count = 0;
             int total = 0;
             float progress = 0;
@@ -128,7 +129,7 @@ namespace EazyBuildPipeline.PackageManager
             double lastTime = EditorApplication.timeSinceStartup;
 
             //重建目录
-            Module.DisplayProgressBar("正在重建Package目录", packagesFolderPath, progress, true); progress += 0.01f;
+            Module.DisplayProgressBar("正在重建" + Module.UserConfig.Json.PackageMode + "目录", packagesFolderPath, progress, true); progress += 0.01f;
             if (Directory.Exists(packagesFolderPath))
             {
                 Directory.Delete(packagesFolderPath, true);

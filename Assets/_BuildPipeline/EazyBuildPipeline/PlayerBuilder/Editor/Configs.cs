@@ -129,6 +129,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public string ClientVersion;
                 public string BuildNumber;
                 public bool AutomaticallySign;
+                public string ProvisioningProfile;
                 public string TeamID;
                 public string CameraUsageDesc;
                 public string LocationUsageDesc;
@@ -139,17 +140,16 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public string TargetMinimumIOSVersion;
                 public bool StripEngineCode;
                 [JsonConverter(typeof(StringEnumConverter))] public ScriptCallOptimizationLevel ScriptCallOptimization;
-                public string ProvisioningProfile;
                 [JsonConverter(typeof(StringEnumConverter))] public ArchitectureEnum Architecture;
 
                 //For iOSPostprocessor
                 public string ThirdFrameWorkPath;
-                public string ExportIpaPath;
-                public bool IsBuildArchive;
                 public string BlueToothUsageDesc;
                 public string PhotoUsageDesc;
                 public string PhotoUsageAddDesc;
-                public string TaskPath;
+                //public string ExportIpaPath;
+                //public bool IsBuildArchive;
+                //public string TaskPath;
             }
 
             [Serializable]
