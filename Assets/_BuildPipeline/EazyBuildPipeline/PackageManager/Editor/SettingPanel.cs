@@ -285,8 +285,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     if (G.Module.DisplayDialog("打包完成！用时：" + string.Format("{0}时 {1}分 {2}秒", time.Hours, time.Minutes, time.Seconds),
                         "显示文件", "关闭"))
                     {
-                        string firstPackagePath = Path.Combine(G.Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(G.Module.ModuleStateConfig.Json.CurrentTag) +
-                            "/" + G.g.packageTree.Packages[0].fileName);
+                        string firstPackagePath = Path.Combine(G.Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(G.Module.ModuleStateConfig.Json.CurrentTag));
                         EditorUtility.RevealInFinder(firstPackagePath);
                     }
                 }
