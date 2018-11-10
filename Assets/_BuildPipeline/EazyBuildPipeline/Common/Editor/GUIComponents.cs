@@ -43,9 +43,9 @@ namespace EazyBuildPipeline
             EditorGUILayout.EndHorizontal();
         }
 
-        public static void TextField(string label, ref string text, Action action = null)
+        public static void TextField(string label, ref string text, Action action = null, params GUILayoutOption[] options)
         {
-            string text_new = EditorGUILayout.TextField(label, text);
+            string text_new = label == null ? EditorGUILayout.TextField(text, options) : EditorGUILayout.TextField(label, text, options);
             if (text_new != text)
             {
                 text = text_new;
@@ -56,9 +56,9 @@ namespace EazyBuildPipeline
             }
         }
 
-        public static void Toggle(string label, ref bool value, Action action = null)
+        public static void Toggle(string label, ref bool value, Action action = null, params GUILayoutOption[] options)
         {
-            bool value_new = EditorGUILayout.Toggle(label, value);
+            bool value_new = EditorGUILayout.Toggle(label, value, options);
             if (value_new != value)
             {
                 value = value_new;
@@ -69,9 +69,9 @@ namespace EazyBuildPipeline
             }
         }
 
-        public static Enum EnumPopup(string label, Enum selected, Action action = null) //TODO:如何用ref传递枚举?
+        public static Enum EnumPopup(string label, Enum selected, Action action = null, params GUILayoutOption[] options) //TODO:如何用ref传递枚举?
         {
-            Enum selected_new = EditorGUILayout.EnumPopup(label, selected);
+            Enum selected_new = label == null ? EditorGUILayout.EnumPopup(selected, options) : EditorGUILayout.EnumPopup(label, selected, options);
             if (!selected_new.Equals(selected))
             {
                 //selected = selected_new;
@@ -83,9 +83,9 @@ namespace EazyBuildPipeline
             return selected_new;
         }
 
-        public static void IntField(string label, ref int value, Action action = null)
+        public static void IntField(string label, ref int value, Action action = null, params GUILayoutOption[] options)
         {
-            int value_new = EditorGUILayout.IntField(label, value);
+            int value_new = EditorGUILayout.IntField(label, value, options);
             if (value_new != value)
             {
                 value = value_new;

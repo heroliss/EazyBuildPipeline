@@ -99,17 +99,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             [Serializable]
             public class GeneralSettings
             {
-                public enum DownloadConfigTypeEnum
-                {
-                    localtest,
-                    ios_cn,
-                    taptap,
-                    ios_banhao,
-                }
-
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
                 public string CompanyName;
                 public string ProductName;
+                [JsonConverter(typeof(StringEnumConverter))] public EazyGameChannel.Channels Channel;
 
                 //Extension
                 //[JsonConverter(typeof(StringEnumConverter))] public DownloadConfigTypeEnum DownloadConfigType;
@@ -125,6 +118,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             {
                 public enum ArchitectureEnum { ARMv7, ARM64, Universal } //TODO: 没有找到该枚举类型，所以自己创建了一个
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
+                public List<CopyItem> CopyList = new List<CopyItem>();
                 public string BundleID;
                 public string ClientVersion;
                 public string BuildNumber;
@@ -159,6 +153,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public enum WritePermissionEnum { Internal, External_SDCard }
 
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
+                public List<CopyItem> CopyList = new List<CopyItem>();
                 public bool PreserveFramebufferAlpha;
                 [JsonConverter(typeof(StringEnumConverter))] public AndroidBlitType BlitType;
                 public bool ProtectGraphicsMemory;
@@ -209,6 +204,14 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public bool Active;
                 public string GroupName;
                 public List<ScriptDefine> Defines = new List<ScriptDefine>();
+            }
+
+            [Serializable]
+            public class CopyItem
+            {
+                public string SourcePath;
+                [JsonConverter(typeof(StringEnumConverter))] public CopyMode CopyMode;
+                public string TargetPath;
             }
         }
     }

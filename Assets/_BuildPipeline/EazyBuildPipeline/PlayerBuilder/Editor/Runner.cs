@@ -1,12 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using System;
 using System.IO;
-using EazyBuildPipeline.PlayerBuilder.Editor;
 using EazyBuildPipeline.PlayerBuilder.Configs;
-using System.Linq;
 
 namespace EazyBuildPipeline.PlayerBuilder
 {
@@ -47,34 +43,7 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         protected override void RunProcess()
         {
-            //准备BuildOptions
-            Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
-            BuildOptions buildOptions =
-                (Module.ModuleStateConfig.Json.DevelopmentBuild ? BuildOptions.Development : BuildOptions.None) |
-                (Module.ModuleStateConfig.Json.ConnectWithProfiler ? BuildOptions.ConnectWithProfiler : BuildOptions.None) |
-                (Module.ModuleStateConfig.Json.AllowDebugging ? BuildOptions.AllowDebugging : BuildOptions.None) |
-                (Module.UserConfig.Json.BuildSettings.CompressionMethod == UserConfig.BuildSettings.CompressionMethodEnum.LZ4 ? BuildOptions.CompressWithLz4 : BuildOptions.None) |
-                (Module.UserConfig.Json.BuildSettings.CompressionMethod == UserConfig.BuildSettings.CompressionMethodEnum.LZ4HC ? BuildOptions.CompressWithLz4HC : BuildOptions.None);
-
-            //设置路径和文件名
-            string tagsPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
-            string locationPath = tagsPath;
-            switch (EditorUserBuildSettings.activeBuildTarget)
-            {
-                case BuildTarget.Android:
-                    locationPath = Path.Combine(tagsPath, PlayerSettings.productName + PlayerSettings.bundleVersion + ".apk");
-                    break;
-            }
-            //获取场景
-            string[] scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes).Take(2).ToArray(); //Hack: 只获取头两个场景
-            //构成BuildPlayerOptions
-            BuildPlayerOptions = new BuildPlayerOptions
-            {
-                scenes = scenes,
-                locationPathName = locationPath,
-                target = EditorUserBuildSettings.activeBuildTarget,
-                options = buildOptions
-            };
+            string tagsPath = Path.GetDirectoryName(BuildPlayerOptions.locationPathName);
             //重建目录
             Module.DisplayProgressBar("正在重建目录", tagsPath, 0, true);
             if (Directory.Exists(tagsPath))

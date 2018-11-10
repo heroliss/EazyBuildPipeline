@@ -111,5 +111,108 @@ namespace EazyBuildPipeline
             }
             return values;
         }
+
+        #region CopyDirectory
+
+        public static void CopyDirectory(string source, string target, CopyMode copyMode)
+        {
+            if (!Directory.Exists(source))
+            {
+                throw new EBPException("要拷贝的源目录不存在:" + source);
+            }
+            switch (copyMode)
+            {
+                case CopyMode.New:
+                    if (Directory.Exists(target))
+                    {
+                        throw new EBPException("目录已存在:" + target);
+                    }
+                    RecursiveCopyDirectory_overwrite(source, target);
+                    break;
+                case CopyMode.Add:
+                    RecursiveCopyDirectory_add(source, target);
+                    break;
+                case CopyMode.Overwrite:
+                    RecursiveCopyDirectory_overwrite(source, target);
+                    break;
+                case CopyMode.Replace:
+                    if (Directory.Exists(target))
+                    {
+                        Directory.Delete(target, true);
+                    }
+                    RecursiveCopyDirectory_overwrite(source, target);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static void RecursiveCopyDirectory_overwrite(string source, string target)
+        {
+            Directory.CreateDirectory(target);
+            foreach (string folderPath in Directory.GetDirectories(source))
+            {
+                RecursiveCopyDirectory_overwrite(folderPath, Path.Combine(target, Path.GetFileName(folderPath)));
+            }
+            foreach (string filePath in Directory.GetFiles(source))
+            {
+                File.Copy(filePath, Path.Combine(target, Path.GetFileName(filePath)), true);
+            }
+        }
+
+        private static void RecursiveCopyDirectory_add(string source, string target)
+        {
+            Directory.CreateDirectory(target);
+            foreach (string folderPath in Directory.GetDirectories(source))
+            {
+                RecursiveCopyDirectory_add(folderPath, Path.Combine(target, Path.GetFileName(folderPath)));
+            }
+            string targetFilePath = null;
+            foreach (string filePath in Directory.GetFiles(source))
+            {
+                targetFilePath = Path.Combine(target, Path.GetFileName(filePath));
+                if (!File.Exists(targetFilePath))
+                {
+                    File.Copy(filePath, targetFilePath);
+                }
+            }
+        }
+
+        #endregion
+
+        public static string GetEnumDescription<TEnum>(object value)
+        {
+            Type enumType = typeof(TEnum);
+            if (!enumType.IsEnum)
+                throw new ArgumentException("不是枚举类型");
+            var name = Enum.GetName(enumType, value);
+            if (name == null)
+                return string.Empty;
+            object[] objs = enumType.GetField(name).GetCustomAttributes(typeof(EnumDescriptionAttribute), false);
+            if (objs == null || objs.Length == 0)
+                return string.Empty;
+            EnumDescriptionAttribute attr = objs[0] as EnumDescriptionAttribute;
+            return attr.Description;
+        }
+    }
+
+    /// <summary>
+    /// 拷贝目录的模式
+    /// </summary>
+    public enum CopyMode
+    {
+        [EnumDescription("新建目录，拷贝所有文件，若有同名根目录则抛出异常")] New,
+        [EnumDescription("补全目录结构，拷贝不存在的文件")] Add,
+        [EnumDescription("补全目录结构，拷贝所有文件，替换已存在的文件")] Overwrite,
+        [EnumDescription("重建目录，拷贝所有文件，所有旧文件都会被删除")] Replace
+    }
+
+    public class EnumDescriptionAttribute : Attribute
+    {
+        public string Description { get; private set; }
+        public EnumDescriptionAttribute(string description)
+        {
+            this.Description = description;
+        }
     }
 }

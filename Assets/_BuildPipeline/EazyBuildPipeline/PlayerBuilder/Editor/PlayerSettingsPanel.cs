@@ -80,6 +80,37 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             G.Module.IsDirty = true;
         }
 
+        private void CopyListPanel(List<Configs.UserConfig.PlayerSettings.CopyItem> copyList)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel("Copy Directory", EditorStyles.boldLabel);
+            if (GUILayout.Button("+"))
+            {
+                copyList.Add(new Configs.UserConfig.PlayerSettings.CopyItem());
+                OnValueChanged();
+            }
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+            for (int i = 0; i < copyList.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("-");
+                EBPEditorGUILayout.TextField(null, ref copyList[i].SourcePath, OnValueChanged, GUILayout.MaxWidth(1000));
+                EditorGUILayout.LabelField("→", GUILayout.Width(15));
+                EBPEditorGUILayout.TextField(null, ref copyList[i].TargetPath, OnValueChanged, GUILayout.MaxWidth(1000));
+                copyList[i].CopyMode = (CopyMode)EBPEditorGUILayout.EnumPopup(null, copyList[i].CopyMode, OnValueChanged, GUILayout.MaxWidth(100));
+                if (GUILayout.Button("-")
+                    && ((string.IsNullOrEmpty(copyList[i].SourcePath) && string.IsNullOrEmpty(copyList[i].TargetPath))
+                    || G.Module.DisplayDialog("确定删除该项？", "确定", "取消")))
+                {
+                    copyList.RemoveAt(i);
+                    OnValueChanged();
+                }
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
         private void AndroidPanel()
         {
             var ps = G.Module.UserConfig.Json.PlayerSettings;
@@ -124,6 +155,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
             EditorGUILayout.LabelField("Rendering", EditorStyles.boldLabel);
             EBPEditorGUILayout.Toggle("Protect Graphics Memory", ref ps.Android.ProtectGraphicsMemory, OnValueChanged);
+            EditorGUILayout.Separator();
+
+            CopyListPanel(ps.Android.CopyList);
 
             EditorGUILayout.EndScrollView();
         }
@@ -175,6 +209,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             //EBPEditorGUILayout.TextField("Export Ipa Path", ref ps.IOS.ExportIpaPath, OnValueChanged);
             //EBPEditorGUILayout.TextField("TaskPath", ref ps.IOS.TaskPath, OnValueChanged);
             //EditorGUI.EndDisabledGroup();
+            EditorGUILayout.Separator();
+
+            CopyListPanel(ps.IOS.CopyList);
 
             EditorGUILayout.EndScrollView();
         }
@@ -187,6 +224,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EditorGUILayout.LabelField("General Player Settings", EditorStyles.boldLabel);
             EBPEditorGUILayout.TextField("Company Name", ref ps.General.CompanyName, OnValueChanged);
             EBPEditorGUILayout.TextField("Product Name", ref ps.General.ProductName, OnValueChanged);
+            ps.General.Channel = (EazyGameChannel.Channels)EBPEditorGUILayout.EnumPopup("Channel", ps.General.Channel, OnValueChanged);
             EditorGUILayout.Separator();
 
             //EditorGUILayout.LabelField("Download Configs & Language", EditorStyles.boldLabel);

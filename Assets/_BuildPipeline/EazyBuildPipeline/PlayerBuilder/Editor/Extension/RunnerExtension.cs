@@ -6,6 +6,8 @@ using System;
 using System.Linq;
 using UnityEditor.XCodeEditor;
 using UnityEditor.iOS.Xcode;
+using System.Collections.Generic;
+using EazyBuildPipeline.PlayerBuilder.Configs;
 
 namespace EazyBuildPipeline.PlayerBuilder
 {
@@ -17,16 +19,20 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         protected override void PostProcess()
         {
-            if (BuildPlayerOptions.target == BuildTarget.Android)
+            switch (BuildPlayerOptions.target)
             {
-                Module.DisplayProgressBar("Renaming OBB File...", 0, true);
-                RenameOBBFileForAndroid();
+                case BuildTarget.Android:
+                    Module.DisplayProgressBar("Renaming OBB File...", 0, true);
+                    RenameOBBFileForAndroid();
+                    break;
+                case BuildTarget.iOS:
+                    Module.DisplayProgressBar("Postprocessing for iOS...", 0, true);
+                    IOSPostProcess(BuildPlayerOptions.locationPathName);
+                    break;
+                default:
+                    throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
             }
-            else if (BuildPlayerOptions.target == BuildTarget.iOS)
-            {
-                Module.DisplayProgressBar("Postprocessing for iOS...", 0, true);
-                IOSPostProcess(BuildPlayerOptions.locationPathName);
-            }
+
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
             iOSBuildPostProcessor.Disable = false; //HACK: 开启旧的后处理过程
@@ -35,13 +41,29 @@ namespace EazyBuildPipeline.PlayerBuilder
         protected override void PreProcess()
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            PrepareBuildOptions();
 
+            switch (BuildPlayerOptions.target)
+            {
+                case BuildTarget.Android:
+                    CopyAllDirectories(Module.UserConfig.Json.PlayerSettings.Android.CopyList);
+                    break;
+                case BuildTarget.iOS:
+                    CopyAllDirectories(Module.UserConfig.Json.PlayerSettings.IOS.CopyList);
+                    break;
+                default:
+                    throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
+            }
+
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.1f, true);
             ApplyPlayerSettingsAndScriptDefines();
 
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Module.DisplayProgressBar("Applying PostProcess Settings", 0.2f, true);
             ApplyPostProcessSettings();
 
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Module.DisplayProgressBar("Creating Building Configs Class File", 0.3f, true);
             CreateBuildingConfigsClassFile();
 
@@ -60,6 +82,54 @@ namespace EazyBuildPipeline.PlayerBuilder
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
             iOSBuildPostProcessor.Disable = true; //HACK: 关闭旧的后处理过程
+        }
+
+        private void CopyAllDirectories(List<UserConfig.PlayerSettings.CopyItem> copyList)
+        {
+            for (int i = 0; i < copyList.Count; i++)
+            {
+                Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].TargetPath, 0, true);
+                EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode);
+            }
+        }
+
+        private void PrepareBuildOptions()
+        {
+            //准备BuildOptions
+            Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
+            BuildOptions buildOptions =
+                (Module.ModuleStateConfig.Json.DevelopmentBuild ? BuildOptions.Development : BuildOptions.None) |
+                (Module.ModuleStateConfig.Json.ConnectWithProfiler ? BuildOptions.ConnectWithProfiler : BuildOptions.None) |
+                (Module.ModuleStateConfig.Json.AllowDebugging ? BuildOptions.AllowDebugging : BuildOptions.None) |
+                (Module.UserConfig.Json.BuildSettings.CompressionMethod == UserConfig.BuildSettings.CompressionMethodEnum.LZ4 ? BuildOptions.CompressWithLz4 : BuildOptions.None) |
+                (Module.UserConfig.Json.BuildSettings.CompressionMethod == UserConfig.BuildSettings.CompressionMethodEnum.LZ4HC ? BuildOptions.CompressWithLz4HC : BuildOptions.None);
+
+            //设置路径和文件名
+            string tagsPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
+            string locationPath;
+            switch (EditorUserBuildSettings.activeBuildTarget)
+            {
+                case BuildTarget.Android:
+                    locationPath = Path.Combine(tagsPath, string.Format("{0}{1}.{2}.apk", PlayerSettings.productName, PlayerSettings.bundleVersion, PlayerSettings.Android.bundleVersionCode));
+                    break;
+                case BuildTarget.iOS:
+                    locationPath = Path.Combine(tagsPath, "Project");
+                    break;
+                default:
+                    throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
+            }
+
+            //获取场景
+            string[] scenes = EditorBuildSettingsScene.GetActiveSceneList(EditorBuildSettings.scenes).Take(2).ToArray(); //Hack: 只获取头两个场景
+
+            //构成BuildPlayerOptions
+            BuildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = scenes,
+                locationPathName = locationPath,
+                target = EditorUserBuildSettings.activeBuildTarget,
+                options = buildOptions
+            };
         }
 
         public void ApplyPostProcessSettings()
@@ -195,10 +265,20 @@ namespace EazyBuildPipeline.PlayerBuilder
             }
 
             string code = "public static class " + BuildingConfigsClassName + "\n{\n";
-            code += System.String.Format("\tpublic static readonly string BuildVersion = \"{0}\";\n", build);
-            code += System.String.Format("\tpublic static readonly int Resourceversion = {0};\n", CommonModule.CommonConfig.Json.CurrentResourceVersion);
-            code += System.String.Format("\tpublic static readonly string BuglyAppId = \"{0}\";\n", ps.General.BuglyAppID);
-            code += System.String.Format("\tpublic static readonly string BuglyAppKey = \"{0}\";", ps.General.BuglyAppKey);
+            code += string.Format("\tpublic static readonly string BuildVersion = \"{0}\";\n", build);
+            code += string.Format("\tpublic static readonly int Resourceversion = {0};\n", CommonModule.CommonConfig.Json.CurrentResourceVersion);
+            code += string.Format("\tpublic static readonly string BuglyAppId = \"{0}\";\n", ps.General.BuglyAppID);
+            code += string.Format("\tpublic static readonly string BuglyAppKey = \"{0}\";", ps.General.BuglyAppKey);
+
+            if (ps.General.Channel == EazyGameChannel.Channels.None)
+            {
+                code += string.Format("\tpublic static readonly string GameChannel = {0};", "string.Empty");
+            }
+            else
+            {
+                code += string.Format("\tpublic static readonly string GameChannel = \"{0}\";", ps.General.Channel.ToString());
+            }
+
             code += "\n}\n";
             return code;
         }
