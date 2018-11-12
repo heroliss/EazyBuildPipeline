@@ -7,9 +7,9 @@ namespace EazyBuildPipeline
 {
     public interface IRunner
     {
+        BaseModule BaseModule { get; }
         void Run(bool isPartOfPipeline = false);
         void Check(bool onlyCheckConfig = false);
-        BaseModule BaseModule { get; }
     }
 
     public abstract class EBPRunner<TModule, TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass> : IRunner
@@ -61,10 +61,12 @@ namespace EazyBuildPipeline
                 state.ErrorMessage = e.Message;
                 state.DetailedErrorMessage = e.ToString();
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
+                Catch(e);
                 throw e;
             }
             finally
             {
+                Finally();
                 Module.EndLog();
                 EditorUtility.ClearProgressBar();
                 if (!isPartOfPipeline) //若为管线一部分时，让所有模块使用相同的CurrentLogFolderPath
@@ -138,8 +140,11 @@ namespace EazyBuildPipeline
             }
         }
 
-        protected abstract void PreProcess();
+        protected virtual void PreProcess() { }
         protected abstract void RunProcess();
-        protected abstract void PostProcess();
+        protected virtual void PostProcess() { }
+
+        protected virtual void Catch(Exception e) { }
+        protected virtual void Finally() { }
     }
 }

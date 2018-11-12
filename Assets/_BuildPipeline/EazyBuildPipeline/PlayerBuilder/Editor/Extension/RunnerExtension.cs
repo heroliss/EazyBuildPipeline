@@ -8,14 +8,40 @@ using UnityEditor.XCodeEditor;
 using UnityEditor.iOS.Xcode;
 using System.Collections.Generic;
 using EazyBuildPipeline.PlayerBuilder.Configs;
+using System.Text.RegularExpressions;
 
 namespace EazyBuildPipeline.PlayerBuilder
 {
     public partial class Runner
     {
-        public string ConfigURL_Game;
-        public string ConfigURL_Language;
-        public string ConfigURL_LanguageVersion;
+        protected override void PreProcess()
+        {
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            PrepareBuildOptions();
+
+            CopyAllDirectories();
+
+            Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.1f, true);
+            ApplyPlayerSettingsAndScriptDefines();
+
+            Module.DisplayProgressBar("Applying PostProcess Settings", 0.2f, true);
+            ApplyPostProcessSettings();
+
+            Module.DisplayProgressBar("Creating Building Configs Class File", 0.3f, true);
+            CreateBuildingConfigsClassFile();
+
+            Module.DisplayProgressBar("Start DownloadConfigs", 0.35f, true);
+            DownLoadConfigs();
+
+            //重新创建Wrap和Lua文件
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            Module.DisplayProgressBar("Clear and Generate Wrap Files...", 0.9f, true);
+            ToLuaMenu.ClearWrapFilesAndCreate();
+
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+
+            iOSBuildPostProcessor.DisableOnce = true; //HACK: 关闭一次旧的后处理过程
+        }
 
         protected override void PostProcess()
         {
@@ -34,62 +60,57 @@ namespace EazyBuildPipeline.PlayerBuilder
             }
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-
-            iOSBuildPostProcessor.Disable = false; //HACK: 开启旧的后处理过程
         }
 
-        protected override void PreProcess()
+        protected override void Finally()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            PrepareBuildOptions();
+            iOSBuildPostProcessor.DisableOnce = false;
+        }
 
+        private void CopyAllDirectories()
+        {
+            string directoryRegexStr = CommonModule.CommonConfig.Json.DirectoryRegex;
+            string fileRegexStr = CommonModule.CommonConfig.Json.FileRegex;
+            List<UserConfig.PlayerSettings.CopyItem> copyList;
             switch (BuildPlayerOptions.target)
             {
                 case BuildTarget.Android:
-                    CopyAllDirectories(Module.UserConfig.Json.PlayerSettings.Android.CopyList);
+                    string directoryRegexStr_Android = Module.UserConfig.Json.PlayerSettings.Android.CopyDirectoryRegex;
+                    string fileRegexStr_Android = Module.UserConfig.Json.PlayerSettings.Android.CopyFileRegex;
+                    if (!string.IsNullOrEmpty(directoryRegexStr_Android))
+                    {
+                        directoryRegexStr = directoryRegexStr_Android;
+                    }
+                    if (!string.IsNullOrEmpty(fileRegexStr_Android))
+                    {
+                        fileRegexStr = fileRegexStr_Android;
+                    }
+                    copyList = Module.UserConfig.Json.PlayerSettings.Android.CopyList;
                     break;
                 case BuildTarget.iOS:
-                    CopyAllDirectories(Module.UserConfig.Json.PlayerSettings.IOS.CopyList);
+                    string directoryRegexStr_IOS = Module.UserConfig.Json.PlayerSettings.IOS.CopyDirectoryRegex;
+                    string fileRegexStr_IOS = Module.UserConfig.Json.PlayerSettings.IOS.CopyFileRegex;
+                    if (!string.IsNullOrEmpty(directoryRegexStr_IOS))
+                    {
+                        directoryRegexStr = directoryRegexStr_IOS;
+                    }
+                    if (!string.IsNullOrEmpty(fileRegexStr_IOS))
+                    {
+                        fileRegexStr = fileRegexStr_IOS;
+                    }
+                    copyList = Module.UserConfig.Json.PlayerSettings.IOS.CopyList;
                     break;
                 default:
                     throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
             }
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.1f, true);
-            ApplyPlayerSettingsAndScriptDefines();
+            Regex directoryRegex = string.IsNullOrEmpty(directoryRegexStr) ? null : new Regex(directoryRegexStr);
+            Regex fileRegex = string.IsNullOrEmpty(fileRegexStr) ? null : new Regex(fileRegexStr);
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            Module.DisplayProgressBar("Applying PostProcess Settings", 0.2f, true);
-            ApplyPostProcessSettings();
-
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            Module.DisplayProgressBar("Creating Building Configs Class File", 0.3f, true);
-            CreateBuildingConfigsClassFile();
-
-            if (CommonModule.CommonConfig.IsBatchMode)
-            {
-                Module.DisplayProgressBar("Start DownloadConfigs", 0.35f, true);
-                DownLoadConfigs();
-                DownLoadMultiLanguage();
-            }
-
-            //重新创建Wrap和Lua文件
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            Module.DisplayProgressBar("Clear and Generate Wrap Files...", 0.9f, true);
-            ToLuaMenu.ClearWrapFilesAndCreate();
-
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-
-            iOSBuildPostProcessor.Disable = true; //HACK: 关闭旧的后处理过程
-        }
-
-        private void CopyAllDirectories(List<UserConfig.PlayerSettings.CopyItem> copyList)
-        {
             for (int i = 0; i < copyList.Count; i++)
             {
                 Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].TargetPath, 0, true);
-                EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode);
+                EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode, directoryRegex, fileRegex);
             }
         }
 
@@ -132,59 +153,37 @@ namespace EazyBuildPipeline.PlayerBuilder
             };
         }
 
-        public void ApplyPostProcessSettings()
-        {
-            var ps = Module.UserConfig.Json.PlayerSettings;
-
-            //IsBuildArchive = ps.IOS.IsBuildArchive;
-            //ExportIpaPath = ps.IOS.ExportIpaPath;
-            //TaskPath = ps.IOS.TaskPath;
-
-            //iOSBuildPostProcessor.BuglyAppKey = ps.IOS.BuglyAppKey; //不需要
-            BuglyInit.BuglyAppID = ps.General.BuglyAppID;
-            BuglyInit.BuglyAppKey = ps.General.BuglyAppKey;
-        }
-
-
+        #region DownLoad Configs
 
         private void DownLoadConfigs()
         {
             string configsPath = Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Configs";
-            //WriteToLog("[EazyBuildPipeline] DwonLoad Configs Start.");
-
-            //string srcPath = "http://10.1.1.10/configtool/data/" + Module.UserConfig.Json.PlayerSettings.General.DownloadConfigType + ".zip";
-            NetWorkConnection.ConfigNetworkURL();
-
-            //Module.DisplayProgressBar("Download Configs...", srcPath, 0, true);
-            //DownLoadFile(srcPath, Path.Combine(configsPath, "StaticConfigs.zip"));
-            Module.DisplayProgressBar("Download Game Config...", ConfigURL_Game, 0.4f, true);
-            DownLoadFile(ConfigURL_Game, Path.Combine(configsPath, "StaticConfigs.zip"));  //TODO:这里的保存的名永远都是StaticConfigs.zip？？
-        }
-
-        private void DownLoadMultiLanguage()
-        {
-            string configsPath = Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Configs";
-
-            //WriteToLog("[EazyBuildPipeline] DwonLoad Language Start.");
-            //var multiLanType = Module.UserConfig.Json.PlayerSettings.General.DownloadLanguageType;
-            //string srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".bbb";
-            //Module.DisplayProgressBar("Download Language...", srcPath, 0, true);
-            //DownLoadFile(srcPath, Path.Combine(configsPath, multiLanType + ".bbb"));
-            Module.DisplayProgressBar("Download Language Config...", ConfigURL_Language, 0.6f, true);
-            DownLoadFile(ConfigURL_Language, Path.Combine(configsPath, Path.GetFileName(ConfigURL_Language)));
-
-            //srcPath = "http://10.1.1.10/configtool/data/locale_bin/" + multiLanType + ".json";
-            //Module.DisplayProgressBar("Download Language...", srcPath, 0, true);
-            //DownLoadFile(srcPath, Path.Combine(configsPath, "locale.json"));
-            Module.DisplayProgressBar("Download Language Version Config...", ConfigURL_LanguageVersion, 0.8f, true);
-            DownLoadFile(ConfigURL_LanguageVersion, Path.Combine(configsPath, Path.GetFileName(ConfigURL_LanguageVersion)));
+            //NetWorkConnection.ConfigNetworkURL();
+            //.zip
+            string configURL_Game = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_Game;
+            if (!string.IsNullOrEmpty(configURL_Game))
+            {
+                Module.DisplayProgressBar("Download Game Config...", configURL_Game, 0.4f, true);
+                DownLoadFile(configURL_Game, Path.Combine(configsPath, "StaticConfigs.zip"));
+            }
+            //.bbb
+            string configURL_Language = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_Language;
+            if (!string.IsNullOrEmpty(configURL_Language))
+            {
+                Module.DisplayProgressBar("Download Language Config...", configURL_Language, 0.6f, true);
+                DownLoadFile(configURL_Language, Path.Combine(configsPath, Path.GetFileName(configURL_Language)));
+            }
+            //.json
+            string configURL_LanguageVersion = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_LanguageVersion;
+            if (!string.IsNullOrEmpty(configURL_LanguageVersion))
+            {
+                Module.DisplayProgressBar("Download Language Version Config...", configURL_LanguageVersion, 0.8f, true);
+                DownLoadFile(configURL_LanguageVersion, Path.Combine(configsPath, Path.GetFileName(configURL_LanguageVersion)));
+            }
         }
 
         private void DownLoadFile(string srcPath, string targetPath)
         {
-            //WriteToLog("[EazyBuildPipeline] DwonLoad URL is: " + srcPath);
-            //WriteToLog("[EazyBuildPipeline] DwonLoad targetPath is: " + targetPath);
-            //WriteToLog("[EazyBuildPipeline] DwonLoad fileName is: " + fileName);
             //实例一个process类
             Process process = new Process();
             //设定程序名
@@ -206,8 +205,9 @@ namespace EazyBuildPipeline.PlayerBuilder
                 throw new EBPException("下载文件" + srcPath + "失败! 错误信息：\n" + process.StandardError.ReadToEnd());
             }
             process.Close();
-            //ezDebug.LogError("DownLoadFile Completed");
         }
+
+        #endregion
 
         void RenameOBBFileForAndroid()
         {
@@ -284,18 +284,19 @@ namespace EazyBuildPipeline.PlayerBuilder
         }
         #endregion
 
-        //public static void WriteToLog(string str)
-        //{
-        //    if (taskPath != string.Empty || FileStaticAPI.IsFileExists(taskPath))
-        //    {
-        //        string path = Path.Combine(taskPath, "log.txt");
-        //        if (FileStaticAPI.IsFileExists(path))
-        //        {
-        //            FileStaticAPI.CreateFile(path);
-        //        }
-        //        FileStaticAPI.Write(path, DateTime.Now.ToString() + str, true);
-        //    }
-        //}
+        public void ApplyPostProcessSettings()
+        {
+            var ps = Module.UserConfig.Json.PlayerSettings;
+
+            //IsBuildArchive = ps.IOS.IsBuildArchive;
+            //ExportIpaPath = ps.IOS.ExportIpaPath;
+            //TaskPath = ps.IOS.TaskPath;
+
+            //iOSBuildPostProcessor.BuglyAppKey = ps.IOS.BuglyAppKey; //不需要
+            BuglyInit.BuglyAppID = ps.General.BuglyAppID;
+            BuglyInit.BuglyAppKey = ps.General.BuglyAppKey;
+        }
+
         #region iOSPostProcess
         private void IOSPostProcess(string path)
         {

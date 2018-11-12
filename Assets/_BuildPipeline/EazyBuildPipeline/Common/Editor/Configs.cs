@@ -60,6 +60,8 @@ namespace EazyBuildPipeline.Common.Configs
             public string UserConfigsFolderName_BundleManager;
             public string UserConfigsFolderName_PackageManager;
             public string UserConfigsFolderName_PlayerBuilder;
+
+            public string DirectoryRegex, FileRegex;
         }
 
         #region 自定义序列化

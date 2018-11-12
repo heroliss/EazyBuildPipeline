@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -114,7 +115,7 @@ namespace EazyBuildPipeline
 
         #region CopyDirectory
 
-        public static void CopyDirectory(string source, string target, CopyMode copyMode)
+        public static void CopyDirectory(string source, string target, CopyMode copyMode, Regex directoryRegex = null, Regex fileRegex = null)
         {
             if (!Directory.Exists(source))
             {
@@ -127,52 +128,52 @@ namespace EazyBuildPipeline
                     {
                         throw new EBPException("目录已存在:" + target);
                     }
-                    RecursiveCopyDirectory_overwrite(source, target);
+                    RecursiveCopyDirectory(source, target, directoryRegex, fileRegex);
                     break;
                 case CopyMode.Add:
-                    RecursiveCopyDirectory_add(source, target);
+                    RecursiveCopyDirectory(source, target, directoryRegex, fileRegex, true);
                     break;
                 case CopyMode.Overwrite:
-                    RecursiveCopyDirectory_overwrite(source, target);
+                    RecursiveCopyDirectory(source, target, directoryRegex, fileRegex);
                     break;
                 case CopyMode.Replace:
                     if (Directory.Exists(target))
                     {
                         Directory.Delete(target, true);
                     }
-                    RecursiveCopyDirectory_overwrite(source, target);
+                    RecursiveCopyDirectory(source, target, directoryRegex, fileRegex);
                     break;
                 default:
                     break;
             }
         }
 
-        private static void RecursiveCopyDirectory_overwrite(string source, string target)
+        private static void RecursiveCopyDirectory(string source, string target, Regex directoryRegex = null, Regex fileRegex = null, bool checkFileExist = false)
         {
             Directory.CreateDirectory(target);
-            foreach (string folderPath in Directory.GetDirectories(source))
-            {
-                RecursiveCopyDirectory_overwrite(folderPath, Path.Combine(target, Path.GetFileName(folderPath)));
-            }
-            foreach (string filePath in Directory.GetFiles(source))
-            {
-                File.Copy(filePath, Path.Combine(target, Path.GetFileName(filePath)), true);
-            }
-        }
 
-        private static void RecursiveCopyDirectory_add(string source, string target)
-        {
-            Directory.CreateDirectory(target);
+            string folderName = null;
             foreach (string folderPath in Directory.GetDirectories(source))
             {
-                RecursiveCopyDirectory_add(folderPath, Path.Combine(target, Path.GetFileName(folderPath)));
+                folderName = Path.GetFileName(folderPath);
+                if (directoryRegex == null || directoryRegex.IsMatch(folderName))
+                {
+                    RecursiveCopyDirectory(folderPath, Path.Combine(target, folderName), directoryRegex, fileRegex, checkFileExist);
+                }
             }
+
+            string fileName = null;
             string targetFilePath = null;
             foreach (string filePath in Directory.GetFiles(source))
             {
-                targetFilePath = Path.Combine(target, Path.GetFileName(filePath));
-                if (!File.Exists(targetFilePath))
+                fileName = Path.GetFileName(filePath);
+                if (fileRegex == null || fileRegex.IsMatch(fileName))
                 {
+                    targetFilePath = Path.Combine(target, fileName);
+                    if (checkFileExist && File.Exists(targetFilePath))
+                    {
+                        continue;
+                    }
                     File.Copy(filePath, targetFilePath);
                 }
             }

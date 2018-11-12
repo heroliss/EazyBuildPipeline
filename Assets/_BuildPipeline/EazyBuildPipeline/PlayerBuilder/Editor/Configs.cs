@@ -102,12 +102,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
                 public string CompanyName;
                 public string ProductName;
-                [JsonConverter(typeof(StringEnumConverter))] public EazyGameChannel.Channels Channel;
-
                 //Extension
-                //[JsonConverter(typeof(StringEnumConverter))] public DownloadConfigTypeEnum DownloadConfigType;
-                //[JsonConverter(typeof(StringEnumConverter))] public WowGamePlay.LanguageType DownloadLanguageType;
-
+                [JsonConverter(typeof(StringEnumConverter))] public EazyGameChannel.Channels Channel;
+                public string ConfigURL_Game, ConfigURL_Language, ConfigURL_LanguageVersion;
                 //For BuglyInit
                 public string BuglyAppID;
                 public string BuglyAppKey;
@@ -118,6 +115,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             {
                 public enum ArchitectureEnum { ARMv7, ARM64, Universal } //TODO: 没有找到该枚举类型，所以自己创建了一个
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
+                public string CopyDirectoryRegex, CopyFileRegex;
                 public List<CopyItem> CopyList = new List<CopyItem>();
                 public string BundleID;
                 public string ClientVersion;
@@ -153,6 +151,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public enum WritePermissionEnum { Internal, External_SDCard }
 
                 public List<ScriptDefinesGroup> ScriptDefines = new List<ScriptDefinesGroup>();
+                public string CopyDirectoryRegex, CopyFileRegex;
                 public List<CopyItem> CopyList = new List<CopyItem>();
                 public bool PreserveFramebufferAlpha;
                 [JsonConverter(typeof(StringEnumConverter))] public AndroidBlitType BlitType;

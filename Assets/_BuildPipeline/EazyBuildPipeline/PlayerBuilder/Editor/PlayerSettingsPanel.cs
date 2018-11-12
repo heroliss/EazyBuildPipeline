@@ -80,24 +80,27 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             G.Module.IsDirty = true;
         }
 
-        private void CopyListPanel(List<Configs.UserConfig.PlayerSettings.CopyItem> copyList)
+        private void CopyListPanel(List<Configs.UserConfig.PlayerSettings.CopyItem> copyList, ref string directoryRegex, ref string fileRegex)
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PrefixLabel("Copy Directory", EditorStyles.boldLabel);
+            GUI.SetNextControlName("+");
             if (GUILayout.Button("+"))
             {
                 copyList.Add(new Configs.UserConfig.PlayerSettings.CopyItem());
                 OnValueChanged();
             }
+            //EBPEditorGUILayout.TextField("           Directory Regex:", ref directoryRegex, OnValueChanged, GUILayout.MaxWidth(100000));
+            //EBPEditorGUILayout.TextField("                    File Regex:", ref fileRegex, OnValueChanged, GUILayout.MaxWidth(100000));
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             for (int i = 0; i < copyList.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PrefixLabel("-");
-                EBPEditorGUILayout.TextField(null, ref copyList[i].SourcePath, OnValueChanged, GUILayout.MaxWidth(1000));
+                EBPEditorGUILayout.TextField(null, ref copyList[i].SourcePath, OnValueChanged, GUILayout.MaxWidth(100000));
                 EditorGUILayout.LabelField("→", GUILayout.Width(15));
-                EBPEditorGUILayout.TextField(null, ref copyList[i].TargetPath, OnValueChanged, GUILayout.MaxWidth(1000));
+                EBPEditorGUILayout.TextField(null, ref copyList[i].TargetPath, OnValueChanged, GUILayout.MaxWidth(100000));
                 copyList[i].CopyMode = (CopyMode)EBPEditorGUILayout.EnumPopup(null, copyList[i].CopyMode, OnValueChanged, GUILayout.MaxWidth(100));
                 if (GUILayout.Button("-")
                     && ((string.IsNullOrEmpty(copyList[i].SourcePath) && string.IsNullOrEmpty(copyList[i].TargetPath))
@@ -105,6 +108,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 {
                     copyList.RemoveAt(i);
                     OnValueChanged();
+                    GUI.FocusControl("+");
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
@@ -157,7 +161,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EBPEditorGUILayout.Toggle("Protect Graphics Memory", ref ps.Android.ProtectGraphicsMemory, OnValueChanged);
             EditorGUILayout.Separator();
 
-            CopyListPanel(ps.Android.CopyList);
+            CopyListPanel(ps.Android.CopyList, ref ps.Android.CopyDirectoryRegex, ref ps.Android.CopyFileRegex);
 
             EditorGUILayout.EndScrollView();
         }
@@ -211,7 +215,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             //EditorGUI.EndDisabledGroup();
             EditorGUILayout.Separator();
 
-            CopyListPanel(ps.IOS.CopyList);
+            CopyListPanel(ps.IOS.CopyList, ref ps.IOS.CopyDirectoryRegex, ref ps.IOS.CopyFileRegex);
 
             EditorGUILayout.EndScrollView();
         }
@@ -224,7 +228,18 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EditorGUILayout.LabelField("General Player Settings", EditorStyles.boldLabel);
             EBPEditorGUILayout.TextField("Company Name", ref ps.General.CompanyName, OnValueChanged);
             EBPEditorGUILayout.TextField("Product Name", ref ps.General.ProductName, OnValueChanged);
+            EditorGUILayout.Separator();
+
             ps.General.Channel = (EazyGameChannel.Channels)EBPEditorGUILayout.EnumPopup("Channel", ps.General.Channel, OnValueChanged);
+            EditorGUILayout.Separator();
+
+            EBPEditorGUILayout.TextField("Game Config URL", ref ps.General.ConfigURL_Game, OnValueChanged);
+            EBPEditorGUILayout.TextField("Language Config URL", ref ps.General.ConfigURL_Language, OnValueChanged);
+            EBPEditorGUILayout.TextField("LanguageVersion Config URL", ref ps.General.ConfigURL_LanguageVersion, OnValueChanged);
+            EditorGUILayout.Separator();
+
+            EBPEditorGUILayout.TextField("BuglyAppID", ref ps.General.BuglyAppID, OnValueChanged);
+            EBPEditorGUILayout.TextField("BuglyAppKey", ref ps.General.BuglyAppKey, OnValueChanged);
             EditorGUILayout.Separator();
 
             //EditorGUILayout.LabelField("Download Configs & Language", EditorStyles.boldLabel);
@@ -233,9 +248,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             //EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Build Settings", EditorStyles.boldLabel);
-            G.Module.UserConfig.Json.BuildSettings.CompressionMethod =(Configs.UserConfig.BuildSettings.CompressionMethodEnum)EBPEditorGUILayout.EnumPopup("Compression Method", G.Module.UserConfig.Json.BuildSettings.CompressionMethod, OnValueChanged);
-            EBPEditorGUILayout.TextField("BuglyAppID", ref ps.General.BuglyAppID, OnValueChanged);
-            EBPEditorGUILayout.TextField("BuglyAppKey", ref ps.General.BuglyAppKey, OnValueChanged);
+            G.Module.UserConfig.Json.BuildSettings.CompressionMethod = (Configs.UserConfig.BuildSettings.CompressionMethodEnum)EBPEditorGUILayout.EnumPopup("Compression Method", G.Module.UserConfig.Json.BuildSettings.CompressionMethod, OnValueChanged);
             EditorGUILayout.Separator();
 
             //以下为当前配置，不保存在配置文件中
@@ -311,7 +324,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 EditorGUILayout.BeginVertical("GroupBox");
                 EditorGUILayout.BeginHorizontal();
                 bool b = GUILayout.Toggle(group.Active, GUIContent.none);
-                if(group.Active != b)
+                if (group.Active != b)
                 {
                     group.Active = b;
                     G.Module.IsDirty = true;
@@ -320,7 +333,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 EditorGUI.BeginDisabledGroup(!group.Active);
 
                 string newDefineStr = GUILayout.TextField(group.GroupName, "flow overlay header upper left", GUILayout.MinWidth(100), GUILayout.MaxWidth(2000));
-                if(group.GroupName != newDefineStr)
+                if (group.GroupName != newDefineStr)
                 {
                     group.GroupName = newDefineStr;
                     G.Module.IsDirty = true;
@@ -375,8 +388,8 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         G.Module.IsDirty = true;
                     }
                     EditorGUI.BeginDisabledGroup(!define.Active);
-                    newDefineStr = GUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle ,GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
-                    if(define.Define != newDefineStr)
+                    newDefineStr = GUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle, GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
+                    if (define.Define != newDefineStr)
                     {
                         define.Define = newDefineStr;
                         UpdateRepeatList(scriptDefinesGroupList, define);
@@ -453,7 +466,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
         private static void RemoveGroup(List<Configs.UserConfig.PlayerSettings.ScriptDefinesGroup> groupList, int index)
         {
             var group = groupList[index];
-            while(group.Defines.Count > 0)
+            while (group.Defines.Count > 0)
             {
                 RemoveDefine(group, 0);
             }

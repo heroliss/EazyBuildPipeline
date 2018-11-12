@@ -94,20 +94,21 @@ namespace EazyBuildPipeline
                     case "PackageManager":
                         break;
                     case "PlayerBuilder":
-                        totalModule.PlayerBuilderRunner.ConfigURL_Game = EBPUtility.GetArgValue("ConfigURL-Game");
-                        totalModule.PlayerBuilderRunner.ConfigURL_Language = EBPUtility.GetArgValue("ConfigURL-Language");
-                        totalModule.PlayerBuilderRunner.ConfigURL_LanguageVersion = EBPUtility.GetArgValue("ConfigURL-LanguageVersion");
+                        var playerSettings = totalModule.PlayerBuilderModule.UserConfig.Json.PlayerSettings;
+                        playerSettings.General.ConfigURL_Game = EBPUtility.GetArgValue("ConfigURL-Game");
+                        playerSettings.General.ConfigURL_Language = EBPUtility.GetArgValue("ConfigURL-Language");
+                        playerSettings.General.ConfigURL_LanguageVersion = EBPUtility.GetArgValue("ConfigURL-LanguageVersion");
                         switch (assetTag[0])
                         {
                             case "iOS":
-                                totalModule.PlayerBuilderModule.UserConfig.Json.PlayerSettings.IOS.BundleID = EBPUtility.GetArgValue("BundleID");
-                                totalModule.PlayerBuilderModule.UserConfig.Json.PlayerSettings.IOS.ClientVersion = EBPUtility.GetArgValue("ClientVersion");
-                                totalModule.PlayerBuilderModule.UserConfig.Json.PlayerSettings.IOS.BuildNumber = EBPUtility.GetArgValue("BuildNumber");
+                                playerSettings.IOS.BundleID = EBPUtility.GetArgValue("BundleID");
+                                playerSettings.IOS.ClientVersion = EBPUtility.GetArgValue("ClientVersion");
+                                playerSettings.IOS.BuildNumber = EBPUtility.GetArgValue("BuildNumber");
                                 break;
                             case "Android":
-                                totalModule.PlayerBuilderModule.UserConfig.Json.PlayerSettings.Android.PackageName = EBPUtility.GetArgValue("BundleID");
-                                totalModule.PlayerBuilderModule.UserConfig.Json.PlayerSettings.Android.ClientVersion = EBPUtility.GetArgValue("ClientVersion");
-                                totalModule.PlayerBuilderModule.UserConfig.Json.PlayerSettings.Android.BundleVersionCode = int.Parse(EBPUtility.GetArgValue("BuildNumber"));
+                                playerSettings.Android.PackageName = EBPUtility.GetArgValue("BundleID");
+                                playerSettings.Android.ClientVersion = EBPUtility.GetArgValue("ClientVersion");
+                                playerSettings.Android.BundleVersionCode = int.Parse(EBPUtility.GetArgValue("BuildNumber"));
                                 break;
                             default:
                                 break;

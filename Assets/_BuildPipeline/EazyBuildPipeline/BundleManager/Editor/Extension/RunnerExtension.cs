@@ -5,12 +5,12 @@ namespace EazyBuildPipeline.BundleManager
 {
     public partial class Runner
     {
-        protected override void PostProcess()
+        protected override void PreProcess()
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
-        protected override void PreProcess()
+        protected override void PostProcess()
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }

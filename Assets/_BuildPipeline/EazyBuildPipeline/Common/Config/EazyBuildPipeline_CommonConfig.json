@@ -30,5 +30,7 @@
   "UserConfigsFolderName_AssetPreprocessor": "AssetPreprocessConfigs",
   "UserConfigsFolderName_BundleManager": "BundleMaps",
   "UserConfigsFolderName_PackageManager": "PackageMaps",
-  "UserConfigsFolderName_PlayerBuilder": "BuildSettings"
+  "UserConfigsFolderName_PlayerBuilder": "BuildSettings",
+  "DirectoryRegex": "^(?!\\.).*",
+  "FileRegex": null
 }
