@@ -32,5 +32,5 @@
   "UserConfigsFolderName_PackageManager": "PackageMaps",
   "UserConfigsFolderName_PlayerBuilder": "BuildSettings",
   "DirectoryRegex": "^(?!\\.).*",
-  "FileRegex": null
+  "FileRegex": "^(?!\\.).*"
 }
