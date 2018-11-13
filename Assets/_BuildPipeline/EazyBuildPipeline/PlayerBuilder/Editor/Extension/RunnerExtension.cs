@@ -19,27 +19,25 @@ namespace EazyBuildPipeline.PlayerBuilder
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             PrepareBuildOptions();
 
-            CopyAllDirectories();
-
-            Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.1f, true);
-            ApplyPlayerSettingsAndScriptDefines();
-
-            Module.DisplayProgressBar("Applying PostProcess Settings", 0.2f, true);
-            ApplyPostProcessSettings();
-
-            Module.DisplayProgressBar("Creating Building Configs Class File", 0.3f, true);
-            CreateBuildingConfigsClassFile();
-
-            Module.DisplayProgressBar("Start DownloadConfigs", 0.35f, true);
+            Module.DisplayProgressBar("Start DownloadConfigs", 0f, true);
             DownLoadConfigs();
 
-            //重新创建Wrap和Lua文件
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            Module.DisplayProgressBar("Clear and Generate Wrap Files...", 0.9f, true);
-            ToLuaMenu.ClearAndGen();  //TODO:可能不需要
+            Module.DisplayProgressBar("Start Copy Directories", 0.5f, true);
+            CopyAllDirectories();
+
+            Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.7f, true);
+            ApplyPlayerSettingsAndScriptDefines();
+
+            Module.DisplayProgressBar("Applying PostProcess Settings", 0.8f, true);
+            ApplyPostProcessSettings();
+
+            Module.DisplayProgressBar("Creating Building Configs Class File", 0.9f, true);
+            CreateBuildingConfigsClassFile();
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            SVNUpdate.Runner.ClearWrapFilesAndGenerateLuaAllAndEncrypt(Module);
 
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             iOSBuildPostProcessor.DisableOnce = true; //HACK: 关闭一次旧的后处理过程
         }
 
@@ -109,7 +107,7 @@ namespace EazyBuildPipeline.PlayerBuilder
 
             for (int i = 0; i < copyList.Count; i++)
             {
-                Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].TargetPath, 0, true);
+                Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].TargetPath, 0.5f, true);
                 EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode, directoryRegex, fileRegex);
             }
         }
@@ -163,21 +161,21 @@ namespace EazyBuildPipeline.PlayerBuilder
             string configURL_Game = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_Game;
             if (!string.IsNullOrEmpty(configURL_Game))
             {
-                Module.DisplayProgressBar("Download Game Config...", configURL_Game, 0.4f, true);
+                Module.DisplayProgressBar("Download Game Config...", configURL_Game, 0f, true);
                 DownLoadFile(configURL_Game, Path.Combine(configsPath, "StaticConfigs.zip"));
             }
             //.bbb
             string configURL_Language = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_Language;
             if (!string.IsNullOrEmpty(configURL_Language))
             {
-                Module.DisplayProgressBar("Download Language Config...", configURL_Language, 0.6f, true);
+                Module.DisplayProgressBar("Download Language Config...", configURL_Language, 0.2f, true);
                 DownLoadFile(configURL_Language, Path.Combine(configsPath, Path.GetFileName(configURL_Language)));
             }
             //.json
             string configURL_LanguageVersion = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_LanguageVersion;
             if (!string.IsNullOrEmpty(configURL_LanguageVersion))
             {
-                Module.DisplayProgressBar("Download Language Version Config...", configURL_LanguageVersion, 0.8f, true);
+                Module.DisplayProgressBar("Download Language Version Config...", configURL_LanguageVersion, 0.4f, true);
                 DownLoadFile(configURL_LanguageVersion, Path.Combine(configsPath, Path.GetFileName(configURL_LanguageVersion)));
             }
         }
