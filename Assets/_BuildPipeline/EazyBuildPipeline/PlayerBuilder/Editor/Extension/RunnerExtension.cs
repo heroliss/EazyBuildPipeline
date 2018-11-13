@@ -36,7 +36,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             //重新创建Wrap和Lua文件
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Module.DisplayProgressBar("Clear and Generate Wrap Files...", 0.9f, true);
-            ToLuaMenu.ClearWrapFilesAndCreate();
+            ToLuaMenu.ClearAndGen();  //TODO:可能不需要
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 

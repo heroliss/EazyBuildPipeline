@@ -174,7 +174,7 @@ namespace EazyBuildPipeline
                     {
                         continue;
                     }
-                    File.Copy(filePath, targetFilePath);
+                    File.Copy(filePath, targetFilePath, true);
                 }
             }
         }
