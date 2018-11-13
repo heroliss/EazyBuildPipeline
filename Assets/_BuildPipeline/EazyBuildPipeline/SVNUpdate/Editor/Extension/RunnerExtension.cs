@@ -15,6 +15,7 @@ namespace EazyBuildPipeline.SVNUpdate
 
         protected override void PostProcess()
         {
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             ClearWrapFilesAndGenerateLuaAllAndEncrypt(Module);
         }
 
@@ -23,7 +24,8 @@ namespace EazyBuildPipeline.SVNUpdate
             //重新创建Wrap和Lua文件
             float progress = 0f;
             Module.DisplayProgressBar("Start Clear Wrap Files & Generate Lua All.", progress, true);
-            foreach (var step in new ToLuaMenu.ClearWrapFilesAndCreateSteps())
+            var steps = new ToLuaMenu.ClearWrapFilesAndCreateSteps();
+            foreach (var step in steps)
             {
                 progress += 0.1f;
                 Module.DisplayProgressBar(step, progress, true);
@@ -34,7 +36,7 @@ namespace EazyBuildPipeline.SVNUpdate
             Module.DisplayProgressBar("Clear Lua Files...", 0.8f, true);
             LuaScriptsPreProcessor.Clean();
             Module.DisplayProgressBar("Translate Lua to ByteFile...", 0.85f, true);
-            LuaScriptsPreProcessor.DoByteCodeTranslationJob();
+            LuaScriptsPreProcessor.DoByteCodeTranslationJob(true);
             Module.DisplayProgressBar("Encrypt Lua ByteFile...", 0.9f, true);
             LuaScriptsPreProcessor.DoTheEncryptionJob();
 
