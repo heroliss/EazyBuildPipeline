@@ -95,7 +95,7 @@ namespace EazyBuildPipeline.SVNUpdate
             {
                 ExcuteCommand("svn", "info", OnInfoReceived, OnInfoErrorReceived, OnInfoExited);
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 InfoErrorMessage = err.Message;
                 InfoExitedAction(false);
@@ -242,7 +242,7 @@ namespace EazyBuildPipeline.SVNUpdate
             }
         }
 
-        static Process ExcuteCommand(string command, string arguments,
+        public static Process ExcuteCommand(string command, string arguments,
            DataReceivedEventHandler outputDataReceivedHandler,
            DataReceivedEventHandler errorDataReceivedHandler,
            EventHandler exitedHandler)

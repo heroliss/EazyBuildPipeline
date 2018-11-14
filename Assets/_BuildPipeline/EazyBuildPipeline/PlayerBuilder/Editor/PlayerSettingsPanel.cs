@@ -284,10 +284,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 }
                 G.Module.IsDirty = true;
             }
-            if (GUILayout.Button("Apply All Defines", GUILayout.Height(30)))
+            if (GUILayout.Button(new GUIContent("Apply Scripting Defines","应用当前平台的宏定义，不包括临时宏定义"), GUILayout.Height(30)))
             {
-                G.Runner.ApplyScriptDefines(BuildTargetGroup.iOS);
-                G.Runner.ApplyScriptDefines(BuildTargetGroup.Android);
+                G.Runner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true);
             }
             EditorGUILayout.EndHorizontal();
 
@@ -338,7 +337,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     group.GroupName = newDefineStr;
                     G.Module.IsDirty = true;
                 }
-                GUILayout.FlexibleSpace();
+                EditorGUILayout.Space();
+                GUILayout.Label("Temp");
+                EditorGUILayout.Space();
                 if (GUILayout.Button("+"))
                 {
                     if (!group.Defines.Exists(x => x.Define == ""))
@@ -405,12 +406,20 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         G.Module.IsDirty = true;
                     }
                     GUILayout.FlexibleSpace();
+                    EditorGUILayout.Space();
+                    bool isTemp_new = GUILayout.Toggle(define.IsTemp, GUIContent.none);
+                    if (isTemp_new != define.IsTemp)
+                    {
+                        define.IsTemp = isTemp_new;
+                        G.Module.IsDirty = true;
+                    }
+                    GUILayout.Space(50);
                     if (GUILayout.Button("-"))
                     {
                         bool ensure = true;
                         if (define.Define != "")
                         {
-                            ensure = G.Module.DisplayDialog("确定要删除宏定义“" + define.Define + "”?", "确定", "取消");
+                            ensure = G.Module.DisplayDialog("确定要删除宏定义" + define.Define + "?", "确定", "取消");
                         }
                         if (ensure)
                         {

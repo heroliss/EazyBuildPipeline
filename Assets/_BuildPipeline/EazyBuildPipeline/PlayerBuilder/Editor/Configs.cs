@@ -193,6 +193,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             {
                 public bool Active;
                 public string Define;
+                public bool IsTemp;
                 [NonSerialized]
                 public List<ScriptDefine> RepeatList = new List<ScriptDefine>();
             }

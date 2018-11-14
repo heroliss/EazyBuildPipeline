@@ -60,15 +60,6 @@ namespace EazyBuildPipeline.PlayerBuilder
             }
         }
 
-        public void ApplyPlayerSettingsAndScriptDefines()
-        {
-            var activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
-            var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(activeBuildTarget);
-
-            ApplyScriptDefines(buildTargetGroup);
-            ApplyPlayerSettings(buildTargetGroup);
-        }
-
         public void FetchPlayerSettings()
         {
             var ps = Module.UserConfig.Json.PlayerSettings;
@@ -117,14 +108,14 @@ namespace EazyBuildPipeline.PlayerBuilder
             ps.Android.UseObbMode = PlayerSettings.Android.useAPKExpansionFiles;
         }
 
-        private void ApplyPlayerSettings(BuildTargetGroup buildTargetGroup)
+        public void ApplyPlayerSettings(BuildTarget buildTarget)
         {
             var ps = Module.UserConfig.Json.PlayerSettings;
             PlayerSettings.companyName = ps.General.CompanyName;
             PlayerSettings.productName = ps.General.ProductName;
-            switch (buildTargetGroup)
+            switch (buildTarget)
             {
-                case BuildTargetGroup.iOS:
+                case BuildTarget.iOS:
                     //Identity
                     PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, ps.IOS.BundleID);
                     PlayerSettings.bundleVersion = ps.IOS.ClientVersion;
@@ -142,7 +133,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     PlayerSettings.stripEngineCode = ps.IOS.StripEngineCode;
                     PlayerSettings.iOS.scriptCallOptimization = ps.IOS.ScriptCallOptimization;
                     break;
-                case BuildTargetGroup.Android:
+                case BuildTarget.Android:
                     PlayerSettings.preserveFramebufferAlpha = ps.Android.PreserveFramebufferAlpha;
                     //TODO：未找到：Resolution Scaling Mode
                     PlayerSettings.Android.blitType = ps.Android.BlitType;
@@ -167,7 +158,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     PlayerSettings.Android.keyaliasPass = ps.Android.KeyaliasPass;
                     break;
                 default:
-                    break;
+                    throw new EBPException("意外的平台：" + buildTarget.ToString());
             }
         }
 
@@ -194,28 +185,28 @@ namespace EazyBuildPipeline.PlayerBuilder
             return definesGroup;
         }
 
-        public void ApplyScriptDefines(BuildTargetGroup buildTargetGroup)
+        public void ApplyScriptDefines(BuildTarget buildTarget, bool disableTemp)
         {
             var ps = Module.UserConfig.Json.PlayerSettings;
 
-            switch (buildTargetGroup)
+            switch (buildTarget)
             {
-                case BuildTargetGroup.iOS:
+                case BuildTarget.iOS:
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS,
-                        GetScriptDefinesStr(ps.General.ScriptDefines) +
-                        GetScriptDefinesStr(ps.IOS.ScriptDefines));
+                        GetScriptDefinesStr(ps.General.ScriptDefines, disableTemp) +
+                        GetScriptDefinesStr(ps.IOS.ScriptDefines, disableTemp));
                     break;
-                case BuildTargetGroup.Android:
+                case BuildTarget.Android:
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android,
-                        GetScriptDefinesStr(ps.General.ScriptDefines) +
-                        GetScriptDefinesStr(ps.Android.ScriptDefines));
+                        GetScriptDefinesStr(ps.General.ScriptDefines, disableTemp) +
+                        GetScriptDefinesStr(ps.Android.ScriptDefines, disableTemp));
                     break;
                 default:
-                    break;
+                    throw new EBPException("意外的平台：" + buildTarget.ToString());
             }
         }
 
-        private string GetScriptDefinesStr(List<UserConfig.PlayerSettings.ScriptDefinesGroup> scriptDefines)
+        private string GetScriptDefinesStr(List<UserConfig.PlayerSettings.ScriptDefinesGroup> scriptDefines, bool disableTemp)
         {
             string s = "";
             foreach (var definesGroup in scriptDefines)
@@ -224,7 +215,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 {
                     foreach (var define in definesGroup.Defines)
                     {
-                        if (define.Active)
+                        if (define.Active && (!disableTemp || !define.IsTemp))
                         {
                             s += define.Define + ";";
                         }

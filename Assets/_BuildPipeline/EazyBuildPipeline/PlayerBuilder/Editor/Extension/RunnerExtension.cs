@@ -32,8 +32,11 @@ namespace EazyBuildPipeline.PlayerBuilder
             Module.DisplayProgressBar("Applying PostProcess Settings", 0.45f, true);
             ApplyPostProcessSettings();
 
-            Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.5f, true);
-            ApplyPlayerSettingsAndScriptDefines();
+            Module.DisplayProgressBar("Applying PlayerSettings", 0.47f, true);
+            ApplyPlayerSettings(BuildPlayerOptions.target);
+
+            Module.DisplayProgressBar("Applying Scripting Defines", 0.49f, true);
+            ApplyScriptDefines(BuildPlayerOptions.target, false);
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             ClearWrapFilesAndGenerateLuaAllAndEncrypt(Module, 0.5f, 1);
@@ -44,6 +47,7 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         protected override void PostProcess()
         {
+            //工程需要的后处理
             switch (BuildPlayerOptions.target)
             {
                 case BuildTarget.Android:
@@ -57,6 +61,13 @@ namespace EazyBuildPipeline.PlayerBuilder
                 default:
                     throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
             }
+
+            //还原宏定义
+            Module.DisplayProgressBar("Applying Scripting Defines Without Temp", 0.2f, true);
+            ApplyScriptDefines(BuildPlayerOptions.target, true);
+            //还原被拷贝覆盖的文件
+            Module.DisplayProgressBar("Start Revert Copied Files", 1f, true);
+            RevertAllCopiedFiles();
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
@@ -91,8 +102,13 @@ namespace EazyBuildPipeline.PlayerBuilder
             Module.DisplayProgressBar("Clear Wrap Files & Generate Lua & Encrypt All Finished!", startProgress + progressLength * 1, true);
         }
 
+        #region CopyDirectories & RevertCopiedFiles
+
+        List<string> allCopiedFiles = new List<string>();
+
         private void CopyAllDirectories()
         {
+            allCopiedFiles.Clear();
             string directoryRegexStr = CommonModule.CommonConfig.Json.DirectoryRegex;
             string fileRegexStr = CommonModule.CommonConfig.Json.FileRegex;
             List<UserConfig.PlayerSettings.CopyItem> copyList;
@@ -134,9 +150,48 @@ namespace EazyBuildPipeline.PlayerBuilder
             for (int i = 0; i < copyList.Count; i++)
             {
                 Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].TargetPath, 0.5f, true);
-                EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode, directoryRegex, fileRegex);
+                allCopiedFiles.AddRange(EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode, directoryRegex, fileRegex));
             }
         }
+
+        private void RevertAllCopiedFiles()
+        {
+            //删除所有已拷贝的文件
+            foreach (string file in allCopiedFiles)
+            {
+                Module.DisplayProgressBar("Delete Copied Files", file, 0, true);
+                File.Delete(file);
+            }
+            //还原目录
+            List<UserConfig.PlayerSettings.CopyItem> copyList;
+            switch (BuildPlayerOptions.target)
+            {
+                case BuildTarget.Android:
+                    copyList = Module.UserConfig.Json.PlayerSettings.Android.CopyList;
+                    break;
+                case BuildTarget.iOS:
+                    copyList = Module.UserConfig.Json.PlayerSettings.IOS.CopyList;
+                    break;
+                default:
+                    throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
+            }
+            float count = 0;
+            string errorMessage = "";
+            foreach (var item in copyList)
+            {
+                string directoryName = Path.GetFileName(item.TargetPath);
+                Process p = SVNUpdate.Runner.ExcuteCommand("svn", "svn --non-interactive revert -R " + item.TargetPath,
+                    (object sender, DataReceivedEventArgs e) => { Module.DisplayProgressBar("Revert Copied Files in " + directoryName, e.Data, count++ % 1000f / 1000f, true); },
+                    (object sender, DataReceivedEventArgs e) => { errorMessage += e.Data + '\n'; }, null);
+                p.WaitForExit();
+                if (p.ExitCode != 0)
+                {
+                    throw new EBPException("还原目录(" + item.TargetPath + ")时发生错误：" + errorMessage);
+                }
+            }
+        }
+
+        #endregion
 
         private void PrepareBuildOptions()
         {

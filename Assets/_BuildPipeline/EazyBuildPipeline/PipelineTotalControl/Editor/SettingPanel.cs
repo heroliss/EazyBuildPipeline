@@ -538,7 +538,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         }
         private void ClickedApply()
         {
-            PlayerBuilder.G.Runner.ApplyPlayerSettingsAndScriptDefines();
+            PlayerBuilder.G.Runner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true);
+            PlayerBuilder.G.Runner.ApplyPlayerSettings(EditorUserBuildSettings.activeBuildTarget);
         }
 
         private void ClickedRunPipeline()
