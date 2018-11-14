@@ -180,7 +180,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             foreach (var item in copyList)
             {
                 string directoryName = Path.GetFileName(item.TargetPath);
-                Process p = SVNUpdate.Runner.ExcuteCommand("svn", "svn --non-interactive revert -R " + item.TargetPath,
+                Process p = SVNUpdate.Runner.ExcuteCommand("svn", "--non-interactive revert -R " + item.TargetPath,
                     (object sender, DataReceivedEventArgs e) => { Module.DisplayProgressBar("Revert Copied Files in " + directoryName, e.Data, count++ % 1000f / 1000f, true); },
                     (object sender, DataReceivedEventArgs e) => { errorMessage += e.Data + '\n'; }, null);
                 p.WaitForExit();
