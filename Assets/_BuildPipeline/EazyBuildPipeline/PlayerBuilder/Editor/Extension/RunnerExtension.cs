@@ -17,25 +17,26 @@ namespace EazyBuildPipeline.PlayerBuilder
         protected override void PreProcess()
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
             PrepareBuildOptions();
 
-            Module.DisplayProgressBar("Start DownloadConfigs", 0f, true);
-            DownLoadConfigs();
+            Module.DisplayProgressBar("Start DownloadConfigs", 0.05f, true);
+            DownLoadConfigs(0.1f, 0.4f);
 
-            Module.DisplayProgressBar("Start Copy Directories", 0.5f, true);
+            Module.DisplayProgressBar("Start Copy Directories", 0.2f, true);
             CopyAllDirectories();
 
-            Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.7f, true);
-            ApplyPlayerSettingsAndScriptDefines();
-
-            Module.DisplayProgressBar("Applying PostProcess Settings", 0.8f, true);
-            ApplyPostProcessSettings();
-
-            Module.DisplayProgressBar("Creating Building Configs Class File", 0.9f, true);
+            Module.DisplayProgressBar("Creating Building Configs Class File", 0.4f, true);
             CreateBuildingConfigsClassFile();
 
+            Module.DisplayProgressBar("Applying PostProcess Settings", 0.45f, true);
+            ApplyPostProcessSettings();
+
+            Module.DisplayProgressBar("Applying PlayerSettings And ScriptDefines", 0.5f, true);
+            ApplyPlayerSettingsAndScriptDefines();
+
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            SVNUpdate.Runner.ClearWrapFilesAndGenerateLuaAllAndEncrypt(Module);
+            ClearWrapFilesAndGenerateLuaAllAndEncrypt(Module, 0.5f, 1);
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             iOSBuildPostProcessor.DisableOnce = true; //HACK: 关闭一次旧的后处理过程
@@ -63,6 +64,31 @@ namespace EazyBuildPipeline.PlayerBuilder
         protected override void Finally()
         {
             iOSBuildPostProcessor.DisableOnce = false;
+        }
+
+        public static void ClearWrapFilesAndGenerateLuaAllAndEncrypt(BaseModule Module, float startProgress, float endProgress)
+        {
+            float progressLength = endProgress - startProgress;
+            //重新创建Wrap和Lua文件
+            float progress = 0f;
+            Module.DisplayProgressBar("Start Clear Wrap Files & Generate Lua All...", progress, true);
+            var steps = new ToLuaMenu.ClearWrapFilesAndCreateSteps();
+            foreach (var step in steps)
+            {
+                Module.DisplayProgressBar(step, startProgress + progressLength * progress, true);
+                progress += 0.8f / steps.StepCount;
+            }
+
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            //LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { }); //下面三步代替这一步
+            Module.DisplayProgressBar("Clear Lua Files...", startProgress + progressLength * 0.8f, true);
+            LuaScriptsPreProcessor.Clean();
+            Module.DisplayProgressBar("Translate Lua to ByteFile...", startProgress + progressLength * 0.85f, true);
+            LuaScriptsPreProcessor.DoByteCodeTranslationJob(true);
+            Module.DisplayProgressBar("Encrypt Lua ByteFile...", startProgress + progressLength * 0.9f, true);
+            LuaScriptsPreProcessor.DoTheEncryptionJob();
+
+            Module.DisplayProgressBar("Clear Wrap Files & Generate Lua & Encrypt All Finished!", startProgress + progressLength * 1, true);
         }
 
         private void CopyAllDirectories()
@@ -115,7 +141,6 @@ namespace EazyBuildPipeline.PlayerBuilder
         private void PrepareBuildOptions()
         {
             //准备BuildOptions
-            Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
             BuildOptions buildOptions =
                 (Module.ModuleStateConfig.Json.DevelopmentBuild ? BuildOptions.Development : BuildOptions.None) |
                 (Module.ModuleStateConfig.Json.ConnectWithProfiler ? BuildOptions.ConnectWithProfiler : BuildOptions.None) |
@@ -126,16 +151,17 @@ namespace EazyBuildPipeline.PlayerBuilder
             //设置路径和文件名
             string tagsPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
             string locationPath;
+            string versionInfo = string.Format("{0}_{1}.{2}", PlayerSettings.productName, PlayerSettings.bundleVersion, PlayerSettings.Android.bundleVersionCode);
             switch (EditorUserBuildSettings.activeBuildTarget)
             {
                 case BuildTarget.Android:
-                    locationPath = Path.Combine(tagsPath, string.Format("{0}{1}.{2}.apk", PlayerSettings.productName, PlayerSettings.bundleVersion, PlayerSettings.Android.bundleVersionCode));
+                    locationPath = Path.Combine(tagsPath, versionInfo + ".apk");
                     break;
                 case BuildTarget.iOS:
-                    locationPath = Path.Combine(tagsPath, "Project");
+                    locationPath = Path.Combine(tagsPath, versionInfo);
                     break;
                 default:
-                    throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
+                    throw new EBPException("意外的平台：" + EditorUserBuildSettings.activeBuildTarget);
             }
 
             //获取场景
@@ -153,29 +179,30 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         #region DownLoad Configs
 
-        private void DownLoadConfigs()
+        private void DownLoadConfigs(float startProgress, float endProgress)
         {
+            float progressLength = endProgress - startProgress;
             string configsPath = Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Configs";
             //NetWorkConnection.ConfigNetworkURL();
             //.zip
             string configURL_Game = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_Game;
             if (!string.IsNullOrEmpty(configURL_Game))
             {
-                Module.DisplayProgressBar("Download Game Config...", configURL_Game, 0f, true);
+                Module.DisplayProgressBar("Download Game Config...", configURL_Game, startProgress + progressLength * 0f, true);
                 DownLoadFile(configURL_Game, Path.Combine(configsPath, "StaticConfigs.zip"));
             }
             //.bbb
             string configURL_Language = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_Language;
             if (!string.IsNullOrEmpty(configURL_Language))
             {
-                Module.DisplayProgressBar("Download Language Config...", configURL_Language, 0.2f, true);
+                Module.DisplayProgressBar("Download Language Config...", configURL_Language, startProgress + progressLength * 0.3f, true);
                 DownLoadFile(configURL_Language, Path.Combine(configsPath, Path.GetFileName(configURL_Language)));
             }
             //.json
             string configURL_LanguageVersion = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_LanguageVersion;
             if (!string.IsNullOrEmpty(configURL_LanguageVersion))
             {
-                Module.DisplayProgressBar("Download Language Version Config...", configURL_LanguageVersion, 0.4f, true);
+                Module.DisplayProgressBar("Download Language Version Config...", configURL_LanguageVersion, startProgress + progressLength * 0.6f, true);
                 DownLoadFile(configURL_LanguageVersion, Path.Combine(configsPath, Path.GetFileName(configURL_LanguageVersion)));
             }
         }
