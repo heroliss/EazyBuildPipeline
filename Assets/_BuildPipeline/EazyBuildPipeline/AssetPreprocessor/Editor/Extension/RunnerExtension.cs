@@ -9,12 +9,12 @@ namespace EazyBuildPipeline.AssetPreprocessor
     {
         protected override void PreProcess()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
         }
 
         protected override void PostProcess()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
         }
     }
 }

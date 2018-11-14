@@ -23,6 +23,11 @@ namespace EazyBuildPipeline
             return s;
         }
 
+        public static void RefreshAssets()
+        {
+            AssetDatabase.Refresh();
+        }
+
         /// <summary>
         /// 在给定的根目录(rootPath)下递归查找所有匹配搜索模式(searchPattern)的文件，返回在根目录下的相对路径，不包含文件名后缀
         /// </summary>

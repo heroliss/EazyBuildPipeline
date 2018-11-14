@@ -7,7 +7,7 @@ namespace EazyBuildPipeline.SVNUpdate
     {
         protected override void PreProcess()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
 
             Module.DisplayProgressBar("Clear Wrap Files...", 0, true);
             AssetDatabase.DeleteAsset("Assets/ToLua/ToLua/Source/Generate");
@@ -18,7 +18,7 @@ namespace EazyBuildPipeline.SVNUpdate
             Module.DisplayProgressBar("Clear Wrap Files...", 0, true);
             AssetDatabase.DeleteAsset("Assets/ToLua/ToLua/Source/Generate");
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
         }
     }
 }

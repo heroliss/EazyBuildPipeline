@@ -7,12 +7,12 @@ namespace EazyBuildPipeline.BundleManager
     {
         protected override void PreProcess()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
         }
 
         protected override void PostProcess()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
         }
     }
 }

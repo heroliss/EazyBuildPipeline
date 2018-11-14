@@ -16,7 +16,7 @@ namespace EazyBuildPipeline.PlayerBuilder
     {
         protected override void PreProcess()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
             Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
             PrepareBuildOptions();
 
@@ -38,10 +38,10 @@ namespace EazyBuildPipeline.PlayerBuilder
             Module.DisplayProgressBar("Applying Scripting Defines", 0.49f, true);
             ApplyScriptDefines(BuildPlayerOptions.target, false);
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
             ClearWrapFilesAndGenerateLuaAllAndEncrypt(Module, 0.5f, 1);
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
             iOSBuildPostProcessor.DisableOnce = true; //HACK: 关闭一次旧的后处理过程
         }
 
@@ -69,7 +69,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             Module.DisplayProgressBar("Start Revert Copied Files", 1f, true);
             RevertAllCopiedFiles();
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
         }
 
         protected override void Finally()
@@ -90,7 +90,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 progress += 0.8f / steps.StepCount;
             }
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EBPUtility.RefreshAssets();
             //LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { }); //下面三步代替这一步
             Module.DisplayProgressBar("Clear Lua Files...", startProgress + progressLength * 0.8f, true);
             LuaScriptsPreProcessor.Clean();
