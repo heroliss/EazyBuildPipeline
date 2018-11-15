@@ -14,6 +14,11 @@ namespace EazyBuildPipeline
         {
             return AssetDatabase.LoadAssetAtPath<Texture2D>(Path.Combine(CommonConfig.IconsFolderPath, iconFileName));
         }
+
+        /// <summary>
+        /// //该函数内已经确保了日志目录路径存在（但不确保主日志路径存在）
+        /// </summary>
+        /// <returns></returns>
         public static bool LoadCommonConfig()
         {
             try
@@ -24,14 +29,17 @@ namespace EazyBuildPipeline
                     throw new EBPException("未能找到本地公共配置文件! 搜索文本：" + CommonConfigSearchText);
                 }
                 CommonConfig.Load(AssetDatabase.GUIDToAssetPath(guids[0]));
+
                 if (CommonConfig.IsBatchMode)
                 {
+                    GenerateLogFolderPath(); //确保没有LogPath参数时也存在日志目录路径
                     CommonConfig.CurrentLogFolderPath = EBPUtility.GetArgValue("LogPath"); //只有batchmode才开启自定义日志路径
                 }
                 else
                 {
                     CheckAndSetAllRootPath(); //只有非batchmode才开启根目录检查和自动创建
                 }
+
                 return true;
             }
             catch (Exception e)
@@ -79,6 +87,15 @@ namespace EazyBuildPipeline
                     }
                 }
             }
+        }
+
+        public static void GenerateLogFolderPath()
+        {
+            CommonConfig.CurrentLogFolderPath = Path.Combine(CommonConfig.LogsRootPath, DateTime.Now.ToString("[yyyyMMddHHmmss]"));
+        }
+        public static void ClearLogFolderPath()
+        {
+            CommonConfig.CurrentLogFolderPath = null;
         }
     }
 
@@ -182,6 +199,12 @@ namespace EazyBuildPipeline
                 logWriter = null;
             }
         }
+
+        /// <summary>
+        /// 专用于打包工具启动和加载配置时，错误弹窗（编辑器模式）或 日志记录（批处理模式）
+        /// </summary>
+        /// <param name="customMessage"></param>
+        /// <param name="e"></param>
         public void DisplayOrLogAndThrowError(string customMessage, Exception e)
         {
             if (CommonModule.CommonConfig.IsBatchMode)

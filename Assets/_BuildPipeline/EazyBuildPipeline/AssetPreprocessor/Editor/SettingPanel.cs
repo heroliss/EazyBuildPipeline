@@ -106,6 +106,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         {
             try
             {
+                CommonModule.ClearLogFolderPath();
                 G.Runner.Check(true);
                 G.Module.DisplayDialog("检查正常！");
             }
@@ -118,6 +119,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 		{
             try
             {
+                CommonModule.GenerateLogFolderPath();
                 G.Runner.Check();
             }
             catch(EBPCheckFailedException e)

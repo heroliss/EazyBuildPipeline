@@ -32,7 +32,6 @@ namespace EazyBuildPipeline
             var state = Module.ModuleStateConfig.Json;
             try
             {
-                CreateLogFolder();
                 Module.StartLog();
                 Module.Log("## Start Module " + Module.ModuleName + " ##", true);
 
@@ -56,32 +55,35 @@ namespace EazyBuildPipeline
             }
             catch (Exception e)
             {
-                CommonModule.CommonConfig.CurrentLogFolderPath = null;
-                Module.Log(e.ToString());
-                state.ErrorMessage = e.Message;
-                state.DetailedErrorMessage = e.ToString();
-                if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
-                Catch(e);
-                throw e;
+                Exception e_catch = null;
+                try { Catch(e); }
+                catch(Exception e_in)
+                {
+                    Module.Log("Catch内部错误：" + e_in.ToString());
+                    e_catch = e_in;
+                }
+                finally
+                {
+                    state.ErrorMessage = e.Message + e_catch == null ? "" : "\n同时发生Catch内部错误:" + e_catch.Message;
+                    state.DetailedErrorMessage = e.ToString() + e_catch == null ? "" : "\nCatch内部异常:" + e_catch.ToString();
+                    if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
+                    Module.Log(state.DetailedErrorMessage);
+                    throw new EBPException(state.DetailedErrorMessage);
+                }
             }
             finally
             {
-                Finally();
-                Module.EndLog();
-                EditorUtility.ClearProgressBar();
-                if (!isPartOfPipeline) //若为管线一部分时，让所有模块使用相同的CurrentLogFolderPath
+                try { Finally(); }
+                catch (Exception e_in)
                 {
-                    CommonModule.CommonConfig.CurrentLogFolderPath = null; //赋值为null，会让下次Run时产生新的目录名（根据时间）
+                    Module.Log("Finally内部错误：" + e_in.ToString());
+                    throw e_in;
                 }
-            }
-        }
-
-        private static void CreateLogFolder()
-        {
-            if (CommonModule.CommonConfig.CurrentLogFolderPath == null)
-            {
-                CommonModule.CommonConfig.CurrentLogFolderPath = Path.Combine(CommonModule.CommonConfig.LogsRootPath, DateTime.Now.ToString("[yyyyMMddHHmmss]"));
-                Directory.CreateDirectory(CommonModule.CommonConfig.CurrentLogFolderPath);
+                finally
+                {
+                    Module.EndLog();
+                    EditorUtility.ClearProgressBar();
+                }
             }
         }
 
@@ -89,38 +91,23 @@ namespace EazyBuildPipeline
         {
             try
             {
-                if (!onlyCheckConfig) //这个变量说明是否是Run前检查，若是则记录日志，否则不记录日志
-                {
-                    CreateLogFolder();
-                    Module.StartLog();
-                    Module.Log("## Check " + Module.ModuleName + " ##", true);
-                }
+                Module.StartLog();
+                Module.Log("## Check " + Module.ModuleName + " ##", true);
                 CheckProcess(onlyCheckConfig);
             }
             catch (EBPCheckFailedException e)
             {
-                if (!onlyCheckConfig)
-                {
-                    CommonModule.CommonConfig.CurrentLogFolderPath = null;
-                    Module.Log("[CheckFailed] " + e.Message);
-                }
+                Module.Log("[CheckFailed] " + e.Message);
                 throw e;
             }
             catch (Exception e)
             {
-                if (!onlyCheckConfig)
-                {
-                    CommonModule.CommonConfig.CurrentLogFolderPath = null;
-                    Module.Log(e.ToString());
-                }
+                Module.Log(e.ToString());
                 throw e;
             }
             finally
             {
-                if (!onlyCheckConfig)
-                {
-                    Module.EndLog();
-                }
+                Module.EndLog();
             }
         }
 

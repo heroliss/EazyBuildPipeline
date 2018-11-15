@@ -245,6 +245,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             G.Module.UserConfig.Json.Packages = GetPackageMap(); //从配置现场覆盖当前map
             try
             {
+                CommonModule.ClearLogFolderPath();
                 G.Runner.Check(true);
                 if (CheckAllPackageItem())
                 {
@@ -262,6 +263,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             G.Module.UserConfig.Json.Packages = GetPackageMap(); //从配置现场覆盖当前map
             try
             {
+                CommonModule.GenerateLogFolderPath();
                 G.Runner.Check();
             }
             catch (EBPCheckFailedException e)

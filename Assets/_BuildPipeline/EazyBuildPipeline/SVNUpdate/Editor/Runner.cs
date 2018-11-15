@@ -48,8 +48,8 @@ namespace EazyBuildPipeline.SVNUpdate
             errorMessage = "";
             Module.DisplayProgressBar("SVN Update Starting...", 0, true);
             Process p;
-            p = ExcuteCommand("/bin/bash", Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNUpdate.sh") + " "
-                            + Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "SVNUpdateLog.txt"),
+            p = ExcuteCommand("/bin/bash", EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNUpdate.sh")) + " "
+                            + EBPUtility.Quote(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "SVNUpdateLog.txt")),
                                                  OnReceived, OnErrorReceived, OnExited);
             while (!p.HasExited)
             {
@@ -136,7 +136,7 @@ namespace EazyBuildPipeline.SVNUpdate
                 {
                     try
                     {
-                        ExcuteCommand("/bin/bash", Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNDiff.sh"),
+                        ExcuteCommand("/bin/bash", EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNDiff.sh")),
                            OnDiffReceived, OnDiffErrorReceived, OnDiffExited);
                     }
                     catch (Exception err)
@@ -169,7 +169,7 @@ namespace EazyBuildPipeline.SVNUpdate
                     string repositoryURL = line.Substring(urlName.Length);
                     try
                     {
-                        ExcuteCommand("svn", "info " + repositoryURL, OnRepositoryInfoReceived, OnInfoErrorReceived, OnRepositoryInfoExited);
+                        ExcuteCommand("svn", "info " + EBPUtility.Quote(repositoryURL), OnRepositoryInfoReceived, OnInfoErrorReceived, OnRepositoryInfoExited);
                     }
                     catch (Exception err)
                     {

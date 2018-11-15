@@ -571,6 +571,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     //检查配置
                     try
                     {
+                        CommonModule.ClearLogFolderPath();
                         runner.Check(onlyCheckConfig);
                     }
                     catch (EBPCheckFailedException e)
@@ -607,6 +608,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     case Step.Start:
                         scrollPosition.x = 0;
                         startTime = EditorApplication.timeSinceStartup;
+                        CommonModule.GenerateLogFolderPath();
                         currentStep = Step.SVNUpdate;
                         break;
                     case Step.SVNUpdate:
@@ -674,7 +676,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                         currentStep = Step.Finish;
                         break;
                     case Step.Finish:
-                        CommonModule.CommonConfig.CurrentLogFolderPath = null;
                         TimeSpan endTime = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
                         G.Module.DisplayDialog(string.Format("管线运行成功！用时：{0}时 {1}分 {2}秒", endTime.Hours, endTime.Minutes, endTime.Seconds));
                         currentStep = Step.None;

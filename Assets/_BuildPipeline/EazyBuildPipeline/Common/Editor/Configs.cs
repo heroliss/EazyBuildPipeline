@@ -31,7 +31,8 @@ namespace EazyBuildPipeline.Common.Configs
                 { { "Example Group 1:",new []{"example tag1","example tag2","example tag3"} },
                   { "Example Group 2:",new []{"example tag a","example tag b"} } };
         }
-        public string CurrentLogFolderPath; //日志目录路径，可由命令行参数赋值
+        public string CurrentLogFolderPath; //该值是否为空，是否记录日志的主开关，该变量会经常被修改
+        //主日志路径，若为空则不记录日志，可由命令行参数赋值
         public string PipelineLogPath { get { return string.IsNullOrEmpty(CurrentLogFolderPath) || string.IsNullOrEmpty(Json.PipelineLogFileName) ? null : Path.Combine(CurrentLogFolderPath, Json.PipelineLogFileName); } }
         public string IconsFolderPath { get { return Path.Combine(CommonConfigRootPath, Json.IconsFolderRelativePath); } }
         public string CommonConfigRootPath { get { return Path.GetDirectoryName(JsonPath); } }
@@ -52,7 +53,7 @@ namespace EazyBuildPipeline.Common.Configs
             public Dictionary<string, string[]> TagEnum;
             public string IconsFolderRelativePath;
 
-            public string PipelineLogFileName;
+            public string PipelineLogFileName; //该值为空同样不记录日志
             public string DataRootName;
             public string LogsRootName;
             public string UserConfigsRootName;
