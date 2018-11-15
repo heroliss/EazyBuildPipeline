@@ -62,19 +62,22 @@ namespace EazyBuildPipeline.PlayerBuilder
                     throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
             }
 
-            //还原宏定义
-            Module.DisplayProgressBar("Applying Scripting Defines Without Temp", 0.2f, true);
-            ApplyScriptDefines(BuildPlayerOptions.target, true);
-            //还原被拷贝覆盖的文件
-            Module.DisplayProgressBar("Start Revert Copied Files", 1f, true);
-            RevertAllCopiedFiles();
-
             EBPUtility.RefreshAssets();
         }
 
         protected override void Finally()
         {
             iOSBuildPostProcessor.DisableOnce = false;
+
+            //还原宏定义
+            Module.DisplayProgressBar("Applying Scripting Defines Without Temp", 0f, true);
+            ApplyScriptDefines(BuildPlayerOptions.target, true);
+
+            //还原被拷贝覆盖的文件
+            Module.DisplayProgressBar("Start Revert Copied Files", 0f, true);
+            RevertAllCopiedFiles();
+
+            EBPUtility.RefreshAssets();
         }
 
         public static void ClearWrapFilesAndGenerateLuaAllAndEncrypt(BaseModule Module, float startProgress, float endProgress)
