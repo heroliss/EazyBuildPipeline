@@ -11,7 +11,7 @@ namespace EazyBuildPipeline.SVNUpdate
 
         protected override void PostProcess()
         {
-            Module.DisplayProgressBar("Clear Wrap Files...", 0, true);
+            Module.DisplayProgressBar("Clear Wrap Files...", 1, true);
             ToLuaMenu.ClearLuaWraps();
         }
     }

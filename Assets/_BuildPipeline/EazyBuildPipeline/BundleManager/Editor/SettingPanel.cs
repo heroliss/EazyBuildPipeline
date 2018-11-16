@@ -116,7 +116,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             G.Module.UserConfig.Json = G.g.mainTab.GetBuildMap_extension().ToList(); //从配置现场覆盖当前map
             try
             {
-                CommonModule.GenerateLogFolderPath();
+                CommonModule.ClearLogFolderPath();
                 G.Runner.Check();
             }
             catch (EBPCheckFailedException e)
@@ -138,6 +138,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             {
                 try
                 {
+                    CommonModule.GenerateLogFolderPath();
                     G.Runner.Run();
                     G.Module.DisplayDialog("创建AssetBundles成功！");
                 }

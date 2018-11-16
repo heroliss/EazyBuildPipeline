@@ -108,6 +108,8 @@ namespace EazyBuildPipeline.PlayerBuilder
         #region CopyDirectories & RevertCopiedFiles
 
         List<string> allCopiedFiles = new List<string>();
+        string message;
+        string errorMessage;
 
         private void CopyAllDirectories()
         {
@@ -159,18 +161,20 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         private void RevertAllCopiedFiles()
         {
+            errorMessage = "";
+            float progress = 0;
             //单独的日志文件
             string logPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RevertFilesLog.txt");
+            //删除所有已拷贝的文件（不存在的文件不记录日志）
             using (var logWriter = new StreamWriter(logPath, true))
             {
-                //删除所有已拷贝并存在的文件
                 Module.DisplayProgressBar("Start Delete Copied Files", 0, true);
                 logWriter.WriteLine("Start Delete Files"); logWriter.Flush();
                 foreach (string file in allCopiedFiles)
                 {
                     if (File.Exists(file))
                     {
-                        Module.DisplayProgressBar("Delete Copied Files", file, 0);
+                        Module.DisplayProgressBar("Delete Copied Files", file, progress++ % 1000 / 1000);
                         File.Delete(file);
                         logWriter.WriteLine("Deleted: " + file); logWriter.Flush();
                     }
@@ -178,8 +182,10 @@ namespace EazyBuildPipeline.PlayerBuilder
                 logWriter.WriteLine("End Delete Files"); logWriter.Flush();
                 Module.DisplayProgressBar("End Delete Copied Files", 0, true);
             }
+
             //还原目录
-            Module.DisplayProgressBar("Start Revert Copied Files", 0, true);
+            progress = 0;
+            Module.DisplayProgressBar("Start Revert All Copied Files", 0, true);
             List<UserConfig.PlayerSettings.CopyItem> copyList;
             switch (BuildPlayerOptions.target)
             {
@@ -192,8 +198,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 default:
                     throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
             }
-            float count = 0;
-            string errorMessage = "";
+
             foreach (var item in copyList)
             {
                 string title = "Revert Copied Files in " + EBPUtility.Quote(Path.GetFileName(item.TargetPath));
@@ -202,19 +207,35 @@ namespace EazyBuildPipeline.PlayerBuilder
                 Process p = SVNUpdate.Runner.ExcuteCommand("/bin/bash",
                     EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNRevert.sh")) + " " +
                     EBPUtility.Quote(item.TargetPath) + " " +
-                    EBPUtility.Quote(logPath),
-                    (object sender, DataReceivedEventArgs e) => { Module.DisplayProgressBar(title, e.Data, count++ % 1000f / 1000f); },
-                    (object sender, DataReceivedEventArgs e) => { errorMessage += e.Data + '\n'; },
-                    (object sender, EventArgs e) => { });
+                    EBPUtility.Quote(logPath), OnReceived, OnErrorReceived, null);
 
-                p.WaitForExit();
+                while (!p.HasExited)
+                {
+                    Module.DisplayProgressBar(title, message, progress++ % 1000 / 1000);
+                    System.Threading.Thread.Sleep(50);
+                }
+
                 if (p.ExitCode != 0)
                 {
                     throw new EBPException("还原目录(" + item.TargetPath + ")时发生错误：" + errorMessage);
                 }
                 Module.DisplayProgressBar(title, "Finish!", 1, true);
             }
+
             Module.DisplayProgressBar("End Revert All Copied Files", 1, true);
+        }
+
+        void OnErrorReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data.Trim() != "")
+            {
+                errorMessage += e.Data + "\n";
+            }
+        }
+
+        void OnReceived(object sender, DataReceivedEventArgs e)
+        {
+            message = e.Data;
         }
 
         #endregion

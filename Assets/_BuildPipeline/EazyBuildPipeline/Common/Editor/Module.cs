@@ -159,7 +159,7 @@ namespace EazyBuildPipeline
 
         public void DisplayRunError(string preText = null)
         {
-            if (BaseModuleStateConfig.BaseJson.Applying)
+            //if (BaseModuleStateConfig.BaseJson.Applying) //TODO:这里是干啥的？？
             {
                 if (DisplayDialog(preText + "运行过程中发生错误：" + BaseModuleStateConfig.BaseJson.ErrorMessage, "详细信息", "确定"))
                 {
@@ -186,9 +186,10 @@ namespace EazyBuildPipeline
         }
         public void StartLog()
         {
-            if (logWriter == null)
+            if (logWriter == null && !string.IsNullOrEmpty(CommonModule.CommonConfig.PipelineLogPath))
             {
-                logWriter = string.IsNullOrEmpty(CommonModule.CommonConfig.PipelineLogPath) ? null : new StreamWriter(CommonModule.CommonConfig.PipelineLogPath, true);
+                Directory.CreateDirectory(Path.GetDirectoryName(CommonModule.CommonConfig.PipelineLogPath));
+                logWriter = new StreamWriter(CommonModule.CommonConfig.PipelineLogPath, true);
             }
         }
         public void EndLog()

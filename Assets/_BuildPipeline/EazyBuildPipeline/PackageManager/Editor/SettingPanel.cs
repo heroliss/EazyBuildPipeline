@@ -263,7 +263,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             G.Module.UserConfig.Json.Packages = GetPackageMap(); //从配置现场覆盖当前map
             try
             {
-                CommonModule.GenerateLogFolderPath();
+                CommonModule.ClearLogFolderPath();
                 G.Runner.Check();
             }
             catch (EBPCheckFailedException e)
@@ -281,6 +281,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
                     G.Module.DisplayProgressBar("Build Packages", "Starting...", 0);
                     double startTime = EditorApplication.timeSinceStartup;
                     G.Runner.ResourceVersion = G.g.bundleTree.Versions.ResourceVersion;
+
+                    CommonModule.GenerateLogFolderPath();
                     G.Runner.Run();
 
                     TimeSpan time = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);

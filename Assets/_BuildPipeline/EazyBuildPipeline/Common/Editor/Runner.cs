@@ -64,8 +64,8 @@ namespace EazyBuildPipeline
                 }
                 finally
                 {
-                    state.ErrorMessage = e.Message + e_catch == null ? "" : "\n同时发生Catch内部错误:" + e_catch.Message;
-                    state.DetailedErrorMessage = e.ToString() + e_catch == null ? "" : "\nCatch内部异常:" + e_catch.ToString();
+                    state.ErrorMessage = e.Message + (e_catch == null ? "" : "\n同时发生Catch内部错误:" + e_catch.Message);
+                    state.DetailedErrorMessage = e.ToString() + (e_catch == null ? "" : "\nCatch内部异常:" + e_catch.ToString());
                     if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
                     Module.Log(state.DetailedErrorMessage);
                     throw new EBPException(state.DetailedErrorMessage);
