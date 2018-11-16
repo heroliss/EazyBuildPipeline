@@ -33,7 +33,7 @@ namespace EazyBuildPipeline
             try
             {
                 Module.StartLog();
-                Module.Log("## Start Module " + Module.ModuleName + " ##", true);
+                Module.Log("---- Start Module " + Module.ModuleName + " ----", true);
 
                 state.IsPartOfPipeline = isPartOfPipeline;
                 state.Applying = true;
@@ -41,13 +41,12 @@ namespace EazyBuildPipeline
                 state.DetailedErrorMessage = null;
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
 
-                Module.Log("# PreProcess of " + Module.ModuleName + " #", true);
+                Module.Log("-- PreProcess of " + Module.ModuleName + " --", true);
                 PreProcess();
-                Module.Log("# RunProcess of " + Module.ModuleName + " #", true);
+                Module.Log("-- RunProcess of " + Module.ModuleName + " --", true);
                 RunProcess();
-                Module.Log("# PostProcess of " + Module.ModuleName + " #", true);
+                Module.Log("-- PostProcess of " + Module.ModuleName + " --", true);
                 PostProcess();
-                Module.Log("## End Module " + Module.ModuleName + " ##", true);
 
                 state.Applying = false;
                 state.ErrorMessage = null;
@@ -56,8 +55,13 @@ namespace EazyBuildPipeline
             catch (Exception e)
             {
                 Exception e_catch = null;
-                try { Catch(e); }
-                catch(Exception e_in)
+                try
+                {
+                    Module.Log("-- Enter Catch --");
+                    Catch(e);
+                    Module.Log("-- Exit Catch --");
+                }
+                catch (Exception e_in)
                 {
                     Module.Log("Catch内部错误：" + e_in.ToString());
                     e_catch = e_in;
@@ -73,7 +77,12 @@ namespace EazyBuildPipeline
             }
             finally
             {
-                try { Finally(); }
+                try
+                {
+                    Module.Log("-- Enter Finally --");
+                    Finally();
+                    Module.Log("-- Exit Finally --");
+                }
                 catch (Exception e_in)
                 {
                     Module.Log("Finally内部错误：" + e_in.ToString());
@@ -81,6 +90,7 @@ namespace EazyBuildPipeline
                 }
                 finally
                 {
+                    Module.Log("---- End Module " + Module.ModuleName + " ----", true);
                     Module.EndLog();
                     EditorUtility.ClearProgressBar();
                 }

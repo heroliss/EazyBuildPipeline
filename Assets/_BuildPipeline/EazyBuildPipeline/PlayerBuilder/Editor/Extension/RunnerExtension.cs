@@ -74,7 +74,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             ApplyScriptDefines(BuildPlayerOptions.target, true);
 
             //还原被拷贝覆盖的文件
-            Module.DisplayProgressBar("Start Revert Copied Files", 0f, true);
+            Module.DisplayProgressBar("Start Restore Copied Files", 0f, true);
             RevertAllCopiedFiles();
 
             EBPUtility.RefreshAssets();
