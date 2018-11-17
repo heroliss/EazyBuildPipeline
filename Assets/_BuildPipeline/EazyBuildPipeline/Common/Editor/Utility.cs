@@ -28,8 +28,10 @@ namespace EazyBuildPipeline
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             while (EditorApplication.isCompiling)
             {
-                Debug.Log("-------------------------> Compiling!");
-                //System.Threading.Thread.Sleep(100);
+                string s = DateTime.Now.ToLongTimeString() + "    Compiling\n";
+                Debug.Log(s);
+                File.AppendAllText("CompilingMonitor.txt", s);
+                System.Threading.Thread.Sleep(1000);
             }
         }
 

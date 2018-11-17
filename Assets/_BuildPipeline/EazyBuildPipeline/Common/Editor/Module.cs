@@ -176,8 +176,17 @@ namespace EazyBuildPipeline
 
         public void LogHead(string text, ushort level)
         {
-            string s = new string('-', (int)Math.Pow(2, level));
-            Log(s + " " + text + " " + s);
+            string start = "";
+            string end = "";
+            switch (level)
+            {
+                case 0: start = end = ""; break;
+                case 1: start = end = "-------- "; break;
+                case 2: start = end = "---- "; break;
+                case 3: start = end = "-- "; break;
+                default: break;
+            }
+            Log(start + text + end);
         }
 
         public void Log(string text, bool delayFlush = false)

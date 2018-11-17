@@ -33,7 +33,7 @@ namespace EazyBuildPipeline
             try
             {
                 Module.StartLog();
-                Module.LogHead("Start Module " + Module.ModuleName, 4);
+                Module.LogHead("Start Module " + Module.ModuleName, 1);
 
                 state.IsPartOfPipeline = isPartOfPipeline;
                 state.Applying = true;
@@ -41,11 +41,11 @@ namespace EazyBuildPipeline
                 state.DetailedErrorMessage = null;
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
 
-                Module.LogHead("PreProcess of " + Module.ModuleName, 3);
+                Module.LogHead("PreProcess of " + Module.ModuleName, 2);
                 PreProcess();
-                Module.LogHead("RunProcess of " + Module.ModuleName, 3);
+                Module.LogHead("RunProcess of " + Module.ModuleName, 2);
                 RunProcess();
-                Module.LogHead("PostProcess of " + Module.ModuleName, 3);
+                Module.LogHead("PostProcess of " + Module.ModuleName, 2);
                 PostProcess();
 
                 state.Applying = false;
@@ -57,9 +57,9 @@ namespace EazyBuildPipeline
                 Exception e_catch = null;
                 try
                 {
-                    Module.LogHead("Enter Catch", 3);
+                    Module.LogHead("Enter Catch", 2);
                     Catch(e);
-                    Module.LogHead("Exit Catch", 3);
+                    Module.LogHead("Exit Catch", 2);
                 }
                 catch (Exception e_in)
                 {
@@ -79,9 +79,9 @@ namespace EazyBuildPipeline
             {
                 try
                 {
-                    Module.LogHead("Enter Finally", 3);
+                    Module.LogHead("Enter Finally", 2);
                     Finally();
-                    Module.LogHead("Exit Finally", 3);
+                    Module.LogHead("Exit Finally", 2);
                 }
                 catch (Exception e_in)
                 {
@@ -90,7 +90,7 @@ namespace EazyBuildPipeline
                 }
                 finally
                 {
-                    Module.LogHead("End Module " + Module.ModuleName, 4);
+                    Module.LogHead("End Module " + Module.ModuleName, 1);
                     Module.EndLog();
                     EditorUtility.ClearProgressBar();
                 }
@@ -102,7 +102,7 @@ namespace EazyBuildPipeline
             try
             {
                 Module.StartLog();
-                Module.LogHead("Check " + Module.ModuleName, 4);
+                Module.LogHead("Check " + Module.ModuleName, 1);
                 CheckProcess(onlyCheckConfig);
             }
             catch (EBPCheckFailedException e)
