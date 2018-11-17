@@ -33,7 +33,7 @@ namespace EazyBuildPipeline
             try
             {
                 Module.StartLog();
-                Module.Log("---- Start Module " + Module.ModuleName + " ----", true);
+                Module.LogHead("Start Module " + Module.ModuleName, 4);
 
                 state.IsPartOfPipeline = isPartOfPipeline;
                 state.Applying = true;
@@ -41,11 +41,11 @@ namespace EazyBuildPipeline
                 state.DetailedErrorMessage = null;
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
 
-                Module.Log("-- PreProcess of " + Module.ModuleName + " --", true);
+                Module.LogHead("PreProcess of " + Module.ModuleName, 3);
                 PreProcess();
-                Module.Log("-- RunProcess of " + Module.ModuleName + " --", true);
+                Module.LogHead("RunProcess of " + Module.ModuleName, 3);
                 RunProcess();
-                Module.Log("-- PostProcess of " + Module.ModuleName + " --", true);
+                Module.LogHead("PostProcess of " + Module.ModuleName, 3);
                 PostProcess();
 
                 state.Applying = false;
@@ -57,9 +57,9 @@ namespace EazyBuildPipeline
                 Exception e_catch = null;
                 try
                 {
-                    Module.Log("-- Enter Catch --");
+                    Module.LogHead("Enter Catch", 3);
                     Catch(e);
-                    Module.Log("-- Exit Catch --");
+                    Module.LogHead("Exit Catch", 3);
                 }
                 catch (Exception e_in)
                 {
@@ -79,9 +79,9 @@ namespace EazyBuildPipeline
             {
                 try
                 {
-                    Module.Log("-- Enter Finally --");
+                    Module.LogHead("Enter Finally", 3);
                     Finally();
-                    Module.Log("-- Exit Finally --");
+                    Module.LogHead("Exit Finally", 3);
                 }
                 catch (Exception e_in)
                 {
@@ -90,7 +90,7 @@ namespace EazyBuildPipeline
                 }
                 finally
                 {
-                    Module.Log("---- End Module " + Module.ModuleName + " ----", true);
+                    Module.LogHead("End Module " + Module.ModuleName, 4);
                     Module.EndLog();
                     EditorUtility.ClearProgressBar();
                 }
@@ -102,7 +102,7 @@ namespace EazyBuildPipeline
             try
             {
                 Module.StartLog();
-                Module.Log("## Check " + Module.ModuleName + " ##", true);
+                Module.LogHead("Check " + Module.ModuleName, 4);
                 CheckProcess(onlyCheckConfig);
             }
             catch (EBPCheckFailedException e)
@@ -123,13 +123,14 @@ namespace EazyBuildPipeline
 
         protected virtual void CheckProcess(bool onlyCheckConfig)
         {
-            //检查状态配置文件和工作目录
             if (!onlyCheckConfig)
             {
+                //检查状态配置文件
                 if (!Module.StateConfigAvailable)
                 {
                     throw new EBPCheckFailedException(Module.StateConfigLoadFailedMessage);
                 }
+                //检查工作目录
                 if (!Directory.Exists(Module.ModuleConfig.WorkPath)) //这个检查冗余，放在这里为保险起见
                 {
                     throw new EBPCheckFailedException("工作目录不存在：" + Module.ModuleConfig.WorkPath);

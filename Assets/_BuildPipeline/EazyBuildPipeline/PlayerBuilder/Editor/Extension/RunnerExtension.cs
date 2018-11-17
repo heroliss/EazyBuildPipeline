@@ -17,31 +17,50 @@ namespace EazyBuildPipeline.PlayerBuilder
         protected override void PreProcess()
         {
             EBPUtility.RefreshAssets();
+
             Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
             PrepareBuildOptions();
 
-            Module.DisplayProgressBar("Start DownloadConfigs", 0.05f, true);
-            DownLoadConfigs(0.1f, 0.4f);
+            Module.DisplayProgressBar("Start DownloadConfigs", 0.02f, true);
+            DownLoadConfigs(0.02f, 0.1f);
 
-            Module.DisplayProgressBar("Start Copy Directories", 0.2f, true);
+            Module.DisplayProgressBar("Start Copy Directories", 0.1f, true);
             CopyAllDirectories();
 
-            Module.DisplayProgressBar("Creating Building Configs Class File", 0.4f, true);
+            EBPUtility.RefreshAssets();
+
+            Module.DisplayProgressBar("Creating Building Configs Class File", 0.3f, true);
             CreateBuildingConfigsClassFile();
 
-            Module.DisplayProgressBar("Applying PostProcess Settings", 0.45f, true);
+            EBPUtility.RefreshAssets();
+
+            Module.DisplayProgressBar("Applying PostProcess Settings", 0.35f, true);
             ApplyPostProcessSettings();
 
-            Module.DisplayProgressBar("Applying PlayerSettings", 0.47f, true);
+            EBPUtility.RefreshAssets();
+
+            Module.DisplayProgressBar("Applying PlayerSettings", 0.37f, true);
             ApplyPlayerSettings(BuildPlayerOptions.target);
 
-            Module.DisplayProgressBar("Applying Scripting Defines", 0.49f, true);
+            EBPUtility.RefreshAssets();
+
+            Module.DisplayProgressBar("Applying Scripting Defines", 0.39f, true);
             ApplyScriptDefines(BuildPlayerOptions.target, false);
 
             EBPUtility.RefreshAssets();
-            ClearWrapFilesAndGenerateLuaAllAndEncrypt(Module, 0.5f, 1);
+
+            Module.DisplayProgressBar("-- Start Handle Lua Files --", 0.4f, true);
+            HandleLuaFiles(0.4f, 0.7f);
+            Module.DisplayProgressBar("-- End Handle Lua Files --", 0.7f, true);
 
             EBPUtility.RefreshAssets();
+
+            Module.DisplayProgressBar("-- Start Handle Wrap Files --", 0.7f, true);
+            HandleWrapFiles(0.7f, 1f);
+            Module.DisplayProgressBar("-- End Handle Wrap Files --", 1f, true);
+
+            EBPUtility.RefreshAssets();
+
             iOSBuildPostProcessor.DisableOnce = true; //HACK: 关闭一次旧的后处理过程
         }
 
@@ -80,29 +99,30 @@ namespace EazyBuildPipeline.PlayerBuilder
             EBPUtility.RefreshAssets();
         }
 
-        public static void ClearWrapFilesAndGenerateLuaAllAndEncrypt(BaseModule Module, float startProgress, float endProgress)
+        public void HandleWrapFiles(float startProgress, float endProgress)
         {
             float progressLength = endProgress - startProgress;
-            //重新创建Wrap和Lua文件
             float progress = 0f;
-            Module.DisplayProgressBar("Start Clear Wrap Files & Generate Lua All...", progress, true);
             var steps = new ToLuaMenu.ClearWrapFilesAndCreateSteps();
             foreach (var step in steps)
             {
                 Module.DisplayProgressBar(step, startProgress + progressLength * progress, true);
-                progress += 0.8f / steps.StepCount;
+                progress += 1f / steps.StepCount;
             }
+            Module.DisplayProgressBar("Clear & Generate Wrap Files Finished!", startProgress + progressLength * 1, true);
+        }
 
-            EBPUtility.RefreshAssets();
+        private void HandleLuaFiles(float startProgress, float endProgress)
+        {
+            float progressLength = endProgress - startProgress;
             //LuaScriptsPreProcessor.LuaEncryptAllThingsDone(true, () => { }); //下面三步代替这一步
-            Module.DisplayProgressBar("Clear Lua Files...", startProgress + progressLength * 0.8f, true);
+            Module.DisplayProgressBar("Clear Lua Files...", startProgress + progressLength * 0f, true);
             LuaScriptsPreProcessor.Clean();
-            Module.DisplayProgressBar("Translate Lua to ByteFile...", startProgress + progressLength * 0.85f, true);
+            Module.DisplayProgressBar("Translate Lua to ByteFile...", startProgress + progressLength * 0.2f, true);
             LuaScriptsPreProcessor.DoByteCodeTranslationJob(true);
-            Module.DisplayProgressBar("Encrypt Lua ByteFile...", startProgress + progressLength * 0.9f, true);
+            Module.DisplayProgressBar("Encrypt Lua ByteFile...", startProgress + progressLength * 0.4f, true);
             LuaScriptsPreProcessor.DoTheEncryptionJob();
-
-            Module.DisplayProgressBar("Clear Wrap Files & Generate Lua & Encrypt All Finished!", startProgress + progressLength * 1, true);
+            Module.DisplayProgressBar("Lua Clear & ToByte & Encrypt All Finish!", startProgress + progressLength * 1f, true);
         }
 
         #region CopyDirectories & RevertCopiedFiles

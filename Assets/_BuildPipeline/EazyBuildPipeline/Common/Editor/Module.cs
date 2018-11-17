@@ -141,7 +141,7 @@ namespace EazyBuildPipeline
             }
             if (log)
             {
-                Log(title, true);
+                Log(title);
             }
         }
 
@@ -153,7 +153,7 @@ namespace EazyBuildPipeline
             }
             if (log)
             {
-                Log(title + " : " + info, true);
+                Log(title + " : " + info);
             }
         }
 
@@ -170,20 +170,36 @@ namespace EazyBuildPipeline
         #endregion
 
         #region 日志系统
+
         private double currentTime;
         private StreamWriter logWriter;
-        public void Log(string text, bool forceFlush = false)
+
+        public void LogHead(string text, ushort level)
+        {
+            string s = new string('-', (int)Math.Pow(2, level));
+            Log(s + " " + text + " " + s);
+        }
+
+        public void Log(string text, bool delayFlush = false)
         {
             if (logWriter != null)
             {
                 logWriter.WriteLine(DateTime.Now.ToString("[HH:mm:ss] ") + text);
-                if (EditorApplication.timeSinceStartup - currentTime > 0.5 || forceFlush) //保存日志的最少间隔时间
+                if (delayFlush)
+                {
+                    if (EditorApplication.timeSinceStartup - currentTime > 0.2)
+                    {
+                        logWriter.Flush();
+                        currentTime = EditorApplication.timeSinceStartup;
+                    }
+                }
+                else
                 {
                     logWriter.Flush();
-                    currentTime = EditorApplication.timeSinceStartup;
                 }
             }
         }
+
         public void StartLog()
         {
             if (logWriter == null && !string.IsNullOrEmpty(CommonModule.CommonConfig.PipelineLogPath))
@@ -220,6 +236,7 @@ namespace EazyBuildPipeline
                 DisplayDialog(customMessage);
             }
         }
+
         #endregion
     }
 
