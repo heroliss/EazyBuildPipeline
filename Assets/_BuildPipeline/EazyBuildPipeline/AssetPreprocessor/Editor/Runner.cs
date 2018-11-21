@@ -11,22 +11,24 @@ using EazyBuildPipeline.AssetPreprocessor.Configs;
 
 namespace EazyBuildPipeline.AssetPreprocessor
 {
+    [Serializable]
     public partial class Runner : EBPRunner<Module,
         ModuleConfig, ModuleConfig.JsonClass,
         ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
-        public Process process;
-        public int RuningShellCount;
-        public int applyingID;
-        public int totalApplyCount;
-        public List<int> totalCountList;
-        public List<int> skipCountList;
-        public List<int> successCountList;
-        public List<string> LogFilePathList;
-        public int currentShellIndex;
-        public string applyingFile;
-        public string errorMessage;
+        [NonSerialized] public Process process;
+        [NonSerialized] public int RuningShellCount;
+        [NonSerialized] public int applyingID;
+        [NonSerialized] public int totalApplyCount;
+        [NonSerialized] public List<int> totalCountList;
+        [NonSerialized] public List<int> skipCountList;
+        [NonSerialized] public List<int> successCountList;
+        [NonSerialized] public List<string> LogFilePathList;
+        [NonSerialized] public int currentShellIndex;
+        [NonSerialized] public string applyingFile;
+        [NonSerialized] public string errorMessage;
 
+        public Runner() { }
         public Runner(Module module) : base(module)
         {
         }

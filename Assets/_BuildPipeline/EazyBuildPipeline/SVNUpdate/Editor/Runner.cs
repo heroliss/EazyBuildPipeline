@@ -33,6 +33,7 @@ namespace EazyBuildPipeline.SVNUpdate
         public string message = "";
         public string errorMessage = "";
 
+        public Runner() { }
         public Runner(Module module) : base(module)
         {
         }

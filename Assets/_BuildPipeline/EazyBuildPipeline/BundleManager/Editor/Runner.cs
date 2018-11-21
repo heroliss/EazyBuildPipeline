@@ -7,10 +7,12 @@ using EazyBuildPipeline.BundleManager.Configs;
 
 namespace EazyBuildPipeline.BundleManager
 {
+    [Serializable]
     public partial class Runner : EBPRunner<Module,
         ModuleConfig, ModuleConfig.JsonClass,
         ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
+        public Runner() { }
         public Runner(Module module) : base(module)
         {
         }

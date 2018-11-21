@@ -25,14 +25,7 @@ namespace EazyBuildPipeline
 
         public static void RefreshAssets()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-            while (EditorApplication.isCompiling)
-            {
-                string s = DateTime.Now.ToLongTimeString() + "    Compiling\n";
-                Debug.Log(s);
-                File.AppendAllText("CompilingMonitor.txt", s);
-                System.Threading.Thread.Sleep(1000);
-            }
+            AssetDatabase.Refresh();
         }
 
         public static string Quote(string s)

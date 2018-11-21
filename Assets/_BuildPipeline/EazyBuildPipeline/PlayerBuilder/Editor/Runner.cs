@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEditor;
 using System;
 using System.IO;
@@ -6,11 +7,14 @@ using EazyBuildPipeline.PlayerBuilder.Configs;
 
 namespace EazyBuildPipeline.PlayerBuilder
 {
+    [Serializable]
     public partial class Runner : EBPRunner<Module,
         ModuleConfig, ModuleConfig.JsonClass,
         ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
-        public BuildPlayerOptions BuildPlayerOptions;
+        [SerializeField] BuildPlayerOptions BuildPlayerOptions;
+
+        public Runner() { }
         public Runner(Module module) : base(module)
         {
         }

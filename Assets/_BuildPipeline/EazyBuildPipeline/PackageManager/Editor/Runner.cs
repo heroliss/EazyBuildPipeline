@@ -11,6 +11,7 @@ using EazyBuildPipeline.PackageManager.Configs;
 
 namespace EazyBuildPipeline.PackageManager
 {
+    [Serializable]
     public partial class Runner : EBPRunner<Module,
         ModuleConfig, ModuleConfig.JsonClass,
         ModuleStateConfig, ModuleStateConfig.JsonClass>
@@ -26,6 +27,7 @@ namespace EazyBuildPipeline.PackageManager
 
         public int ResourceVersion;
 
+        public Runner() { }
         public Runner(Module module) : base(module)
         {
         }

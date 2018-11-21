@@ -35,15 +35,15 @@ namespace EazyBuildPipeline.PipelineTotalControl
         ModuleStateConfig, ModuleStateConfig.JsonClass>, ISerializationCallbackReceiver
     {
         public SVNUpdate.Module SVNUpdateModule = new SVNUpdate.Module();
-        public SVNUpdate.Runner SVNUpdateRunner;
+        public SVNUpdate.Runner SVNUpdateRunner = new SVNUpdate.Runner();
         public AssetPreprocessor.Module AssetPreprocessorModule = new AssetPreprocessor.Module();
-        public AssetPreprocessor.Runner AssetPreprocessorRunner;
+        public AssetPreprocessor.Runner AssetPreprocessorRunner = new AssetPreprocessor.Runner();
         public BundleManager.Module BundleManagerModule = new BundleManager.Module();
-        public BundleManager.Runner BundleManagerRunner;
+        public BundleManager.Runner BundleManagerRunner = new BundleManager.Runner();
         public PackageManager.Module PackageManagerModule = new PackageManager.Module();
-        public PackageManager.Runner PackageManagerRunner;
+        public PackageManager.Runner PackageManagerRunner = new PackageManager.Runner();
         public PlayerBuilder.Module PlayerBuilderModule = new PlayerBuilder.Module();
-        public PlayerBuilder.Runner PlayerBuilderRunner;
+        public PlayerBuilder.Runner PlayerBuilderRunner = new PlayerBuilder.Runner();
 
         [NonSerialized]
         public List<IRunner> Runners;
@@ -52,6 +52,7 @@ namespace EazyBuildPipeline.PipelineTotalControl
 
         public void Init()
         {
+            //以下均为引用关系的初始化
             InitRunners();
             Runners = new List<IRunner>
             {
@@ -85,11 +86,17 @@ namespace EazyBuildPipeline.PipelineTotalControl
 
         public void InitRunners()
         {
-            SVNUpdateRunner = new SVNUpdate.Runner(SVNUpdateModule);
-            AssetPreprocessorRunner = new AssetPreprocessor.Runner(AssetPreprocessorModule);
-            BundleManagerRunner = new BundleManager.Runner(BundleManagerModule);
-            PackageManagerRunner = new PackageManager.Runner(PackageManagerModule);
-            PlayerBuilderRunner = new PlayerBuilder.Runner(PlayerBuilderModule);
+            //SVNUpdateRunner = new SVNUpdate.Runner(SVNUpdateModule);
+            //AssetPreprocessorRunner = new AssetPreprocessor.Runner(AssetPreprocessorModule);
+            //BundleManagerRunner = new BundleManager.Runner(BundleManagerModule);
+            //PackageManagerRunner = new PackageManager.Runner(PackageManagerModule);
+            //PlayerBuilderRunner = new PlayerBuilder.Runner(PlayerBuilderModule);
+
+            SVNUpdateRunner.Module = SVNUpdateModule;
+            AssetPreprocessorRunner.Module = AssetPreprocessorModule;
+            BundleManagerRunner.Module = BundleManagerModule;
+            PackageManagerRunner.Module = PackageManagerModule;
+            PlayerBuilderRunner.Module = PlayerBuilderModule;
         }
 
         public void OnBeforeSerialize()

@@ -11,7 +11,8 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
     [Serializable]
     public class SettingPanel
     {
-        enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer, Finish }
+        enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, PrepareBuildPlayer, BuildPlayer, Finish }
+        float progress;
         [SerializeField] string SVNMessage;
         [SerializeField] Step currentStep = Step.None;
         [SerializeField] double startTime;
@@ -64,6 +65,10 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         {
             SetupActions();
             RunSVNCheckProcess();
+            if (currentStep != Step.None)
+            {
+                EditorApplication.update += UpdateForRun;
+            }
         }
         public void OnProjectChange()
         {
@@ -247,10 +252,6 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
         public void Update()
         {
-            if (currentStep != Step.None)
-            {
-                RunCurrentSetp();
-            }
             if (needRepaint)
             {
                 G.g.MainWindow.Repaint();
@@ -273,7 +274,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //SVN Update
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.SVNUpdate, false, G.Module.SVNUpdateRunner.errorMessage);
+            FrontIndicator(currentStep == Step.SVNUpdate, false, G.Module.SVNUpdateRunner.errorMessage);
             G.Module.SVNUpdateRunner.IsPartOfPipeline = GUILayout.Toggle(G.Module.SVNUpdateRunner.IsPartOfPipeline, "SVN Update", GUILayout.Width(200)) && G.Module.SVNUpdateRunner.Available;
             SVNInfo();
             if (GUILayout.Button(refreshIcon, miniButtonOptions))
@@ -287,7 +288,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //AssetPreprocessor
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.PreprocessAssets, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.Applying,
+            FrontIndicator(currentStep == Step.PreprocessAssets, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.Applying,
                            G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                 assetPreprocessorContent, G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.IsPartOfPipeline);
@@ -329,7 +330,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //BundleManager
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.BuildBundles, G.Module.BundleManagerModule.ModuleStateConfig.Json.Applying,
+            FrontIndicator(currentStep == Step.BuildBundles, G.Module.BundleManagerModule.ModuleStateConfig.Json.Applying,
                            G.Module.BundleManagerModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.BundleManagerModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                 bundleManagerContent, G.Module.BundleManagerModule.ModuleStateConfig.Json.IsPartOfPipeline);
@@ -381,7 +382,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //PackageManager
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.BuildPackages, G.Module.PackageManagerModule.ModuleStateConfig.Json.Applying,
+            FrontIndicator(currentStep == Step.BuildPackages, G.Module.PackageManagerModule.ModuleStateConfig.Json.Applying,
                           G.Module.PackageManagerModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                    packageManagerContent, G.Module.PackageManagerModule.ModuleStateConfig.Json.IsPartOfPipeline);
@@ -425,7 +426,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
 
             //BuildPlayer
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(Step.BuildPlayer, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying,
+            FrontIndicator(currentStep == Step.BuildPlayer || currentStep == Step.PrepareBuildPlayer, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying,
                           G.Module.PlayerBuilderModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                   playerBuilderContent, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline);
@@ -513,9 +514,9 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
             GUILayout.EndHorizontal();
         }
 
-        private void FrontIndicator(Step step, bool applying, string errorMessage)
+        private void FrontIndicator(bool running, bool applying, string errorMessage)
         {
-            GUILayout.Label(currentStep != step ? applying ?
+            GUILayout.Label(!running ? applying ?
                             new GUIContent(warnIcon, "上次运行时发生错误：" + errorMessage) :
                             GUIContent.none :
                             new GUIContent(fingerIcon), iconOptions);
@@ -551,8 +552,26 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                 {
                     //开始执行
                     currentStep = Step.Start;
+                    EditorApplication.update += UpdateForRun;
                 }
             }
+        }
+
+        void UpdateForRun()
+        {
+            if (EditorApplication.isCompiling)
+            {
+                progress += 0.0002f;
+                EditorUtility.DisplayProgressBar("Compiling...", null, progress % 1);
+                return;
+            }
+            EditorUtility.ClearProgressBar();
+            progress = 0;
+            if (currentStep == Step.None)
+            {
+                G.Module.DisplayDialog("逻辑错误：不应该执行到这句！");
+            }
+            RunCurrentSetp();
         }
 
         private bool ReloadAllUserConfigsAndCheck(bool onlyCheckConfig)
@@ -659,6 +678,14 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                             state3.Json.IsPartOfPipeline = false;
                             state3.Save();
                         }
+                        currentStep = Step.PrepareBuildPlayer;
+                        break;
+                    case Step.PrepareBuildPlayer:
+                        var state4_pre = G.Module.PlayerBuilderModule.ModuleStateConfig;
+                        if (state4_pre.Json.IsPartOfPipeline)
+                        {
+                            G.Module.PlayerBuilderRunner.Prepare();
+                        }
                         currentStep = Step.BuildPlayer;
                         break;
                     case Step.BuildPlayer:
@@ -679,6 +706,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                         TimeSpan endTime = TimeSpan.FromSeconds(EditorApplication.timeSinceStartup - startTime);
                         G.Module.DisplayDialog(string.Format("管线运行成功！用时：{0}时 {1}分 {2}秒", endTime.Hours, endTime.Minutes, endTime.Seconds));
                         currentStep = Step.None;
+                        EditorApplication.update -= UpdateForRun;
                         break;
                 }
             }
@@ -716,6 +744,7 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
                     currentModule.DisplayRunError(timeInfo);
                 }
                 currentStep = Step.None;
+                EditorApplication.update -= UpdateForRun;
             }
             finally
             {

@@ -12,6 +12,7 @@ namespace EazyBuildPipeline
         void Check(bool onlyCheckConfig = false);
     }
 
+    [Serializable]
     public abstract class EBPRunner<TModule, TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass> : IRunner
         where TModule : EBPModule<TModuleConfig, TModuleConfigJsonClass, TModuleStateConfig, TModuleStateConfigJsonClass>
         where TModuleConfig : ModuleConfig<TModuleConfigJsonClass>, new()
@@ -20,8 +21,9 @@ namespace EazyBuildPipeline
         where TModuleStateConfigJsonClass : ModuleStateConfigJsonClass, new()
     {
         public BaseModule BaseModule { get { return Module; } }
-        public TModule Module;
+        [NonSerialized] public TModule Module;
 
+        public EBPRunner() { }
         public EBPRunner(TModule module)
         {
             Module = module;

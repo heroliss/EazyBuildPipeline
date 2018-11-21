@@ -14,7 +14,7 @@ namespace EazyBuildPipeline.PlayerBuilder
 {
     public partial class Runner
     {
-        protected override void PreProcess()
+        public void Prepare()
         {
             EBPUtility.RefreshAssets();
 
@@ -22,44 +22,46 @@ namespace EazyBuildPipeline.PlayerBuilder
             PrepareBuildOptions();
 
             Module.DisplayProgressBar("Start DownloadConfigs", 0.02f, true);
-            DownLoadConfigs(0.02f, 0.1f);
+            DownLoadConfigs(0.02f, 0.3f);
 
-            Module.DisplayProgressBar("Start Copy Directories", 0.1f, true);
+            Module.DisplayProgressBar("Start Copy Directories", 0.3f, true);
             CopyAllDirectories();
 
-            EBPUtility.RefreshAssets();
-
-            Module.DisplayProgressBar("Creating Building Configs Class File", 0.3f, true);
+            Module.DisplayProgressBar("Creating Building Configs Class File", 0.8f, true);
             CreateBuildingConfigsClassFile();
 
             EBPUtility.RefreshAssets();
 
-            Module.DisplayProgressBar("Applying PostProcess Settings", 0.35f, true);
-            ApplyPostProcessSettings();
-
-            EBPUtility.RefreshAssets();
-
-            Module.DisplayProgressBar("Applying PlayerSettings", 0.37f, true);
+            Module.DisplayProgressBar("Applying PlayerSettings", 0.9f, true);
             ApplyPlayerSettings(BuildPlayerOptions.target);
 
-            EBPUtility.RefreshAssets();
-
-            Module.DisplayProgressBar("Applying Scripting Defines", 0.39f, true);
+            Module.DisplayProgressBar("Applying Scripting Defines", 0.95f, true);
             ApplyScriptDefines(BuildPlayerOptions.target, false);
 
             EBPUtility.RefreshAssets();
+        }
 
-            Module.DisplayProgressBar("-- Start Handle Lua Files --", 0.4f, true);
-            HandleLuaFiles(0.4f, 0.7f);
-            Module.DisplayProgressBar("-- End Handle Lua Files --", 0.7f, true);
+        protected override void PreProcess()
+        {
+            EBPUtility.RefreshAssets();
+
+            Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
+            PrepareBuildOptions();
+
+            Module.DisplayProgressBar("-- Start Handle Lua Files --", 0f, true);
+            HandleLuaFiles(0f, 0.6f);
+            Module.DisplayProgressBar("-- End Handle Lua Files --", 0.6f, true);
 
             EBPUtility.RefreshAssets();
 
-            Module.DisplayProgressBar("-- Start Handle Wrap Files --", 0.7f, true);
-            HandleWrapFiles(0.7f, 1f);
+            Module.DisplayProgressBar("-- Start Handle Wrap Files --", 0.6f, true);
+            HandleWrapFiles(0.6f, 1f);
             Module.DisplayProgressBar("-- End Handle Wrap Files --", 1f, true);
 
             EBPUtility.RefreshAssets();
+
+            Module.DisplayProgressBar("Applying PostProcess Settings", 1f, true);
+            ApplyPostProcessSettings();
 
             iOSBuildPostProcessor.DisableOnce = true; //HACK: 关闭一次旧的后处理过程
         }
@@ -127,7 +129,7 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         #region CopyDirectories & RevertCopiedFiles
 
-        List<string> allCopiedFiles = new List<string>();
+        [SerializeField] List<string> allCopiedFiles = new List<string>();
         string message;
         string errorMessage;
 

@@ -7,7 +7,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
     public class BundleManagerWindow : EditorWindow, ISerializationCallbackReceiver
     {
         Module module; //仅用于提供给Unity自动序列化
-        Common.Configs.CommonConfig commonConfig; //仅用于提供给Unity自动序列化
+        CommonConfig commonConfig; //仅用于提供给Unity自动序列化
 
         private AssetBundleManagement2.AssetBundleMainWindow mainTab;
         private SettingPanel settingPanel;
