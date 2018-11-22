@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System;
-using EazyBuildPipeline.PipelineTotalControl.Configs;
+using EazyBuildPipeline.MasterControl.Configs;
 using System.Collections.Generic;
 
-namespace EazyBuildPipeline.PipelineTotalControl
+namespace EazyBuildPipeline.MasterControl
 {
     public static class G
     {
@@ -48,7 +48,7 @@ namespace EazyBuildPipeline.PipelineTotalControl
         [NonSerialized]
         public List<IRunner> Runners;
 
-        public override string ModuleName { get { return "TotalControl"; } }
+        public override string ModuleName { get { return "MasterControl"; } }
 
         public void Init()
         {
@@ -62,7 +62,7 @@ namespace EazyBuildPipeline.PipelineTotalControl
                 PackageManagerRunner,
                 PlayerBuilderRunner
             };
-            //这里需要将静态的Module与TotalControl中的Module同步(用于反序列化时重新指定新的引用)
+            //这里需要将静态的Module与MasterControl中的Module同步(用于反序列化时重新指定新的引用)
             PlayerBuilder.G.Module = PlayerBuilderModule;
             PlayerBuilder.G.Runner = PlayerBuilderRunner;
         }

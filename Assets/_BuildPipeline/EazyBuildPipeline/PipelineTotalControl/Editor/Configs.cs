@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 
-namespace EazyBuildPipeline.PipelineTotalControl.Configs
+namespace EazyBuildPipeline.MasterControl.Configs
 {
     //暂时无用
     [Serializable]

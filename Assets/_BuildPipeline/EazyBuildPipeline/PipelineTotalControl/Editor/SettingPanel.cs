@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace EazyBuildPipeline.PipelineTotalControl.Editor
+namespace EazyBuildPipeline.MasterControl.Editor
 {
     [Serializable]
     public class SettingPanel

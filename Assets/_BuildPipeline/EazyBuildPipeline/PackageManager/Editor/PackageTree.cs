@@ -72,7 +72,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             #endregion
 
 			Reload();
-		}
+            multiColumnHeader.ResizeToFit();
+        }
 
 		private void InitStyles()
 		{

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Collections.Generic;
 using EazyBuildPipeline.PlayerBuilder.Editor;
 
-namespace EazyBuildPipeline.PipelineTotalControl.Editor
+namespace EazyBuildPipeline.MasterControl.Editor
 {
-    public class TotalControlWindow : EditorWindow, ISerializationCallbackReceiver
+    public class MasterControlWindow : EditorWindow, ISerializationCallbackReceiver
     {
         Module module; //仅用于提供给Unity自动序列化
         Common.Configs.CommonConfig commonConfig; //仅用于提供给Unity自动序列化
@@ -18,10 +18,10 @@ namespace EazyBuildPipeline.PipelineTotalControl.Editor
         SettingPanel settingPanel;
 
 
-        [MenuItem("Window/EazyBuildPipeline/TotalControl")]
+        [MenuItem("Window/EazyBuildPipeline/MasterControl")]
         static void ShowWindow()
         {
-            GetWindow<TotalControlWindow>();
+            GetWindow<MasterControlWindow>();
         }
         private void Awake()
         {

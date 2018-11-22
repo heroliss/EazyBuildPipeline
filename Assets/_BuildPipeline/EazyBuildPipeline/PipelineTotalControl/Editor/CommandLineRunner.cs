@@ -24,7 +24,7 @@ namespace EazyBuildPipeline
             //加载公共基础配置
             CommonModule.LoadCommonConfig();
             CommonModule.CommonConfig.Json.PipelineRootPath = EBPUtility.GetArgValue("PipelineRootPath");
-            PipelineTotalControl.Module totalModule = new PipelineTotalControl.Module();
+            MasterControl.Module totalModule = new MasterControl.Module();
             //加载和检查每一个模块
             string platform = EBPUtility.GetArgValue("Platform");
             switch (platform.ToLower())

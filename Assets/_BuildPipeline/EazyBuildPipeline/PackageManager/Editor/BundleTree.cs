@@ -98,7 +98,8 @@ namespace EazyBuildPipeline.PackageManager.Editor
             BundleConfigPath = bundleConfigPath;
 
 			Reload();
-		}
+            multiColumnHeader.ResizeToFit();
+        }
 
         public void ClearAllConnection()
 		{

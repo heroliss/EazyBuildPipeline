@@ -1,0 +1,9 @@
+{
+  "AssetsDirectories": "ABOriginalResources\n_Scenes",
+  "DependenceFilterDirectories": "_Scenes --.unity",
+  "ExcludeSubStringWhenFind": "",
+  "ExcludeExtensionsWhenBuildBundles": ".cs\n.txt",
+  "OutputPath": "DryBuildAssetBundles",
+  "Separator": " --",
+  "ResultFileName": "NoReferenceAssets.txt"
+}
