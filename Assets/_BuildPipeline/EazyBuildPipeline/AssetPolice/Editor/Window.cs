@@ -41,7 +41,6 @@ namespace EazyBuildPipeline.AssetPolice.Editor
         const float headHeight = 20;
         const float fixedSpace = 3;
         const float splitterWidth = 3;
-        const float initLeftWidth = 400;
         const float margin = 3;
 
         private void HandleHorizontalResize()
@@ -67,14 +66,6 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
         private void Awake()
         {
-            #region InitRect
-            splitterRect = new Rect(initLeftWidth + margin,
-                headHeight, splitterWidth, position.height - headHeight - margin);
-            leftRect = new Rect(margin, headHeight, splitterRect.x - margin, position.height - headHeight - margin);
-            rightRect = new Rect(splitterRect.x + splitterWidth, headHeight,
-                position.width - splitterRect.x - splitterWidth - margin, position.height - headHeight - margin);
-            #endregion
-
             toggleStyle = new GUIStyle("toolbarbutton") { fixedHeight = 22, wordWrap = true };
             string[] guids = AssetDatabase.FindAssets(configSearchText);
             if (guids.Length == 0)
@@ -85,6 +76,14 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
             assetTreeViewState = new TreeViewState();
             assetTreeHeaderState = AssetsTreeView.CreateDefaultHeaderState();
+
+            #region InitRect
+            splitterRect = new Rect(configs.Json.InitialLeftWidth + margin,
+                headHeight, splitterWidth, position.height - headHeight - margin);
+            leftRect = new Rect(margin, headHeight, splitterRect.x - margin, position.height - headHeight - margin);
+            rightRect = new Rect(splitterRect.x + splitterWidth, headHeight,
+                position.width - splitterRect.x - splitterWidth - margin, position.height - headHeight - margin);
+            #endregion
         }
 
         private void OnEnable()

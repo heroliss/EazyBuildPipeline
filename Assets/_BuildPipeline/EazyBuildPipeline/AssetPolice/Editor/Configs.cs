@@ -23,6 +23,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             public string OutputPath;
             public string Separator = " --";
             public string ResultFileName = "InverseDependenceMap.json";
+            public int InitialLeftWidth = 400;
         }
     }
 }
