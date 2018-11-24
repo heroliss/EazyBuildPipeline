@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +9,7 @@ using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace EazyBuildPipeline.AssetManager.Editor
+namespace EazyBuildPipeline.AssetPolice.Editor
 {
     class AssetsTreeView : TreeView
     {
@@ -88,9 +89,12 @@ namespace EazyBuildPipeline.AssetManager.Editor
                 displayName = "Root",
             };
             root.children = new List<TreeViewItem>();
-            foreach (var item in configs.NoReferenceAssetList)
+            foreach (var bundle in configs.AllBundles)
             {
-                root.AddChild(new AssetTreeItem(id++, 0, item));
+                if (bundle.Value.Count == 0)
+                {
+                    root.AddChild(new AssetTreeItem(id++, 0, bundle.Key));
+                }
             }
             return root;
         }
@@ -116,9 +120,9 @@ namespace EazyBuildPipeline.AssetManager.Editor
                     {
                         if (IsSelected(item.id))
                         {
-                            foreach (int selectedID in GetSelection())
+                            foreach (AssetTreeItem selectedItem in FindRows(GetSelection()))
                             {
-                                ((AssetTreeItem)FindItem(selectedID, rootItem)).Check = b;
+                                selectedItem.Check = b;
                             }
                         }
                         else
@@ -182,7 +186,15 @@ namespace EazyBuildPipeline.AssetManager.Editor
             menu.AddSeparator(null);
             menu.AddItem(new GUIContent("Delete Checked Files"), false, () =>
             {
-                if (EditorUtility.DisplayDialog("删除文件", "你确定要删除所有勾选✔的文件？", "删除所有勾选的文件", "取消"))
+                int checkedCount = 0;
+                foreach (AssetTreeItem item in rootItem.children)
+                {
+                    if (item.Check == true)
+                    {
+                        checkedCount++;
+                    }
+                }
+                if (EditorUtility.DisplayDialog("删除文件", "你确定要删除所有勾选✔的文件？ (共" + checkedCount + "项)", "删除所有勾选的文件", "取消"))
                 {
                     int deleteCount = 0;
                     for (int i = 0; i < rootItem.children.Count; i++)
@@ -190,11 +202,19 @@ namespace EazyBuildPipeline.AssetManager.Editor
                         var item = rootItem.children[i];
                         if (((AssetTreeItem)item).Check == true)
                         {
-                            configs.NoReferenceAssetList.Remove(item.displayName);
+                            configs.AllBundles.Remove(item.displayName);
                             AssetDatabase.DeleteAsset(item.displayName);
                             deleteCount++;
+                            if (EditorUtility.DisplayCancelableProgressBar("Delete Assets", item.displayName, (float)deleteCount / checkedCount))
+                            {
+                                EditorUtility.ClearProgressBar();
+                                EditorUtility.DisplayDialog("删除被中止", "已删除" + deleteCount + "个文件", "确定");
+                                Reload();
+                                return;
+                            }
                         }
                     }
+                    EditorUtility.ClearProgressBar();
                     EditorUtility.DisplayDialog("删除成功", "已删除" + deleteCount + "个文件", "确定");
                     Reload();
                 }
@@ -207,7 +227,7 @@ namespace EazyBuildPipeline.AssetManager.Editor
                 {
                     return;
                 }
-                configs.NoReferenceAssetList = File.ReadAllLines(path).ToList();
+                configs.AllBundles = JsonConvert.DeserializeObject<BundleIDDictionary>(File.ReadAllText(path));
                 Reload();
             });
         }
@@ -251,7 +271,6 @@ namespace EazyBuildPipeline.AssetManager.Editor
     public class AssetTreeItem : TreeViewItem
     {
         public bool Check;
-        public string Path;
 
         public AssetTreeItem() : base()
         {

@@ -6,25 +6,36 @@ using System.Linq;
 using System;
 using System.Diagnostics;
 using UnityEditor.IMGUI.Controls;
+using Newtonsoft.Json;
 
-namespace EazyBuildPipeline.AssetManager.Editor
+namespace EazyBuildPipeline.AssetPolice.Editor
 {
     public class Window : EditorWindow
     {
-        [MenuItem("Window/EazyBuildPipeline/AssetManager")]
+        [MenuItem("Window/EazyBuildPipeline/AssetPolice")]
         static void ShowWindow()
         {
-            GetWindow<Window>("Finder");
+            GetWindow<Window>("AssetPolice");
         }
 
-        string configSearchText = "EazyBuildPipeline AssetManagerConfig";
+        string configSearchText = "EazyBuildPipeline AssetPoliceConfig";
         Configs configs = new Configs();
+
+        readonly string[] toggles = { "Garbage Collection", "Inverse Dependence" };
+        int selectedToggle;
+        private GUIStyle toggleStyle;
+
         MultiColumnHeaderState assetTreeHeaderState;
         private TreeViewState assetTreeViewState;
         AssetsTreeView assetTree;
 
+        List<string> selectedAssets = new List<string>();
+        bool freeze;
+        Vector2 scrollPosition_InverseDependencePanel;
+
         private void Awake()
         {
+            toggleStyle = new GUIStyle("toolbarbutton") { fixedHeight = 22, wordWrap = true };
             string[] guids = AssetDatabase.FindAssets(configSearchText);
             if (guids.Length == 0)
             {
@@ -48,6 +59,97 @@ namespace EazyBuildPipeline.AssetManager.Editor
         }
 
         private void OnGUI()
+        {
+            //这里当切换Panel时改变焦点，是用来解决当焦点在某个TextField上时输入框遗留显示的问题
+            //GUI.SetNextControlName("Toggle1"); //如果有这句话则会影响到SettingsPanel中New时的输入框的焦点，使输入框不能显示
+            using (new GUILayout.HorizontalScope())
+            {
+                int selectedToggle_new = GUILayout.Toolbar(selectedToggle, toggles, toggleStyle);
+                if (selectedToggle_new != selectedToggle)
+                {
+                    selectedToggle = selectedToggle_new;
+                    GUI.FocusControl("Toggle1"); //这里可能什么都没focus到，但是可以取消当前的focus
+                }
+                GUILayout.FlexibleSpace();
+            }
+            switch (toggles[selectedToggle])
+            {
+                case "Garbage Collection":
+                    GarbageCollectionPanel();
+                    break;
+                case "Inverse Dependence":
+                    InverseDependencePanel();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void OnSelectionChange()
+        {
+            if (!freeze)
+            {
+                selectedAssets.Clear();
+                foreach (string guid in Selection.assetGUIDs)
+                {
+                    selectedAssets.Add(AssetDatabase.GUIDToAssetPath(guid).ToLower());
+                }
+                Repaint();
+            }
+        }
+
+        private void InverseDependencePanel()
+        {
+            freeze = GUILayout.Toggle(freeze, "Freeze", freeze ? "sv_label_1" : "sv_label_0");
+            using (var scrollViewScope = new GUILayout.ScrollViewScope(scrollPosition_InverseDependencePanel))
+            {
+                scrollPosition_InverseDependencePanel = scrollViewScope.scrollPosition;
+                for (int i = 0; i < selectedAssets.Count; i++)
+                {
+                    using (new GUILayout.VerticalScope("GroupBox"))
+                    {
+                        string assetPath = selectedAssets[i];
+                        if (configs.AllBundles.ContainsKey(assetPath))
+                        {
+                            int theReferencedAssetCount = configs.AllBundles[assetPath].Count;
+                            using (new GUILayout.HorizontalScope())
+                            {
+                                if (GUILayout.Button(new GUIContent(" [" + theReferencedAssetCount + "] " + assetPath, AssetDatabase.GetCachedIcon(assetPath)), theReferencedAssetCount == 0 ? "HeaderLabel" : "BoldLabel", GUILayout.Height(17)))
+                                {
+                                    Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
+                                }
+                                GUILayout.FlexibleSpace();
+                            }
+
+                            foreach (var theReferencedAsset in configs.AllBundles[assetPath])
+                            {
+                                using (new GUILayout.HorizontalScope())
+                                {
+                                    if (GUILayout.Button(new GUIContent(theReferencedAsset, AssetDatabase.GetCachedIcon(theReferencedAsset)), "WhiteLabel", GUILayout.Height(16)))
+                                    {
+                                        Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(theReferencedAsset);
+                                    }
+                                    GUILayout.FlexibleSpace();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (new GUILayout.HorizontalScope())
+                            {
+                                if (GUILayout.Button(new GUIContent(assetPath, AssetDatabase.GetCachedIcon(assetPath)), "ErrorLabel", GUILayout.Height(17)))
+                                {
+                                    Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
+                                }
+                                GUILayout.FlexibleSpace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void GarbageCollectionPanel()
         {
             using (new GUILayout.HorizontalScope())
             {
@@ -136,20 +238,19 @@ namespace EazyBuildPipeline.AssetManager.Editor
 
             //创建用来标记是否被引用的字典
             string[] excludeSubStrList = configs.Json.ExcludeSubStringWhenFind.Replace('\\', '/').ToLower().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            Dictionary<string, bool> allBundles = new Dictionary<string, bool>();
-            foreach (var item in manifest.GetAllAssetBundles()) //获取所有Bundle添加到字典
+            foreach (var bundle in manifest.GetAllAssetBundles()) //获取所有Bundle添加到字典
             {
                 bool available = true;
                 foreach (var except in excludeSubStrList)
                 {
-                    if (item.Contains(except))
+                    if (bundle.Contains(except))
                     {
                         available = false;
                     }
                 }
                 if (available)
                 {
-                    allBundles.Add(item, false);
+                    configs.AllBundles.Add(bundle, new StringList());
                 }
             }
 
@@ -178,32 +279,21 @@ namespace EazyBuildPipeline.AssetManager.Editor
                     if (available)
                     {
                         string filePath = Path.Combine(directory, file).Replace('\\', '/').ToLower();
-                        allBundles[filePath] = true; //自身也标记
-                        foreach (var dependence in manifest.GetAllDependencies(filePath)) //标记每一个依赖的文件
+                        configs.AllBundles[filePath].Add(filePath); //自身也添加
+                        foreach (string dependence in manifest.GetAllDependencies(filePath)) //添加每一个依赖的文件
                         {
-                            allBundles[dependence] = true;
+                            configs.AllBundles[dependence].Add(filePath);
                         }
                     }
                 }
             }
 
-            //显示无引用项
-            using (var writer = new StreamWriter(configs.ResultFilePath))
-            {
-                foreach (var item in allBundles.Keys)
-                {
-                    if (allBundles[item] == false)
-                    {
-                        configs.NoReferenceAssetList.Add(item);
-                        writer.WriteLine(item);
-                    }
-                }
-            }
+            //保存映射表
+            File.WriteAllText(configs.ResultFilePath, JsonConvert.SerializeObject(configs.AllBundles, Formatting.Indented));
 
             assetTree.Reload();
-            assetTree.Repaint();
 
-            if(EditorUtility.DisplayDialog("Find No Reference Assets Finish", "完成！", "打开结果文件", "关闭"))
+            if (EditorUtility.DisplayDialog("Find No Reference Assets Finish", "完成！", "打开结果文件", "关闭"))
             {
                 Process.Start(configs.ResultFilePath);
             }

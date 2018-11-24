@@ -5,5 +5,5 @@
   "ExcludeExtensionsWhenBuildBundles": ".cs\n.txt",
   "OutputPath": "DryBuildAssetBundles",
   "Separator": " --",
-  "ResultFileName": "NoReferenceAssets.txt"
+  "ResultFileName": "InverseDependenceMap.json"
 }
