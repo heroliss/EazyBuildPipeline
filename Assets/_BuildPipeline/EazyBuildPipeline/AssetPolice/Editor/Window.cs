@@ -220,13 +220,16 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 configs.Json.DependenceFilterDirectories = EditorGUILayout.TextArea(configs.Json.DependenceFilterDirectories);
                 EditorGUILayout.Separator();
 
-                GUILayout.Label("OutPutPath");
+                GUILayout.Label("Dry Build Bundles OutPutPath:");
                 GUILayout.BeginHorizontal();
                 configs.Json.OutputPath = EditorGUILayout.TextField(configs.Json.OutputPath);
                 if (GUILayout.Button("..", GUILayout.MaxWidth(20)))
                 {
                     string s = EditorUtility.OpenFolderPanel("Open Folder", configs.Json.OutputPath, null);
-                    if (s != "") configs.Json.OutputPath = s;
+                    if (s != "")
+                    {
+                        configs.Json.OutputPath = s;
+                    }
                 }
                 GUILayout.EndHorizontal();
                 EditorGUILayout.Separator();
@@ -239,25 +242,47 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                     }
                     if (GUILayout.Button("Build"))
                     {
+                        try { Check(); }
+                        catch (Exception e)
+                        {
+                            EditorUtility.DisplayDialog("Check Failed", e.Message, "确定");
+                            return;
+                        }
                         if (!Directory.Exists(configs.Json.OutputPath))
                         {
                             EditorUtility.DisplayDialog("错误", "输出目录不存在：" + configs.Json.OutputPath, "确定");
                             return;
                         }
-                        if (EditorUtility.DisplayDialog("Find No Reference Assets", "确定开始?", "确定", "取消"))
+                        //if (EditorUtility.DisplayDialog("Find No Reference Assets", "确定开始?", "确定", "取消"))
                         {
                             Run();
                         }
                     }
                 }
             }
-
             assetTree.OnGUI(rightRect);
+        }
 
+        void Check()
+        {
+            //if (string.IsNullOrEmpty(configs.Json.OutputPath.Trim()))
+            //{
+            //    throw new EBPCheckFailedException("路径不能为空");
+            //}
+
+            //if (!Directory.Exists(configs.Json.OutputPath))
+            //{
+            //    throw new EBPCheckFailedException("找不到输出路径：" + configs.Json.OutputPath);
+            //}
         }
 
         void Run()
         {
+            string InverseDependenceMapSavePath = EditorUtility.SaveFilePanel("Save Inverse Dependence Map", configs.Json.OutputPath, configs.Json.DefaultSaveName, "json");
+            if (string.IsNullOrEmpty(InverseDependenceMapSavePath))
+            {
+                return;
+            }
             configs.AllBundles.Clear();
             //Create AssetBundleList
             List<AssetBundleBuild> assetBundleList = new List<AssetBundleBuild>();
@@ -327,14 +352,10 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             }
 
             //保存映射表
-            File.WriteAllText(configs.ResultFilePath, JsonConvert.SerializeObject(configs.AllBundles, Formatting.Indented));
+            File.WriteAllText(InverseDependenceMapSavePath, JsonConvert.SerializeObject(configs.AllBundles, Formatting.Indented));
 
             assetTree.Reload();
             EditorUtility.DisplayDialog("AssetPolice", "Build Dependence Map Finish！", "确定");
-            //if (EditorUtility.DisplayDialog("Find No Reference Assets Finish", "完成！", "打开结果文件", "关闭"))
-            //{
-            //    Process.Start(configs.ResultFilePath);
-            //}
         }
 
         /// <summary>

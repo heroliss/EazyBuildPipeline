@@ -12,7 +12,6 @@ namespace EazyBuildPipeline.AssetPolice.Editor
     public class Configs : EBPConfig<Configs.JsonClass>
     {
         public BundleIDDictionary AllBundles = new BundleIDDictionary();
-        public string ResultFilePath { get { return Path.Combine(Json.OutputPath, Json.ResultFileName); } }
         [Serializable]
         public class JsonClass
         {
@@ -22,7 +21,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             public string ExcludeExtensionsWhenBuildBundles;
             public string OutputPath;
             public string Separator = " --";
-            public string ResultFileName = "InverseDependenceMap.json";
+            public string DefaultSaveName = "InverseDependenceMap.json";
             public int InitialLeftWidth = 400;
         }
     }
