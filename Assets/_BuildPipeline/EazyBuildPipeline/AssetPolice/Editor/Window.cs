@@ -33,8 +33,48 @@ namespace EazyBuildPipeline.AssetPolice.Editor
         bool freeze;
         Vector2 scrollPosition_InverseDependencePanel;
 
+        #region 分割条
+        Rect splitterRect;
+        Rect leftRect;
+        Rect rightRect;
+        bool resizingSplitter;
+        const float headHeight = 20;
+        const float fixedSpace = 3;
+        const float splitterWidth = 3;
+        const float initLeftWidth = 400;
+        const float margin = 3;
+
+        private void HandleHorizontalResize()
+        {
+            EditorGUIUtility.AddCursorRect(splitterRect, MouseCursor.ResizeHorizontal);
+            if (Event.current.type == EventType.MouseDown && splitterRect.Contains(Event.current.mousePosition))
+                resizingSplitter = true;
+
+            if (resizingSplitter)
+            {
+                splitterRect.x = Event.current.mousePosition.x - splitterWidth / 2;
+                leftRect.width = splitterRect.x - margin;
+                rightRect.width = position.width - splitterRect.x - splitterWidth - margin;
+                rightRect.x = splitterRect.x + splitterWidth;
+            }
+
+            if (Event.current.type == EventType.MouseUp)
+            {
+                resizingSplitter = false;
+            }
+        }
+        #endregion
+
         private void Awake()
         {
+            #region InitRect
+            splitterRect = new Rect(initLeftWidth + margin,
+                headHeight, splitterWidth, position.height - headHeight - margin);
+            leftRect = new Rect(margin, headHeight, splitterRect.x - margin, position.height - headHeight - margin);
+            rightRect = new Rect(splitterRect.x + splitterWidth, headHeight,
+                position.width - splitterRect.x - splitterWidth - margin, position.height - headHeight - margin);
+            #endregion
+
             toggleStyle = new GUIStyle("toolbarbutton") { fixedHeight = 22, wordWrap = true };
             string[] guids = AssetDatabase.FindAssets(configSearchText);
             if (guids.Length == 0)
@@ -151,69 +191,80 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
         private void GarbageCollectionPanel()
         {
-            using (new GUILayout.HorizontalScope())
+            #region 处理区域
+            HandleHorizontalResize(); //拖动分割条时的处理
+            if (resizingSplitter) Repaint();
+            else //改变窗体尺寸时的处理
             {
-                using (new GUILayout.VerticalScope())
+                rightRect.width = position.width - splitterRect.x - splitterWidth - margin;
+                leftRect.height = rightRect.height = splitterRect.height = position.height - headHeight - margin;
+            }
+            #endregion
+
+            using (new GUILayout.AreaScope(leftRect))
+            {
+                EditorGUILayout.Separator();
+
+                GUILayout.Label("Asset Directories:");
+                configs.Json.AssetsDirectories = EditorGUILayout.TextArea(configs.Json.AssetsDirectories);
+                EditorGUILayout.Separator();
+
+                GUILayout.Label("Exclude Extensions When BuildBundles:");
+                configs.Json.ExcludeExtensionsWhenBuildBundles = EditorGUILayout.TextArea(configs.Json.ExcludeExtensionsWhenBuildBundles);
+                EditorGUILayout.Separator();
+
+                GUILayout.Label("Exclude SubString When Find:");
+                configs.Json.ExcludeSubStringWhenFind = EditorGUILayout.TextArea(configs.Json.ExcludeSubStringWhenFind);
+                EditorGUILayout.Separator();
+
+                GUILayout.Label("Dependence Root Directories:  (Use \"" + configs.Json.Separator + "\" Add Available Extension)", GUILayout.MinWidth(50));
+                configs.Json.DependenceFilterDirectories = EditorGUILayout.TextArea(configs.Json.DependenceFilterDirectories);
+                EditorGUILayout.Separator();
+
+                GUILayout.Label("OutPutPath");
+                GUILayout.BeginHorizontal();
+                configs.Json.OutputPath = EditorGUILayout.TextField(configs.Json.OutputPath);
+                if (GUILayout.Button("..", GUILayout.MaxWidth(20)))
                 {
-                    GUILayout.Label("Asset Directories:");
-                    configs.Json.AssetsDirectories = EditorGUILayout.TextArea(configs.Json.AssetsDirectories);
-                    GUILayout.Space(10);
-                    GUILayout.Label("Exclude Extensions When BuildBundles:");
-                    configs.Json.ExcludeExtensionsWhenBuildBundles = EditorGUILayout.TextArea(configs.Json.ExcludeExtensionsWhenBuildBundles);
-                    GUILayout.Label("Exclude SubString When Find:");
-                    configs.Json.ExcludeSubStringWhenFind = EditorGUILayout.TextArea(configs.Json.ExcludeSubStringWhenFind);
+                    string s = EditorUtility.OpenFolderPanel("Open Folder", configs.Json.OutputPath, null);
+                    if (s != "") configs.Json.OutputPath = s;
                 }
-                GUILayout.Space(10);
-                using (new GUILayout.VerticalScope())
+                GUILayout.EndHorizontal();
+                EditorGUILayout.Separator();
+
+                using (new GUILayout.HorizontalScope())
                 {
-                    GUILayout.Label("Dependence Root Directories:  (Use \"" + configs.Json.Separator + "\" Add Available Extension)", GUILayout.MinWidth(50));
-                    configs.Json.DependenceFilterDirectories = EditorGUILayout.TextArea(configs.Json.DependenceFilterDirectories);
-                    GUILayout.Space(10);
-                    GUILayout.Label("OutPutPath");
-                    GUILayout.BeginHorizontal();
-                    configs.Json.OutputPath = EditorGUILayout.TextField(configs.Json.OutputPath);
-                    if (GUILayout.Button("..", GUILayout.MaxWidth(20)))
+                    if (GUILayout.Button("Save") && EditorUtility.DisplayDialog("Save", "确定保存配置?", "确定", "取消"))
                     {
-                        string s = EditorUtility.OpenFolderPanel("Open Folder", configs.Json.OutputPath, null);
-                        if (s != "") configs.Json.OutputPath = s;
+                        configs.Save();
                     }
-                    GUILayout.EndHorizontal();
-                    using (new GUILayout.HorizontalScope())
+                    if (GUILayout.Button("Build"))
                     {
-                        if (GUILayout.Button("Save") && EditorUtility.DisplayDialog("Save", "确定保存配置?", "确定", "取消"))
+                        if (!Directory.Exists(configs.Json.OutputPath))
                         {
-                            configs.Save();
+                            EditorUtility.DisplayDialog("错误", "输出目录不存在：" + configs.Json.OutputPath, "确定");
+                            return;
                         }
-                        if (GUILayout.Button("Build"))
+                        if (EditorUtility.DisplayDialog("Find No Reference Assets", "确定开始?", "确定", "取消"))
                         {
-                            if (!Directory.Exists(configs.Json.OutputPath))
-                            {
-                                EditorUtility.DisplayDialog("错误", "输出目录不存在：" + configs.Json.OutputPath, "确定");
-                                return;
-                            }
-                            if (EditorUtility.DisplayDialog("Find No Reference Assets", "确定开始?", "确定", "取消"))
-                            {
-                                Run();
-                            }
+                            Run();
                         }
                     }
                 }
             }
 
-            //获取底边的垂直位置
-            Rect lastRect = GUILayoutUtility.GetLastRect();
-            float bottomY = lastRect.y + lastRect.height + 3;
+            assetTree.OnGUI(rightRect);
 
-            assetTree.OnGUI(new Rect(3, bottomY, position.width - 6, position.height - bottomY - 3));
         }
 
         void Run()
         {
+            configs.AllBundles.Clear();
             //Create AssetBundleList
             List<AssetBundleBuild> assetBundleList = new List<AssetBundleBuild>();
-            foreach (var item in configs.Json.AssetsDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定的要创建Bundle的目录
+            foreach (var folder in configs.Json.AssetsDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定的要创建Bundle的目录
             {
-                var directory = "Assets/" + item;
+                var directory = "Assets/" + folder;
                 foreach (var file in FindFiles(directory, configs.Json.ExcludeExtensionsWhenBuildBundles)) //每一个资产文件
                 {
                     string filePath = Path.Combine(directory, file);
@@ -232,26 +283,14 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             EditorUtility.ClearProgressBar();
             if (manifest == null)
             {
-                UnityEngine.Debug.LogError("Dry Build AssetBundles Failed!");
+                EditorUtility.DisplayDialog("AssetPolice", "Dry Build AssetBundles Failed!", "确定");
                 return;
             }
 
             //创建用来标记是否被引用的字典
-            string[] excludeSubStrList = configs.Json.ExcludeSubStringWhenFind.Replace('\\', '/').ToLower().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var bundle in manifest.GetAllAssetBundles()) //获取所有Bundle添加到字典
             {
-                bool available = true;
-                foreach (var except in excludeSubStrList)
-                {
-                    if (bundle.Contains(except))
-                    {
-                        available = false;
-                    }
-                }
-                if (available)
-                {
-                    configs.AllBundles.Add(bundle, new StringList());
-                }
+                configs.AllBundles.Add(bundle, new StringList());
             }
 
             //标记是否被引用
@@ -292,11 +331,11 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             File.WriteAllText(configs.ResultFilePath, JsonConvert.SerializeObject(configs.AllBundles, Formatting.Indented));
 
             assetTree.Reload();
-
-            if (EditorUtility.DisplayDialog("Find No Reference Assets Finish", "完成！", "打开结果文件", "关闭"))
-            {
-                Process.Start(configs.ResultFilePath);
-            }
+            EditorUtility.DisplayDialog("AssetPolice", "Build Dependence Map Finish！", "确定");
+            //if (EditorUtility.DisplayDialog("Find No Reference Assets Finish", "完成！", "打开结果文件", "关闭"))
+            //{
+            //    Process.Start(configs.ResultFilePath);
+            //}
         }
 
         /// <summary>

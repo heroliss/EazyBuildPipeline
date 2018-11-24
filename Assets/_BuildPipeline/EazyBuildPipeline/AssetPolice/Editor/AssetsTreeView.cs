@@ -89,9 +89,20 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 displayName = "Root",
             };
             root.children = new List<TreeViewItem>();
+
+            string[] excludeSubStrList = configs.Json.ExcludeSubStringWhenFind.Replace('\\', '/').ToLower().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var bundle in configs.AllBundles)
             {
-                if (bundle.Value.Count == 0)
+                bool available = true;
+                foreach (var except in excludeSubStrList)
+                {
+                    if (bundle.Key.Contains(except))
+                    {
+                        available = false;
+                        break;
+                    }
+                }
+                if (available && bundle.Value.Count == 0)
                 {
                     root.AddChild(new AssetTreeItem(id++, 0, bundle.Key));
                 }
