@@ -19,19 +19,20 @@ namespace EazyBuildPipeline.AssetPolice.Editor
         }
 
         string configSearchText = "EazyBuildPipeline AssetPoliceConfig";
-        Configs configs = new Configs();
+        ModuleConfig moduleConfig = new ModuleConfig();
+        StateConfig stateConfig = new StateConfig();
 
-        readonly string[] toggles = { "Garbage Collection", "Inverse Dependence" };
+        readonly string[] toggles = { "Garbage Collection", "Reverse Dependence" };
         int selectedToggle;
         private GUIStyle toggleStyle;
 
         MultiColumnHeaderState assetTreeHeaderState;
         private TreeViewState assetTreeViewState;
         AssetsTreeView assetTree;
-
         List<string> selectedAssets = new List<string>();
+
         bool freeze;
-        Vector2 scrollPosition_InverseDependencePanel;
+        Vector2 scrollPosition_ReverseDependencePanel;
 
         #region 分割条
         Rect splitterRect;
@@ -63,22 +64,33 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             }
         }
         #endregion
-
-        private void Awake()
+        private void InitStyles()
         {
             toggleStyle = new GUIStyle("toolbarbutton") { fixedHeight = 22, wordWrap = true };
+        }
+        private void Awake()
+        {
+            InitStyles();
             string[] guids = AssetDatabase.FindAssets(configSearchText);
             if (guids.Length == 0)
             {
                 throw new EBPException("未能找到配置文件! 搜索文本：" + configSearchText);
             }
-            configs.Load(AssetDatabase.GUIDToAssetPath(guids[0]));
+            string moduleConfigPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+            string configsFolderPath = Path.GetDirectoryName(moduleConfigPath);
+            moduleConfig.Load(moduleConfigPath);
+            stateConfig.Load(Path.Combine(configsFolderPath, moduleConfig.Json.StateConfigName));
+
+            if (!string.IsNullOrEmpty(stateConfig.Json.CurrentMapFilePath))
+            {
+                moduleConfig.AllBundles = JsonConvert.DeserializeObject<BundleRDDictionary>(File.ReadAllText(stateConfig.Json.CurrentMapFilePath));
+            }
 
             assetTreeViewState = new TreeViewState();
             assetTreeHeaderState = AssetsTreeView.CreateDefaultHeaderState();
 
             #region InitRect
-            splitterRect = new Rect(configs.Json.InitialLeftWidth + margin,
+            splitterRect = new Rect(moduleConfig.Json.InitialLeftWidth + margin,
                 headHeight, splitterWidth, position.height - headHeight - margin);
             leftRect = new Rect(margin, headHeight, splitterRect.x - margin, position.height - headHeight - margin);
             rightRect = new Rect(splitterRect.x + splitterWidth, headHeight,
@@ -94,7 +106,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 MultiColumnHeaderState.OverwriteSerializedFields(assetTreeHeaderState, assetMCHS);
             assetTreeHeaderState = assetMCHS;
 
-            assetTree = new AssetsTreeView(assetTreeViewState, new MultiColumnHeader(assetTreeHeaderState), configs);
+            assetTree = new AssetsTreeView(assetTreeViewState, new MultiColumnHeader(assetTreeHeaderState), moduleConfig, stateConfig);
         }
 
         private void OnGUI()
@@ -116,8 +128,8 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 case "Garbage Collection":
                     GarbageCollectionPanel();
                     break;
-                case "Inverse Dependence":
-                    InverseDependencePanel();
+                case "Reverse Dependence":
+                    ReverseDependencePanel();
                     break;
                 default:
                     break;
@@ -133,38 +145,41 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 {
                     selectedAssets.Add(AssetDatabase.GUIDToAssetPath(guid).ToLower());
                 }
-                Repaint();
             }
+            Repaint();
         }
 
-        private void InverseDependencePanel()
+        private void ReverseDependencePanel()
         {
             freeze = GUILayout.Toggle(freeze, "Freeze", freeze ? "sv_label_1" : "sv_label_0");
-            using (var scrollViewScope = new GUILayout.ScrollViewScope(scrollPosition_InverseDependencePanel))
+            using (var scrollViewScope = new GUILayout.ScrollViewScope(scrollPosition_ReverseDependencePanel))
             {
-                scrollPosition_InverseDependencePanel = scrollViewScope.scrollPosition;
+                scrollPosition_ReverseDependencePanel = scrollViewScope.scrollPosition;
                 for (int i = 0; i < selectedAssets.Count; i++)
                 {
                     using (new GUILayout.VerticalScope("GroupBox"))
                     {
                         string assetPath = selectedAssets[i];
-                        if (configs.AllBundles.ContainsKey(assetPath))
+                        if (moduleConfig.AllBundles.ContainsKey(assetPath))
                         {
-                            int theReferencedAssetCount = configs.AllBundles[assetPath].Count;
+                            int theReferencedAssetCount = moduleConfig.AllBundles[assetPath].RDBundles.Count;
                             using (new GUILayout.HorizontalScope())
                             {
-                                if (GUILayout.Button(new GUIContent(" [" + theReferencedAssetCount + "] " + assetPath, AssetDatabase.GetCachedIcon(assetPath)), theReferencedAssetCount == 0 ? "HeaderLabel" : "BoldLabel", GUILayout.Height(17)))
+                                if (GUILayout.Button(new GUIContent((moduleConfig.AllBundles[assetPath].IsRDRoot ? " [R] " : " [" + theReferencedAssetCount + "] ") + assetPath,
+                                    AssetDatabase.GetCachedIcon(assetPath)),
+                                    freeze && (AssetDatabase.LoadMainAssetAtPath(assetPath) == Selection.activeObject) ? "LightmapEditorSelectedHighlight" : theReferencedAssetCount == 0 ? "HeaderLabel" : "BoldLabel", GUILayout.Height(20)))
                                 {
                                     Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
                                 }
                                 GUILayout.FlexibleSpace();
                             }
 
-                            foreach (var theReferencedAsset in configs.AllBundles[assetPath])
+                            foreach (var theReferencedAsset in moduleConfig.AllBundles[assetPath].RDBundles)
                             {
                                 using (new GUILayout.HorizontalScope())
                                 {
-                                    if (GUILayout.Button(new GUIContent(theReferencedAsset, AssetDatabase.GetCachedIcon(theReferencedAsset)), "WhiteLabel", GUILayout.Height(16)))
+                                    if (GUILayout.Button(new GUIContent(theReferencedAsset, AssetDatabase.GetCachedIcon(theReferencedAsset)),
+                                        freeze && (AssetDatabase.LoadMainAssetAtPath(theReferencedAsset)) == Selection.activeObject ? "LightmapEditorSelectedHighlight" : "WhiteLabel", GUILayout.Height(18)))
                                     {
                                         Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(theReferencedAsset);
                                     }
@@ -176,7 +191,8 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                         {
                             using (new GUILayout.HorizontalScope())
                             {
-                                if (GUILayout.Button(new GUIContent(assetPath, AssetDatabase.GetCachedIcon(assetPath)), "ErrorLabel", GUILayout.Height(17)))
+                                if (GUILayout.Button(new GUIContent(" [X] " + assetPath, AssetDatabase.GetCachedIcon(assetPath)),
+                                    freeze && (AssetDatabase.LoadMainAssetAtPath(assetPath) == Selection.activeObject) ? "LightmapEditorSelectedHighlight" : "ErrorLabel", GUILayout.Height(20)))
                                 {
                                     Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
                                 }
@@ -205,30 +221,30 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 EditorGUILayout.Separator();
 
                 GUILayout.Label("Asset Directories:");
-                configs.Json.AssetsDirectories = EditorGUILayout.TextArea(configs.Json.AssetsDirectories);
+                moduleConfig.Json.AssetsDirectories = EditorGUILayout.TextArea(moduleConfig.Json.AssetsDirectories);
                 EditorGUILayout.Separator();
 
                 GUILayout.Label("Exclude Extensions When BuildBundles:");
-                configs.Json.ExcludeExtensionsWhenBuildBundles = EditorGUILayout.TextArea(configs.Json.ExcludeExtensionsWhenBuildBundles);
+                moduleConfig.Json.ExcludeExtensionsWhenBuildBundles = EditorGUILayout.TextArea(moduleConfig.Json.ExcludeExtensionsWhenBuildBundles);
                 EditorGUILayout.Separator();
 
                 GUILayout.Label("Exclude SubString When Find:");
-                configs.Json.ExcludeSubStringWhenFind = EditorGUILayout.TextArea(configs.Json.ExcludeSubStringWhenFind);
+                moduleConfig.Json.ExcludeSubStringWhenFind = EditorGUILayout.TextArea(moduleConfig.Json.ExcludeSubStringWhenFind);
                 EditorGUILayout.Separator();
 
-                GUILayout.Label("Dependence Root Directories:  (Use \"" + configs.Json.Separator + "\" Add Available Extension)", GUILayout.MinWidth(50));
-                configs.Json.DependenceFilterDirectories = EditorGUILayout.TextArea(configs.Json.DependenceFilterDirectories);
+                GUILayout.Label("Dependence Root Directories:  (Use \"" + moduleConfig.Json.Separator + "\" Add Available Extension)", GUILayout.MinWidth(50));
+                moduleConfig.Json.DependenceFilterDirectories = EditorGUILayout.TextArea(moduleConfig.Json.DependenceFilterDirectories);
                 EditorGUILayout.Separator();
 
                 GUILayout.Label("Dry Build Bundles OutPutPath:");
                 GUILayout.BeginHorizontal();
-                configs.Json.OutputPath = EditorGUILayout.TextField(configs.Json.OutputPath);
+                moduleConfig.Json.OutputPath = EditorGUILayout.TextField(moduleConfig.Json.OutputPath);
                 if (GUILayout.Button("..", GUILayout.MaxWidth(20)))
                 {
-                    string s = EditorUtility.OpenFolderPanel("Open Folder", configs.Json.OutputPath, null);
+                    string s = EditorUtility.OpenFolderPanel("Open Folder", moduleConfig.Json.OutputPath, null);
                     if (s != "")
                     {
-                        configs.Json.OutputPath = s;
+                        moduleConfig.Json.OutputPath = s;
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -238,7 +254,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 {
                     if (GUILayout.Button("Save") && EditorUtility.DisplayDialog("Save", "确定保存配置?", "确定", "取消"))
                     {
-                        configs.Save();
+                        moduleConfig.Save();
                     }
                     if (GUILayout.Button("Build"))
                     {
@@ -248,9 +264,9 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                             EditorUtility.DisplayDialog("Check Failed", e.Message, "确定");
                             return;
                         }
-                        if (!Directory.Exists(configs.Json.OutputPath))
+                        if (!Directory.Exists(moduleConfig.Json.OutputPath))
                         {
-                            EditorUtility.DisplayDialog("错误", "输出目录不存在：" + configs.Json.OutputPath, "确定");
+                            EditorUtility.DisplayDialog("错误", "输出目录不存在：" + moduleConfig.Json.OutputPath, "确定");
                             return;
                         }
                         //if (EditorUtility.DisplayDialog("Find No Reference Assets", "确定开始?", "确定", "取消"))
@@ -278,18 +294,19 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
         void Run()
         {
-            string InverseDependenceMapSavePath = EditorUtility.SaveFilePanel("Save Inverse Dependence Map", configs.Json.OutputPath, configs.Json.DefaultSaveName, "json");
-            if (string.IsNullOrEmpty(InverseDependenceMapSavePath))
+            string currentMapFilePath = string.IsNullOrEmpty(stateConfig.Json.CurrentMapFilePath) ? "ReverseDependenceMap.json" : stateConfig.Json.CurrentMapFilePath;
+            string ReverseDependenceMapSavePath = EditorUtility.SaveFilePanel("Save Reverse Dependence Map", Path.GetDirectoryName(currentMapFilePath), Path.GetFileName(currentMapFilePath), "json");
+            if (string.IsNullOrEmpty(ReverseDependenceMapSavePath))
             {
                 return;
             }
-            configs.AllBundles.Clear();
+            moduleConfig.AllBundles.Clear();
             //Create AssetBundleList
             List<AssetBundleBuild> assetBundleList = new List<AssetBundleBuild>();
-            foreach (var folder in configs.Json.AssetsDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定的要创建Bundle的目录
+            foreach (var folder in moduleConfig.Json.AssetsDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定的要创建Bundle的目录
             {
                 var directory = "Assets/" + folder;
-                foreach (var file in FindFiles(directory, configs.Json.ExcludeExtensionsWhenBuildBundles)) //每一个资产文件
+                foreach (var file in FindFiles(directory, moduleConfig.Json.ExcludeExtensionsWhenBuildBundles)) //每一个资产文件
                 {
                     string filePath = Path.Combine(directory, file);
                     var ab = new AssetBundleBuild
@@ -303,7 +320,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
             //Start DryBuild
             EditorUtility.DisplayProgressBar("", "Building...", 0);
-            var manifest = BuildPipeline.BuildAssetBundles(configs.Json.OutputPath, assetBundleList.ToArray(), BuildAssetBundleOptions.DryRunBuild, EditorUserBuildSettings.activeBuildTarget);
+            var manifest = BuildPipeline.BuildAssetBundles(moduleConfig.Json.OutputPath, assetBundleList.ToArray(), BuildAssetBundleOptions.DryRunBuild, EditorUserBuildSettings.activeBuildTarget);
             EditorUtility.ClearProgressBar();
             if (manifest == null)
             {
@@ -314,14 +331,14 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             //创建用来标记是否被引用的字典
             foreach (var bundle in manifest.GetAllAssetBundles()) //获取所有Bundle添加到字典
             {
-                configs.AllBundles.Add(bundle, new StringList());
+                moduleConfig.AllBundles.Add(bundle, new BundleRDItem());
             }
 
             //标记是否被引用
-            foreach (var item in configs.Json.DependenceFilterDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定要检查依赖的目录
+            foreach (var item in moduleConfig.Json.DependenceFilterDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定要检查依赖的目录
             {
                 if (string.IsNullOrEmpty(item)) continue;
-                string[] s = item.Split(new[] { configs.Json.Separator }, StringSplitOptions.RemoveEmptyEntries);
+                string[] s = item.Split(new[] { moduleConfig.Json.Separator }, StringSplitOptions.RemoveEmptyEntries);
                 var directory = "Assets/" + s[0];
                 foreach (var file in FindFiles(directory))
                 {
@@ -335,24 +352,26 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                             break;
                         }
                     }
-                    if (s.Length < 2)
+                    if (s.Length < 2) //该句表示若没有设置Available Extension，则全部允许
                     {
                         available = true;
                     }
                     if (available)
                     {
                         string filePath = Path.Combine(directory, file).Replace('\\', '/').ToLower();
-                        configs.AllBundles[filePath].Add(filePath); //自身也添加
+                        moduleConfig.AllBundles[filePath].IsRDRoot = true;
                         foreach (string dependence in manifest.GetAllDependencies(filePath)) //添加每一个依赖的文件
                         {
-                            configs.AllBundles[dependence].Add(filePath);
+                            moduleConfig.AllBundles[dependence].RDBundles.Add(filePath);
                         }
                     }
                 }
             }
 
             //保存映射表
-            File.WriteAllText(InverseDependenceMapSavePath, JsonConvert.SerializeObject(configs.AllBundles, Formatting.Indented));
+            File.WriteAllText(ReverseDependenceMapSavePath, JsonConvert.SerializeObject(moduleConfig.AllBundles, Formatting.Indented));
+            stateConfig.Json.CurrentMapFilePath = ReverseDependenceMapSavePath;
+            stateConfig.Save();
 
             assetTree.Reload();
             EditorUtility.DisplayDialog("AssetPolice", "Build Dependence Map Finish！", "确定");

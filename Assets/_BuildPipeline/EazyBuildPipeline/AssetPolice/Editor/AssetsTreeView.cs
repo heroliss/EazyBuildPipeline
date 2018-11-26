@@ -13,7 +13,8 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 {
     class AssetsTreeView : TreeView
     {
-        public Configs configs;
+        public ModuleConfig moduleConfig;
+        public StateConfig stateConfig;
         int id = 0;
         Texture2D emptyTexture;
         #region 列枚举
@@ -23,9 +24,10 @@ namespace EazyBuildPipeline.AssetPolice.Editor
         }
         #endregion
 
-        public AssetsTreeView(TreeViewState treeViewState, MultiColumnHeader multiColumnHeader, Configs configs) : base(treeViewState, multiColumnHeader)
+        public AssetsTreeView(TreeViewState treeViewState, MultiColumnHeader multiColumnHeader, ModuleConfig moduleConfig, StateConfig stateConfig) : base(treeViewState, multiColumnHeader)
         {
-            this.configs = configs;
+            this.moduleConfig = moduleConfig;
+            this.stateConfig = stateConfig;
 
             #region TreeView设置
             baseIndent = 0;
@@ -90,21 +92,24 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             };
             root.children = new List<TreeViewItem>();
 
-            string[] excludeSubStrList = configs.Json.ExcludeSubStringWhenFind.Replace('\\', '/').ToLower().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var bundle in configs.AllBundles)
+            string[] excludeSubStrList = moduleConfig.Json.ExcludeSubStringWhenFind.Replace('\\', '/').ToLower().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var bundle in moduleConfig.AllBundles)
             {
-                bool available = true;
-                foreach (var except in excludeSubStrList)
+                if (!bundle.Value.IsRDRoot && bundle.Value.RDBundles.Count == 0)
                 {
-                    if (bundle.Key.Contains(except))
+                    bool available = true;
+                    foreach (var except in excludeSubStrList)
                     {
-                        available = false;
-                        break;
+                        if (bundle.Key.Contains(except))
+                        {
+                            available = false;
+                            break;
+                        }
                     }
-                }
-                if (available && bundle.Value.Count == 0)
-                {
-                    root.AddChild(new AssetTreeItem(id++, 0, bundle.Key));
+                    if (available)
+                    {
+                        root.AddChild(new AssetTreeItem(id++, 0, bundle.Key));
+                    }
                 }
             }
             return root;
@@ -174,7 +179,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
         {
             menu.AddItem(new GUIContent("Export Checked Items"), false, () =>
             {
-                string path = EditorUtility.SaveFilePanel("Export", configs.Json.OutputPath, null, "txt");
+                string path = EditorUtility.SaveFilePanel("Export", moduleConfig.Json.OutputPath, null, "txt");
                 if (!string.IsNullOrEmpty(path))
                 {
                     int exportCount = 0;
@@ -213,7 +218,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                         var item = rootItem.children[i];
                         if (((AssetTreeItem)item).Check == true)
                         {
-                            configs.AllBundles.Remove(item.displayName);
+                            moduleConfig.AllBundles.Remove(item.displayName);
                             AssetDatabase.DeleteAsset(item.displayName);
                             deleteCount++;
                             if (EditorUtility.DisplayCancelableProgressBar("Delete Assets", item.displayName, (float)deleteCount / checkedCount))
@@ -231,14 +236,16 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 }
             });
             menu.AddSeparator(null);
-            menu.AddItem(new GUIContent("OpenFile"), false, () =>
+            menu.AddItem(new GUIContent("Open Map File"), false, () =>
             {
-                string path = EditorUtility.OpenFilePanel("Open", configs.Json.OutputPath, null);
+                string path = EditorUtility.OpenFilePanel("Open", moduleConfig.Json.OutputPath, "json");
                 if (string.IsNullOrEmpty(path) || !File.Exists(path))
                 {
                     return;
                 }
-                configs.AllBundles = JsonConvert.DeserializeObject<BundleIDDictionary>(File.ReadAllText(path));
+                moduleConfig.AllBundles = JsonConvert.DeserializeObject<BundleRDDictionary>(File.ReadAllText(path));
+                stateConfig.Json.CurrentMapFilePath = path;
+                stateConfig.Save();
                 Reload();
             });
         }

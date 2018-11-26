@@ -6,12 +6,20 @@ using System.Text;
 
 namespace EazyBuildPipeline.AssetPolice.Editor
 {
-    [Serializable] public class StringList : List<string> { }
-    [Serializable] public class BundleIDDictionary : SerializableDictionary<string, StringList> { }
+    /// <summary>
+    /// Bundle Reverse Dependence Item
+    /// </summary>
     [Serializable]
-    public class Configs : EBPConfig<Configs.JsonClass>
+    public class BundleRDItem
     {
-        public BundleIDDictionary AllBundles = new BundleIDDictionary();
+        public List<string> RDBundles = new List<string>();
+        public bool IsRDRoot;
+    }
+    [Serializable] public class BundleRDDictionary : SerializableDictionary<string, BundleRDItem> { }
+    [Serializable]
+    public class ModuleConfig : EBPConfig<ModuleConfig.JsonClass>
+    {
+        public BundleRDDictionary AllBundles = new BundleRDDictionary();
         [Serializable]
         public class JsonClass
         {
@@ -21,8 +29,18 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             public string ExcludeExtensionsWhenBuildBundles;
             public string OutputPath;
             public string Separator = " --";
-            public string DefaultSaveName = "InverseDependenceMap.json";
             public int InitialLeftWidth = 400;
+            public string StateConfigName = "StateConfig.json";
+        }
+    }
+
+    [Serializable]
+    public class StateConfig : EBPConfig<StateConfig.JsonClass>
+    {
+        [Serializable]
+        public class JsonClass
+        {
+            public string CurrentMapFilePath;
         }
     }
 }

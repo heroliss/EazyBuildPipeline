@@ -5,6 +5,6 @@
   "ExcludeExtensionsWhenBuildBundles": ".cs\n.txt",
   "OutputPath": "DryBuildAssetBundles",
   "Separator": " --",
-  "DefaultSaveName": "InverseDependenceMap.json",
-  "InitialLeftWidth": 400
+  "InitialLeftWidth": 400,
+  "StateConfigName": "StateConfig.json"
 }
