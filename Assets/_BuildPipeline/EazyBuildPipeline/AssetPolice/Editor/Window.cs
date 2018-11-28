@@ -81,7 +81,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             moduleConfig.Load(moduleConfigPath);
             stateConfig.Load(Path.Combine(configsFolderPath, moduleConfig.Json.StateConfigName));
 
-            if (!string.IsNullOrEmpty(stateConfig.Json.CurrentMapFilePath))
+            if (!string.IsNullOrEmpty(stateConfig.Json.CurrentMapFilePath) && File.Exists(stateConfig.Json.CurrentMapFilePath))
             {
                 moduleConfig.AllBundles = JsonConvert.DeserializeObject<BundleRDDictionary>(File.ReadAllText(stateConfig.Json.CurrentMapFilePath));
             }

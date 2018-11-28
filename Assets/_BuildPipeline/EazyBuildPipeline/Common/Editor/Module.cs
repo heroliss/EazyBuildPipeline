@@ -181,9 +181,9 @@ namespace EazyBuildPipeline
             switch (level)
             {
                 case 0: start = end = ""; break;
-                case 1: start = end = "-------- "; break;
-                case 2: start = end = "---- "; break;
-                case 3: start = end = "-- "; break;
+                case 1: start = "-------- "; end = " --------"; break;
+                case 2: start = "---- "; end = " ----"; break;
+                case 3: start = "-- "; end = " --"; break;
                 default: break;
             }
             Log(start + text + end);

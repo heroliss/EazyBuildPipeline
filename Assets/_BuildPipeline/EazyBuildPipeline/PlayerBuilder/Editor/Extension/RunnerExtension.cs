@@ -16,6 +16,8 @@ namespace EazyBuildPipeline.PlayerBuilder
     {
         public void Prepare()
         {
+            Module.StartLog();
+            Module.LogHead("Start Prepare", 1);
             EBPUtility.RefreshAssets();
 
             Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
@@ -24,8 +26,11 @@ namespace EazyBuildPipeline.PlayerBuilder
             Module.DisplayProgressBar("Start DownloadConfigs", 0.02f, true);
             DownLoadConfigs(0.02f, 0.3f);
 
-            Module.DisplayProgressBar("Start Copy Directories", 0.3f, true);
-            CopyAllDirectories();
+            if (CommonModule.CommonConfig.IsBatchMode)
+            {
+                Module.DisplayProgressBar("Start Copy Directories", 0.3f, true);
+                CopyAllDirectories();
+            }
 
             Module.DisplayProgressBar("Creating Building Configs Class File", 0.8f, true);
             CreateBuildingConfigsClassFile();
@@ -36,13 +41,19 @@ namespace EazyBuildPipeline.PlayerBuilder
             ApplyPlayerSettings(BuildPlayerOptions.target);
 
             Module.DisplayProgressBar("Applying Scripting Defines", 0.95f, true);
-            ApplyScriptDefines(BuildPlayerOptions.target, false);
+            ApplyScriptDefines(BuildPlayerOptions.target, CommonModule.CommonConfig.IsBatchMode ? false : true);
 
             EBPUtility.RefreshAssets();
+            Module.LogHead("End Prepare", 1);
+            Module.EndLog();
         }
 
         protected override void PreProcess()
         {
+            if (!CommonModule.CommonConfig.IsBatchMode)
+            {
+                Prepare();
+            }
             EBPUtility.RefreshAssets();
 
             Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
@@ -58,10 +69,14 @@ namespace EazyBuildPipeline.PlayerBuilder
             HandleWrapFiles(0.6f, 1f);
             Module.DisplayProgressBar("-- End Handle Wrap Files --", 1f, true);
 
-            EBPUtility.RefreshAssets();
-
             Module.DisplayProgressBar("Applying PostProcess Settings", 1f, true);
             ApplyPostProcessSettings();
+
+            //为了防止第二次启动Unity后部分设置自动消失（如Android的Keystore配置）
+            Module.DisplayProgressBar("Applying PlayerSettings", 1f, true);
+            ApplyPlayerSettings(BuildPlayerOptions.target);
+
+            EBPUtility.RefreshAssets();
 
             iOSBuildPostProcessor.DisableOnce = true; //HACK: 关闭一次旧的后处理过程
         }
@@ -91,12 +106,12 @@ namespace EazyBuildPipeline.PlayerBuilder
             iOSBuildPostProcessor.DisableOnce = false;
 
             //还原宏定义
-            Module.DisplayProgressBar("Applying Scripting Defines Without Temp", 0f, true);
-            ApplyScriptDefines(BuildPlayerOptions.target, true);
+            //Module.DisplayProgressBar("Applying Scripting Defines Without Temp", 0f, true);
+            //ApplyScriptDefines(BuildPlayerOptions.target, true);
 
             //还原被拷贝覆盖的文件
-            Module.DisplayProgressBar("Start Restore Copied Files", 0f, true);
-            RevertAllCopiedFiles();
+            //Module.DisplayProgressBar("Start Restore Copied Files", 0f, true);
+            //RevertAllCopiedFiles();
 
             EBPUtility.RefreshAssets();
         }

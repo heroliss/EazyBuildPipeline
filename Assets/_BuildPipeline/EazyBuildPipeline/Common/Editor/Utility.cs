@@ -25,7 +25,7 @@ namespace EazyBuildPipeline
 
         public static void RefreshAssets()
         {
-            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.Refresh();
         }
 
         public static string Quote(string s)
