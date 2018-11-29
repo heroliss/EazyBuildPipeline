@@ -12,7 +12,6 @@ namespace EazyBuildPipeline.MasterControl.Editor
     public class SettingPanel
     {
         enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, PrepareBuildPlayer, BuildPlayer, Finish }
-        float progress;
         [SerializeField] string SVNMessage;
         [SerializeField] Step currentStep = Step.None;
         [SerializeField] double startTime;
@@ -373,6 +372,8 @@ namespace EazyBuildPipeline.MasterControl.Editor
                 G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion = n;
             }
 
+            G.Module.BundleManagerModule.ModuleStateConfig.Json.CleanUpBundles = GUILayout.Toggle(G.Module.BundleManagerModule.ModuleStateConfig.Json.CleanUpBundles, "CleanUp");
+
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
@@ -557,16 +558,20 @@ namespace EazyBuildPipeline.MasterControl.Editor
             }
         }
 
+        //float compilingProgress;
         void UpdateForRun()
         {
-            if (EditorApplication.isCompiling)
-            {
-                progress += 0.0002f;
-                EditorUtility.DisplayProgressBar("Compiling...", null, progress % 1);
-                return;
-            }
-            EditorUtility.ClearProgressBar();
-            progress = 0;
+            #region 编译等待
+            //if (EditorApplication.isCompiling)
+            //{
+            //    compilingProgress += 0.0002f;
+            //    EditorUtility.DisplayProgressBar("Compiling...", null, compilingProgress % 1);
+            //    return;
+            //}
+            //EditorUtility.ClearProgressBar();
+            //compilingProgress = 0;
+            #endregion
+
             if (currentStep == Step.None)
             {
                 G.Module.DisplayDialog("逻辑错误：不应该执行到这句！");

@@ -24,7 +24,7 @@ namespace EazyBuildPipeline
         static StreamWriter consoleLogWriter;
         static void LogConsole(string logString, string stackTrace, LogType type)
         {
-            consoleLogWriter.WriteLine(DateTime.Now.ToString("[HH:mm:ss] ") + logString + (type == LogType.Log ? "" : "\n[StackTrace] " + stackTrace + "\n"));
+            consoleLogWriter.WriteLine(DateTime.Now.ToString("[HH:mm:ss] ") + logString + (stackTrace == "" ? "" : "\n[StackTrace] " + stackTrace));
         }
 
         public static void Run()
@@ -47,6 +47,7 @@ namespace EazyBuildPipeline
             var disableModules = EBPUtility.GetArgValuesLower("DisableModule");
             bool checkMode = CommonModule.CommonConfig.Args_lower.Contains("--checkmode");
             bool prepareMode = CommonModule.CommonConfig.Args_lower.Contains("--prepare");
+            bool cleanUpBundles = CommonModule.CommonConfig.Args_lower.Contains("--cleanupbundles");
 
             foreach (var runner in totalModule.Runners)
             {
@@ -59,6 +60,7 @@ namespace EazyBuildPipeline
                 //设置Tag
                 runner.BaseModule.BaseModuleStateConfig.BaseJson.CurrentTag = assetTag;
                 //覆盖当前状态配置
+                CommonModule.CommonConfig.Json.CurrentResourceVersion = int.Parse(EBPUtility.GetArgValue("ResourceVersion"));
                 switch (runner.BaseModule.ModuleName)
                 {
                     case "SVNUpdate":
@@ -81,6 +83,7 @@ namespace EazyBuildPipeline
                                 compressOption = BuildAssetBundleOptions.ChunkBasedCompression;
                                 break;
                         }
+                        totalModule.BundleManagerModule.ModuleStateConfig.Json.CleanUpBundles = cleanUpBundles;
                         totalModule.BundleManagerModule.ModuleStateConfig.Json.CompressionOption = compressOption;
                         totalModule.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion = int.Parse(EBPUtility.GetArgValue("ResourceVersion"));
                         break;

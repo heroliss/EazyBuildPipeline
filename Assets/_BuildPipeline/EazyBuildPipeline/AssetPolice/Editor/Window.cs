@@ -18,9 +18,8 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             GetWindow<Window>("AssetPolice");
         }
 
-        string configSearchText = "EazyBuildPipeline AssetPoliceConfig";
-        ModuleConfig moduleConfig = new ModuleConfig();
-        StateConfig stateConfig = new StateConfig();
+        Module module = new Module();
+        Runner runner = new Runner();
 
         readonly string[] toggles = { "Garbage Collection", "Reverse Dependence" };
         int selectedToggle;
@@ -71,26 +70,18 @@ namespace EazyBuildPipeline.AssetPolice.Editor
         private void Awake()
         {
             InitStyles();
-            string[] guids = AssetDatabase.FindAssets(configSearchText);
-            if (guids.Length == 0)
-            {
-                throw new EBPException("未能找到配置文件! 搜索文本：" + configSearchText);
-            }
-            string moduleConfigPath = AssetDatabase.GUIDToAssetPath(guids[0]);
-            string configsFolderPath = Path.GetDirectoryName(moduleConfigPath);
-            moduleConfig.Load(moduleConfigPath);
-            stateConfig.Load(Path.Combine(configsFolderPath, moduleConfig.Json.StateConfigName));
 
-            if (!string.IsNullOrEmpty(stateConfig.Json.CurrentMapFilePath) && File.Exists(stateConfig.Json.CurrentMapFilePath))
+            module.LoadConfigs();
+            if (!string.IsNullOrEmpty(module.StateConfig.Json.CurrentMapFilePath) && File.Exists(module.StateConfig.Json.CurrentMapFilePath))
             {
-                moduleConfig.AllBundles = JsonConvert.DeserializeObject<BundleRDDictionary>(File.ReadAllText(stateConfig.Json.CurrentMapFilePath));
+                module.ModuleConfig.AllBundles = JsonConvert.DeserializeObject<BundleRDDictionary>(File.ReadAllText(module.StateConfig.Json.CurrentMapFilePath));
             }
 
             assetTreeViewState = new TreeViewState();
             assetTreeHeaderState = AssetsTreeView.CreateDefaultHeaderState();
 
             #region InitRect
-            splitterRect = new Rect(moduleConfig.Json.InitialLeftWidth + margin,
+            splitterRect = new Rect(module.ModuleConfig.Json.InitialLeftWidth + margin,
                 headHeight, splitterWidth, position.height - headHeight - margin);
             leftRect = new Rect(margin, headHeight, splitterRect.x - margin, position.height - headHeight - margin);
             rightRect = new Rect(splitterRect.x + splitterWidth, headHeight,
@@ -100,13 +91,14 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
         private void OnEnable()
         {
+            runner.Module = module;
             var assetMCHS = AssetsTreeView.CreateDefaultHeaderState();
 
             if (MultiColumnHeaderState.CanOverwriteSerializedFields(assetTreeHeaderState, assetMCHS))
                 MultiColumnHeaderState.OverwriteSerializedFields(assetTreeHeaderState, assetMCHS);
             assetTreeHeaderState = assetMCHS;
 
-            assetTree = new AssetsTreeView(assetTreeViewState, new MultiColumnHeader(assetTreeHeaderState), moduleConfig, stateConfig);
+            assetTree = new AssetsTreeView(assetTreeViewState, new MultiColumnHeader(assetTreeHeaderState), module.ModuleConfig, module.StateConfig);
         }
 
         private void OnGUI()
@@ -160,12 +152,12 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                     using (new GUILayout.VerticalScope("GroupBox"))
                     {
                         string assetPath = selectedAssets[i];
-                        if (moduleConfig.AllBundles.ContainsKey(assetPath))
+                        if (module.ModuleConfig.AllBundles.ContainsKey(assetPath))
                         {
-                            int theReferencedAssetCount = moduleConfig.AllBundles[assetPath].RDBundles.Count;
+                            int theReferencedAssetCount = module.ModuleConfig.AllBundles[assetPath].RDBundles.Count;
                             using (new GUILayout.HorizontalScope())
                             {
-                                if (GUILayout.Button(new GUIContent((moduleConfig.AllBundles[assetPath].IsRDRoot ? " [R] " : " [" + theReferencedAssetCount + "] ") + assetPath,
+                                if (GUILayout.Button(new GUIContent((module.ModuleConfig.AllBundles[assetPath].IsRDRoot ? " [R] " : " [" + theReferencedAssetCount + "] ") + assetPath,
                                     AssetDatabase.GetCachedIcon(assetPath)),
                                     freeze && (AssetDatabase.LoadMainAssetAtPath(assetPath) == Selection.activeObject) ? "LightmapEditorSelectedHighlight" : theReferencedAssetCount == 0 ? "HeaderLabel" : "BoldLabel", GUILayout.Height(20)))
                                 {
@@ -174,7 +166,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                                 GUILayout.FlexibleSpace();
                             }
 
-                            foreach (var theReferencedAsset in moduleConfig.AllBundles[assetPath].RDBundles)
+                            foreach (var theReferencedAsset in module.ModuleConfig.AllBundles[assetPath].RDBundles)
                             {
                                 using (new GUILayout.HorizontalScope())
                                 {
@@ -221,30 +213,30 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 EditorGUILayout.Separator();
 
                 GUILayout.Label("Asset Directories:");
-                moduleConfig.Json.AssetsDirectories = EditorGUILayout.TextArea(moduleConfig.Json.AssetsDirectories);
+                module.ModuleConfig.Json.AssetsDirectories = EditorGUILayout.TextArea(module.ModuleConfig.Json.AssetsDirectories);
                 EditorGUILayout.Separator();
 
                 GUILayout.Label("Exclude Extensions When BuildBundles:");
-                moduleConfig.Json.ExcludeExtensionsWhenBuildBundles = EditorGUILayout.TextArea(moduleConfig.Json.ExcludeExtensionsWhenBuildBundles);
+                module.ModuleConfig.Json.ExcludeExtensionsWhenBuildBundles = EditorGUILayout.TextArea(module.ModuleConfig.Json.ExcludeExtensionsWhenBuildBundles);
                 EditorGUILayout.Separator();
 
                 GUILayout.Label("Exclude SubString When Find:");
-                moduleConfig.Json.ExcludeSubStringWhenFind = EditorGUILayout.TextArea(moduleConfig.Json.ExcludeSubStringWhenFind);
+                module.ModuleConfig.Json.ExcludeSubStringWhenFind = EditorGUILayout.TextArea(module.ModuleConfig.Json.ExcludeSubStringWhenFind);
                 EditorGUILayout.Separator();
 
-                GUILayout.Label("Dependence Root Directories:  (Use \"" + moduleConfig.Json.Separator + "\" Add Available Extension)", GUILayout.MinWidth(50));
-                moduleConfig.Json.DependenceFilterDirectories = EditorGUILayout.TextArea(moduleConfig.Json.DependenceFilterDirectories);
+                GUILayout.Label("Dependence Root Directories:  (Use \"" + module.ModuleConfig.Json.Separator + "\" Add Available Extension)", GUILayout.MinWidth(50));
+                module.ModuleConfig.Json.DependenceFilterDirectories = EditorGUILayout.TextArea(module.ModuleConfig.Json.DependenceFilterDirectories);
                 EditorGUILayout.Separator();
 
                 GUILayout.Label("Dry Build Bundles OutPutPath:");
                 GUILayout.BeginHorizontal();
-                moduleConfig.Json.OutputPath = EditorGUILayout.TextField(moduleConfig.Json.OutputPath);
+                module.ModuleConfig.Json.OutputPath = EditorGUILayout.TextField(module.ModuleConfig.Json.OutputPath);
                 if (GUILayout.Button("..", GUILayout.MaxWidth(20)))
                 {
-                    string s = EditorUtility.OpenFolderPanel("Open Folder", moduleConfig.Json.OutputPath, null);
+                    string s = EditorUtility.OpenFolderPanel("Open Folder", module.ModuleConfig.Json.OutputPath, null);
                     if (s != "")
                     {
-                        moduleConfig.Json.OutputPath = s;
+                        module.ModuleConfig.Json.OutputPath = s;
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -254,7 +246,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 {
                     if (GUILayout.Button("Save") && EditorUtility.DisplayDialog("Save", "确定保存配置?", "确定", "取消"))
                     {
-                        moduleConfig.Save();
+                        module.ModuleConfig.Save();
                     }
                     if (GUILayout.Button("Build"))
                     {
@@ -264,9 +256,9 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                             EditorUtility.DisplayDialog("Check Failed", e.Message, "确定");
                             return;
                         }
-                        if (!Directory.Exists(moduleConfig.Json.OutputPath))
+                        if (!Directory.Exists(module.ModuleConfig.Json.OutputPath))
                         {
-                            EditorUtility.DisplayDialog("错误", "输出目录不存在：" + moduleConfig.Json.OutputPath, "确定");
+                            EditorUtility.DisplayDialog("错误", "输出目录不存在：" + module.ModuleConfig.Json.OutputPath, "确定");
                             return;
                         }
                         //if (EditorUtility.DisplayDialog("Find No Reference Assets", "确定开始?", "确定", "取消"))
@@ -294,109 +286,35 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
         void Run()
         {
-            string currentMapFilePath = string.IsNullOrEmpty(stateConfig.Json.CurrentMapFilePath) ? "ReverseDependenceMap.json" : stateConfig.Json.CurrentMapFilePath;
+            string currentMapFilePath = string.IsNullOrEmpty(module.StateConfig.Json.CurrentMapFilePath) ? "ReverseDependenceMap.json" : module.StateConfig.Json.CurrentMapFilePath;
             string ReverseDependenceMapSavePath = EditorUtility.SaveFilePanel("Save Reverse Dependence Map", Path.GetDirectoryName(currentMapFilePath), Path.GetFileName(currentMapFilePath), "json");
             if (string.IsNullOrEmpty(ReverseDependenceMapSavePath))
             {
                 return;
             }
-            moduleConfig.AllBundles.Clear();
-            //Create AssetBundleList
-            List<AssetBundleBuild> assetBundleList = new List<AssetBundleBuild>();
-            foreach (var folder in moduleConfig.Json.AssetsDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定的要创建Bundle的目录
+
+            try
             {
-                var directory = "Assets/" + folder;
-                foreach (var file in FindFiles(directory, moduleConfig.Json.ExcludeExtensionsWhenBuildBundles)) //每一个资产文件
-                {
-                    string filePath = Path.Combine(directory, file);
-                    var ab = new AssetBundleBuild
-                    {
-                        assetNames = new[] { filePath },
-                        assetBundleName = filePath
-                    };
-                    assetBundleList.Add(ab);
-                }
-            }
+                EditorUtility.DisplayProgressBar("AssetPolice", "Building...", 0);
+                runner.Run();
 
-            //Start DryBuild
-            EditorUtility.DisplayProgressBar("", "Building...", 0);
-            var manifest = BuildPipeline.BuildAssetBundles(moduleConfig.Json.OutputPath, assetBundleList.ToArray(), BuildAssetBundleOptions.DryRunBuild, EditorUserBuildSettings.activeBuildTarget);
-            EditorUtility.ClearProgressBar();
-            if (manifest == null)
+                //保存映射表
+                File.WriteAllText(ReverseDependenceMapSavePath, JsonConvert.SerializeObject(module.ModuleConfig.AllBundles, Formatting.Indented));
+                module.StateConfig.Json.CurrentMapFilePath = ReverseDependenceMapSavePath;
+                module.StateConfig.Save();
+
+                assetTree.Reload();
+                EditorUtility.DisplayDialog("AssetPolice", "Build Dependence Map Finish！", "确定");
+            }
+            catch (Exception e)
             {
-                EditorUtility.DisplayDialog("AssetPolice", "Dry Build AssetBundles Failed!", "确定");
-                return;
+                EditorUtility.DisplayDialog("AssetPolice", "Build Failed: " + e.Message, "确定");
+                throw e;
             }
-
-            //创建用来标记是否被引用的字典
-            foreach (var bundle in manifest.GetAllAssetBundles()) //获取所有Bundle添加到字典
+            finally
             {
-                moduleConfig.AllBundles.Add(bundle, new BundleRDItem());
+                EditorUtility.ClearProgressBar();
             }
-
-            //标记是否被引用
-            foreach (var item in moduleConfig.Json.DependenceFilterDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定要检查依赖的目录
-            {
-                if (string.IsNullOrEmpty(item)) continue;
-                string[] s = item.Split(new[] { moduleConfig.Json.Separator }, StringSplitOptions.RemoveEmptyEntries);
-                var directory = "Assets/" + s[0];
-                foreach (var file in FindFiles(directory))
-                {
-                    string extension = Path.GetExtension(file);
-                    bool available = false;
-                    for (int i = 1; i < s.Length; i++)
-                    {
-                        if (s[i] == extension)
-                        {
-                            available = true;
-                            break;
-                        }
-                    }
-                    if (s.Length < 2) //该句表示若没有设置Available Extension，则全部允许
-                    {
-                        available = true;
-                    }
-                    if (available)
-                    {
-                        string filePath = Path.Combine(directory, file).Replace('\\', '/').ToLower();
-                        moduleConfig.AllBundles[filePath].IsRDRoot = true;
-                        foreach (string dependence in manifest.GetAllDependencies(filePath)) //添加每一个依赖的文件
-                        {
-                            moduleConfig.AllBundles[dependence].RDBundles.Add(filePath);
-                        }
-                    }
-                }
-            }
-
-            //保存映射表
-            File.WriteAllText(ReverseDependenceMapSavePath, JsonConvert.SerializeObject(moduleConfig.AllBundles, Formatting.Indented));
-            stateConfig.Json.CurrentMapFilePath = ReverseDependenceMapSavePath;
-            stateConfig.Save();
-
-            assetTree.Reload();
-            EditorUtility.DisplayDialog("AssetPolice", "Build Dependence Map Finish！", "确定");
-        }
-
-        /// <summary>
-        /// 查找给定根目录下的所有文件
-        /// </summary>
-        /// <param name="rootPath">根目录路径</param>
-        /// <param name="searchPattern">搜索模式</param>
-        /// <returns>返回文件相对于rootPath的相对路径</returns>
-        public static List<string> FindFiles(string rootPath, string excludeExtensions = "", string searchPattern = "*")
-        {
-            string[] excludeExtensionList = excludeExtensions.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            int rootPathLen = rootPath.Length;
-            List<string> files = new List<string>();
-            foreach (var file in Directory.GetFiles(rootPath, searchPattern, SearchOption.AllDirectories))
-            {
-                string extension = Path.GetExtension(file);
-                if (extension != ".meta" && !excludeExtensionList.Contains(extension)) //需要排除的文件后缀
-                {
-                    files.Add(file.Substring(rootPathLen + 1));
-                }
-            }
-            return files;
         }
     }
 }

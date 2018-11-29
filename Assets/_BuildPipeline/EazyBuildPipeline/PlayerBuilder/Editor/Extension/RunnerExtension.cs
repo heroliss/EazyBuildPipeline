@@ -50,10 +50,6 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         protected override void PreProcess()
         {
-            if (!CommonModule.CommonConfig.IsBatchMode)
-            {
-                Prepare();
-            }
             EBPUtility.RefreshAssets();
 
             Module.DisplayProgressBar("Preparing BuildOptions", 0, true);

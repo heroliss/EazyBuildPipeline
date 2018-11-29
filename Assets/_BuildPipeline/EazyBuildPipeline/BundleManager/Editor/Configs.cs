@@ -45,6 +45,7 @@ namespace EazyBuildPipeline.BundleManager.Configs
             }
             public int CurrentBuildAssetBundleOptionsValue;
             public int CurrentResourceVersion;
+            public bool CleanUpBundles;
         }
     }
 

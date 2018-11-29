@@ -55,6 +55,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             GUILayout.FlexibleSpace();
             EditorGUILayout.LabelField("Resource Version:", labelOptions);
             G.Module.ModuleStateConfig.Json.CurrentResourceVersion = EditorGUILayout.IntField(G.Module.ModuleStateConfig.Json.CurrentResourceVersion, inputOptions);
+            G.Module.ModuleStateConfig.Json.CleanUpBundles = GUILayout.Toggle(G.Module.ModuleStateConfig.Json.CleanUpBundles, "CleanUp");
             GUILayout.Space(10);
             //压缩选项
             int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.Module.CompressionEnum, dropdownStyle, dropdownOptions2);
