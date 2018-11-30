@@ -101,7 +101,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 EBPEditorGUILayout.TextField(null, ref copyList[i].SourcePath, OnValueChanged, GUILayout.MaxWidth(100000));
                 EditorGUILayout.LabelField("→", GUILayout.Width(15));
                 EBPEditorGUILayout.TextField(null, ref copyList[i].TargetPath, OnValueChanged, GUILayout.MaxWidth(100000));
-                copyList[i].CopyMode = (CopyMode)EBPEditorGUILayout.EnumPopup(null, copyList[i].CopyMode, OnValueChanged, GUILayout.MaxWidth(100));
+                copyList[i].CopyMode = (CopyMode)EBPEditorGUILayout.EnumPopup(null, copyList[i].CopyMode, OnValueChanged, GUILayout.Width(70));
                 if (GUILayout.Button("-")
                     && ((string.IsNullOrEmpty(copyList[i].SourcePath) && string.IsNullOrEmpty(copyList[i].TargetPath))
                     || G.Module.DisplayDialog("确定删除该项？", "确定", "取消")))
@@ -270,16 +270,18 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("Add Group", GUILayout.Height(30)))
             {
+                var group = new Configs.UserConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true };
+                group.Defines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefine() { Active = true, Define = "" });
                 switch (platform)
                 {
                     case "General":
-                        ps.General.ScriptDefines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
+                        ps.General.ScriptDefines.Add(group);
                         break;
                     case "iOS":
-                        ps.IOS.ScriptDefines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
+                        ps.IOS.ScriptDefines.Add(group);
                         break;
                     case "Android":
-                        ps.Android.ScriptDefines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefinesGroup() { GroupName = "Script Defines Group", Active = true });
+                        ps.Android.ScriptDefines.Add(group);
                         break;
                 }
                 G.Module.IsDirty = true;
@@ -338,17 +340,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     G.Module.IsDirty = true;
                 }
                 EditorGUILayout.Space();
-                GUILayout.Label("Temp");
+                GUILayout.Label("BatchMode");
                 EditorGUILayout.Space();
-                if (GUILayout.Button("+"))
-                {
-                    if (!group.Defines.Exists(x => x.Define == ""))
-                    {
-                        group.Defines.Add(new Configs.UserConfig.PlayerSettings.ScriptDefine() { Active = true, Define = "" });
-                        G.Module.IsDirty = true;
-                    }
-                }
-                if (GUILayout.Button("-"))
+                if (GUILayout.Button("×"))
                 {
                     bool ensure = true;
                     if (group.Defines.Count > 0)
@@ -413,18 +407,29 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         define.IsTemp = isTemp_new;
                         G.Module.IsDirty = true;
                     }
-                    GUILayout.Space(50);
+                    GUILayout.Space(20);
+                    if (GUILayout.Button("+"))
+                    {
+                        if (!group.Defines.Exists(x => x.Define == ""))
+                        {
+                            group.Defines.Insert(j + 1, new Configs.UserConfig.PlayerSettings.ScriptDefine() { Active = true, Define = "" });
+                            G.Module.IsDirty = true;
+                        }
+                    }
                     if (GUILayout.Button("-"))
                     {
-                        bool ensure = true;
-                        if (define.Define != "")
+                        if (group.Defines.Count > 1)
                         {
-                            ensure = G.Module.DisplayDialog("确定要删除宏定义" + define.Define + "?", "确定", "取消");
-                        }
-                        if (ensure)
-                        {
-                            RemoveDefine(group, j);
-                            G.Module.IsDirty = true;
+                            bool ensure = true;
+                            if (define.Define != "")
+                            {
+                                ensure = G.Module.DisplayDialog("确定要删除宏定义" + define.Define + "?", "确定", "取消");
+                            }
+                            if (ensure)
+                            {
+                                RemoveDefine(group, j);
+                                G.Module.IsDirty = true;
+                            }
                         }
                     }
                     EditorGUILayout.Space();

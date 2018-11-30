@@ -92,7 +92,16 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             };
             root.children = new List<TreeViewItem>();
 
-            string[] excludeSubStrList = moduleConfig.Json.ExcludeSubStringWhenFind.Replace('\\', '/').ToLower().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] excludeSubStrList_origin = moduleConfig.Json.ExcludeSubStringWhenFind.Replace('\\', '/').ToLower().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string> excludeSubStrList = new List<string>();
+            foreach (string item in excludeSubStrList_origin)
+            {
+                if (item.Trim() != "")
+                {
+                    excludeSubStrList.Add(item.Trim());
+                }
+            }
+
             foreach (var bundle in moduleConfig.AllBundles)
             {
                 if (!bundle.Value.IsRDRoot && bundle.Value.RDBundles.Count == 0)

@@ -52,27 +52,52 @@ namespace EazyBuildPipeline.BundleManager
                 Module.DisplayProgressBar("开始清理无用Bundle项", 0, true);
                 AssetPolice.Editor.Module policeModule = new AssetPolice.Editor.Module();
                 AssetPolice.Editor.Runner policeRunner = new AssetPolice.Editor.Runner(policeModule);
+                policeModule.LoadConfigs();
+                policeModule.ModuleConfig.Json.OutputPath = CommonModule.CommonConfig.CurrentLogFolderPath; //Hack: 由于输出目录必须存在，所以临时这样设置
+
                 Module.DisplayProgressBar("Start Dry Build AssetBundles...", 0.02f, true);
                 policeRunner.Run();
 
                 Module.DisplayProgressBar("Create New AssetBundleBuilds...", 0.2f, true);
                 var allAssets = policeModule.ModuleConfig.AllBundles;
                 List<string> assetNames = new List<string>();
-                foreach (AssetBundleBuild bundle in Module.UserConfig.Json)
+                using (var writer = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RemovedAssetsWhenBuildBundles.txt")))
                 {
-                    assetNames.Clear();
-                    foreach (string asset in bundle.assetNames)
+                    int removedAssetsCount = 0;
+                    int removedBundlesCount = 0;
+                    foreach (AssetBundleBuild bundle in Module.UserConfig.Json)
                     {
-                        var rddItem = allAssets[asset];
-                        if (rddItem.RDBundles.Count > 0 || rddItem.IsRDRoot)
+                        assetNames.Clear();
+                        foreach (string asset in bundle.assetNames)
                         {
-                            assetNames.Add(asset);
+                            AssetPolice.Editor.BundleRDItem rddItem;
+                            var exist = allAssets.TryGetValue(asset.ToLower(), out rddItem);
+                            if (!exist || rddItem.RDBundles.Count > 0 || rddItem.IsRDRoot)
+                            {
+                                assetNames.Add(asset);
+                            }
+                            else
+                            {
+                                removedAssetsCount++;
+                                writer.WriteLine("Remove Asset : " + asset);
+                            }
+                        }
+                        if (assetNames.Count != 0)
+                        {
+                            cleanedBuilds.Add(new AssetBundleBuild() { assetBundleName = bundle.assetBundleName, assetNames = assetNames.ToArray() });
+                        }
+                        else
+                        {
+                            removedBundlesCount++;
+                            writer.WriteLine("Remove Bundle: " + bundle.assetBundleName);
                         }
                     }
-                    cleanedBuilds.Add(new AssetBundleBuild() { assetBundleName = bundle.assetBundleName, assetNames = assetNames.ToArray() });
+                    writer.WriteLine("\nRemoved Assets Count: " + removedAssetsCount);
+                    writer.WriteLine("Removed Bundles Count: " + removedBundlesCount);
                 }
                 //保存当前Builds作为日志
-                File.WriteAllText(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "CleanedBundles.json"), JsonConvert.SerializeObject(cleanedBuilds));
+                File.WriteAllText(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "CleanedBundles.json"),
+                    JsonConvert.SerializeObject(cleanedBuilds, Formatting.Indented));
             }
             else
             {
@@ -95,6 +120,16 @@ namespace EazyBuildPipeline.BundleManager
             string bundlesPath = Path.Combine(tagPath, "Bundles");
             Directory.CreateDirectory(infoPath);
             Directory.CreateDirectory(bundlesPath);
+
+            //创建json文件
+            Module.DisplayProgressBar("Creating Info Files...", 0.45f, true);
+            File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(cleanedBuilds, Formatting.Indented));
+            File.WriteAllText(Path.Combine(infoPath, "Versions.json"), JsonConvert.SerializeObject(new Dictionary<string, int> {
+                { "ResourceVersion", resourceVersion } }, Formatting.Indented));
+            //创建Map文件
+            //此处保留旧map文件的生成方式
+            AssetBundleManagement.ABExtractItemBuilder.BuildMapperFile(AssetBundleManagement.ABExtractItemBuilder.BuildAssetMapper(cleanedBuilds.ToArray()), Path.Combine(infoPath, "map"));
+
             //创建Bundles
             Module.DisplayProgressBar("Start Build AssetBundles...", 0.5f, true);
             var manifest = BuildPipeline.BuildAssetBundles(bundlesPath, cleanedBuilds.ToArray(), (BuildAssetBundleOptions)optionsValue, target);
@@ -103,16 +138,8 @@ namespace EazyBuildPipeline.BundleManager
                 throw new EBPException("BuildAssetBundles失败！详情请查看Console面板。");
             }
             //重命名Bundles清单文件
-            Module.DisplayProgressBar("Renaming assetbundlemanifest...", 0.92f, true);
+            Module.DisplayProgressBar("Renaming assetbundlemanifest...", 1f, true);
             RenameMainBundleManifest(bundlesPath);
-            //创建json文件
-            Module.DisplayProgressBar("Creating Info Files...", 0.95f, true);
-            File.WriteAllText(Path.Combine(infoPath, "BuildMap.json"), JsonConvert.SerializeObject(Module.UserConfig.Json, Formatting.Indented));
-            File.WriteAllText(Path.Combine(infoPath, "Versions.json"), JsonConvert.SerializeObject(new Dictionary<string, int> {
-                { "ResourceVersion", resourceVersion } }, Formatting.Indented));
-            //创建Map文件
-            //此处保留旧map文件的生成方式
-            AssetBundleManagement.ABExtractItemBuilder.BuildMapperFile(AssetBundleManagement.ABExtractItemBuilder.BuildAssetMapper(Module.UserConfig.Json.ToArray()), Path.Combine(infoPath, "map"));
         }
 
         private void RenameMainBundleManifest(string folderPath)

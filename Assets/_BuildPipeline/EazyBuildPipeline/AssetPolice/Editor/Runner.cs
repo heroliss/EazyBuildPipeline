@@ -26,7 +26,8 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             List<AssetBundleBuild> assetBundleList = new List<AssetBundleBuild>();
             foreach (var folder in Module.ModuleConfig.Json.AssetsDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定的要创建Bundle的目录
             {
-                var directory = "Assets/" + folder;
+                if (folder.Trim() == "") continue;
+                var directory = Path.Combine("Assets", folder.Trim() == "*" ? "" : folder.Trim());
                 foreach (var file in FindFiles(directory, Module.ModuleConfig.Json.ExcludeExtensionsWhenBuildBundles)) //每一个资产文件
                 {
                     string filePath = Path.Combine(directory, file);
@@ -53,10 +54,10 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             }
 
             //标记是否被引用
-            foreach (var item in Module.ModuleConfig.Json.DependenceFilterDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定要检查依赖的目录
+            foreach (var dependenceRootItem in Module.ModuleConfig.Json.DependenceFilterDirectories.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)) //每一个给定要检查依赖的目录
             {
-                if (string.IsNullOrEmpty(item)) continue;
-                string[] s = item.Split(new[] { Module.ModuleConfig.Json.Separator }, StringSplitOptions.RemoveEmptyEntries);
+                if (dependenceRootItem.Trim() == "") continue;
+                string[] s = dependenceRootItem.Split(new[] { Module.ModuleConfig.Json.Separator }, StringSplitOptions.RemoveEmptyEntries);
                 var directory = "Assets/" + s[0];
                 foreach (var file in FindFiles(directory))
                 {

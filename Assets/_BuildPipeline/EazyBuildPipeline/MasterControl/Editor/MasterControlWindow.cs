@@ -13,7 +13,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
         Module module; //仅用于提供给Unity自动序列化
         Common.Configs.CommonConfig commonConfig; //仅用于提供给Unity自动序列化
 
-        readonly int settingPanelHeight = 160;
+        readonly int settingPanelHeight = 180;
         PlayerSettingsPanel playerSettingsPanel;
         SettingPanel settingPanel;
 

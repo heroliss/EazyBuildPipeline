@@ -1,5 +1,5 @@
 {
-  "AssetsDirectories": "*",
+  "AssetsDirectories": "ABOriginalResources\n_Scenes\nPrefabs\nArt\nT4MOBJ\nResources",
   "DependenceFilterDirectories": "_Scenes --.unity\nABOriginalResources --.prefab\nPrefabs --.prefab\nResources --.prefab --.wav",
   "ExcludeSubStringWhenFind": "ABOriginalResources/Png\nABOriginalResources/Audio\nABOriginalResources/Atlas\nABOriginalResources/Global/EazyMaterialConsole\n_Scenes/_Calibrating\n_Scenes/_SceneEditing",
   "ExcludeExtensionsWhenBuildBundles": ".cs\n.js\n.json\n.html\n.txt",

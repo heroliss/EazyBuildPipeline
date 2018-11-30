@@ -100,20 +100,57 @@ namespace EazyBuildPipeline.PackageManager
             base.CheckProcess(onlyCheckConfig);
         }
 
+        #region 清除不存在的Bundle
+        StreamWriter notExistLogWriter;
+        string bundlesFolderPath; //原RunProcess中的局部变量
+        int cleanBundlesCount;
+        bool IsNotExist(string path)
+        {
+            if (!File.Exists(Path.Combine(bundlesFolderPath, path)))
+            {
+                notExistLogWriter.WriteLine(path);
+                cleanBundlesCount++;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        #endregion
+
         protected override void RunProcess()
         {
+            //开始
+            double lastTime = EditorApplication.timeSinceStartup;
+
             //准备参数
-            string bundlesFolderPath = Module.GetBundleFolderPath();
+            bundlesFolderPath = Module.GetBundleFolderPath();
             if (!Directory.Exists(bundlesFolderPath))
             {
                 throw new EBPException("Bundles目录不存：" + bundlesFolderPath);
             }
+
             string packagesFolderPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag)
                 + "/" + Module.UserConfig.Json.PackageMode);
             int count = 0;
             int total = 0;
             float progress = 0;
             var packages = Module.UserConfig.Json.Packages;
+
+            //清除不存在的Bundle
+            Module.DisplayProgressBar("正在从Packages清单中清除不存在的Bundle", 0, true);
+            notExistLogWriter = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "NotExistBundlesWhenBuildPackage.txt"));
+            notExistLogWriter.WriteLine("Root: " + bundlesFolderPath + "\n");
+            cleanBundlesCount = 0;
+            foreach (var package in packages)
+            {
+                package.Bundles.RemoveAll(IsNotExist);
+            }
+            notExistLogWriter.WriteLine("\ntotal：" + cleanBundlesCount);
+            notExistLogWriter.Close();
+
+            //统计总数
             foreach (var package in packages)
             {
                 total += package.Bundles.Count;
@@ -127,9 +164,6 @@ namespace EazyBuildPipeline.PackageManager
             //}
             //string mapContent = JsonConvert.SerializeObject(BuildAsset2BundleMap(Configs.g.bundleTree.BundleBuildMap), Formatting.Indented);
 
-            //开始
-            double lastTime = EditorApplication.timeSinceStartup;
-
             //重建目录
             Module.DisplayProgressBar("正在重建" + Module.UserConfig.Json.PackageMode + "目录", packagesFolderPath, progress, true); progress += 0.01f;
             if (Directory.Exists(packagesFolderPath))
@@ -137,6 +171,7 @@ namespace EazyBuildPipeline.PackageManager
                 Directory.Delete(packagesFolderPath, true);
             }
             Directory.CreateDirectory(packagesFolderPath);
+
             //设置路径
             string platform = Module.ModuleStateConfig.Json.CurrentTag[0].ToLower();
             string bundlesRootPathInPackage = "AssetBundles/" + platform + "/AssetBundles/";

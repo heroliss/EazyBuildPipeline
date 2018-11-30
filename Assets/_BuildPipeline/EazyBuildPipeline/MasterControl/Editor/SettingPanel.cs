@@ -453,9 +453,15 @@ namespace EazyBuildPipeline.MasterControl.Editor
             { ClickedApply(); return; }
             if (GUILayout.Button(new GUIContent("Fetch", "获取当前的PlayerSettings"), buttonOptions))
             { FetchSettings(); return; }
+
+            GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
+            EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
+
+            //Run Button
+            EditorGUILayout.BeginHorizontal();
             if (PlayerBuilder.G.Module.StateConfigAvailable)
             {
                 if (GUILayout.Button(new GUIContent("Run Pipeline"))) { ClickedRunPipeline(); return; }
@@ -465,7 +471,6 @@ namespace EazyBuildPipeline.MasterControl.Editor
                 if (GUILayout.Button(new GUIContent("Check", "检查所有勾选的模块配置"))) { ClickedCheckAll(); return; }
             }
             EditorGUILayout.EndHorizontal();
-            GUILayout.FlexibleSpace();
 
             EditorGUILayout.EndScrollView();
         }
