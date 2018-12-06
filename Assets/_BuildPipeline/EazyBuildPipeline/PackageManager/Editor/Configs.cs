@@ -55,7 +55,8 @@ namespace EazyBuildPipeline.PackageManager.Configs
         [Serializable]
         public class JsonClass : Common.Configs.ModuleStateConfigJsonClass
         {
-            public string CurrentAddonVersion;
+            public int ResourceVersion;
+            public string ClientVersion;
         }
     }
 }

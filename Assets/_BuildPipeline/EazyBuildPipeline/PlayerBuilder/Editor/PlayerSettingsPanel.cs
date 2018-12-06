@@ -122,8 +122,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
             EditorGUILayout.LabelField("Identity", EditorStyles.boldLabel);
             EBPEditorGUILayout.TextField("Package Name", ref ps.Android.PackageName, OnValueChanged);
-            EBPEditorGUILayout.TextField("Client Version", ref ps.Android.ClientVersion, OnValueChanged);
-            EBPEditorGUILayout.IntField("Bundle Version Code", ref ps.Android.BundleVersionCode, OnValueChanged);
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Deployment Info", EditorStyles.boldLabel);
@@ -173,8 +171,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
             EditorGUILayout.LabelField("Identity", EditorStyles.boldLabel);
             EBPEditorGUILayout.TextField("Bundle Identifier", ref ps.IOS.BundleID, OnValueChanged);
-            EBPEditorGUILayout.TextField("Client Version", ref ps.IOS.ClientVersion, OnValueChanged);
-            EBPEditorGUILayout.TextField("Build Number", ref ps.IOS.BuildNumber, OnValueChanged);
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Signing", EditorStyles.boldLabel);

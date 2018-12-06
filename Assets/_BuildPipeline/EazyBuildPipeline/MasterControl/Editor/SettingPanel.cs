@@ -27,7 +27,6 @@ namespace EazyBuildPipeline.MasterControl.Editor
         [SerializeField] int packageManagerUserConfigSelectedIndex;
         [SerializeField] int playerBuilderUserConfigSelectedIndex;
 
-        [SerializeField] GUIStyle labelMidRight;
         [SerializeField] GUIStyle richTextLabel;
         [SerializeField] Texture2D settingIcon;
         [SerializeField] Texture2D warnIcon;
@@ -163,7 +162,6 @@ namespace EazyBuildPipeline.MasterControl.Editor
 
         private void InitStyles()
         {
-            labelMidRight = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleRight };
             richTextLabel = new GUIStyle(EditorStyles.label) { richText = true };
 
             settingGUIContent = new GUIContent(settingIcon);
@@ -355,7 +353,16 @@ namespace EazyBuildPipeline.MasterControl.Editor
                 }
                 return;
             }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndToggleGroup();
+
             GUILayout.Space(10);
+            EditorGUILayout.LabelField("Resource Version:", labelOptions);
+            int n = EditorGUILayout.IntField(G.Module.BundleManagerModule.ModuleStateConfig.Json.ResourceVersion, inputOptions);
+            if (G.Module.BundleManagerModule.ModuleStateConfig.Json.ResourceVersion != n)
+            {
+                G.Module.BundleManagerModule.ModuleStateConfig.Json.ResourceVersion = n;
+            }
 
             int selectedCompressionIndex_new = EditorGUILayout.Popup(selectedCompressionIndex, G.Module.BundleManagerModule.CompressionEnum, dropdownOptions2);
             if (selectedCompressionIndex_new != selectedCompressionIndex)
@@ -365,18 +372,9 @@ namespace EazyBuildPipeline.MasterControl.Editor
                 return;
             }
 
-            EditorGUILayout.LabelField("Resource Version:", labelMidRight, labelOptions);
-            int n = EditorGUILayout.IntField(G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion, inputOptions);
-            if (G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion != n)
-            {
-                G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion = n;
-            }
-
             G.Module.BundleManagerModule.ModuleStateConfig.Json.CleanUpBundles = GUILayout.Toggle(G.Module.BundleManagerModule.ModuleStateConfig.Json.CleanUpBundles, "CleanUp");
 
             GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndToggleGroup();
             EditorGUILayout.EndHorizontal();
 
             GUILayout.FlexibleSpace();
@@ -410,17 +408,17 @@ namespace EazyBuildPipeline.MasterControl.Editor
                 }
                 return;
             }
-            GUILayout.Space(10);
-
-            EditorGUILayout.LabelField("Addon Version:", labelOptions);
-            string packageVersion_new = EditorGUILayout.TextField(G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentAddonVersion);
-            if (G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentAddonVersion != packageVersion_new)
-            {
-                G.Module.PackageManagerModule.ModuleStateConfig.Json.CurrentAddonVersion = packageVersion_new;
-            }
-            GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndToggleGroup();
+
+            GUILayout.Space(10);
+            EditorGUILayout.LabelField("Client Version:", labelOptions);
+            string packageVersion_new = EditorGUILayout.TextField(G.Module.PackageManagerModule.ModuleStateConfig.Json.ClientVersion, inputOptions);
+            if (G.Module.PackageManagerModule.ModuleStateConfig.Json.ClientVersion != packageVersion_new)
+            {
+                G.Module.PackageManagerModule.ModuleStateConfig.Json.ClientVersion = packageVersion_new;
+            }
+            GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
 
             GUILayout.FlexibleSpace();
@@ -442,7 +440,21 @@ namespace EazyBuildPipeline.MasterControl.Editor
             }
             if (GUILayout.Button(new GUIContent(EditorGUIUtility.FindTexture("ViewToolOrbit"), "查看该文件"), miniButtonOptions))
             { ClickedShowConfigFile(); return; }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndToggleGroup();
             GUILayout.Space(10);
+            EditorGUILayout.LabelField("Build Number:", labelOptions);
+            int buildNum = EditorGUILayout.IntField(G.Module.PlayerBuilderModule.ModuleStateConfig.Json.BuildNumber, inputOptions);
+            if (G.Module.PlayerBuilderModule.ModuleStateConfig.Json.BuildNumber != buildNum)
+            {
+                G.Module.PlayerBuilderModule.ModuleStateConfig.Json.BuildNumber = buildNum;
+            }
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(30);
             if (GUILayout.Button(new GUIContent("New", "新建配置文件"), buttonOptions))
             { ClickedNew(); return; }
             if (GUILayout.Button(new GUIContent("Save", "保存配置文件"), buttonOptions))
@@ -453,15 +465,9 @@ namespace EazyBuildPipeline.MasterControl.Editor
             { ClickedApply(); return; }
             if (GUILayout.Button(new GUIContent("Fetch", "获取当前的PlayerSettings"), buttonOptions))
             { FetchSettings(); return; }
-
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndToggleGroup();
-            EditorGUILayout.EndHorizontal();
             GUILayout.FlexibleSpace();
 
             //Run Button
-            EditorGUILayout.BeginHorizontal();
             if (PlayerBuilder.G.Module.StateConfigAvailable)
             {
                 if (GUILayout.Button(new GUIContent("Run Pipeline"))) { ClickedRunPipeline(); return; }
@@ -679,7 +685,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
                         var state3 = G.Module.PackageManagerModule.ModuleStateConfig;
                         if (state3.Json.IsPartOfPipeline)
                         {
-                            G.Module.PackageManagerRunner.ResourceVersion = G.Module.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion;
+                            state3.Json.ResourceVersion = G.Module.BundleManagerModule.ModuleStateConfig.Json.ResourceVersion;
                             G.Module.PackageManagerRunner.Run(true);
                         }
                         else if (!string.IsNullOrEmpty(state3.Json.CurrentUserConfigName))
@@ -694,6 +700,8 @@ namespace EazyBuildPipeline.MasterControl.Editor
                         var state4_pre = G.Module.PlayerBuilderModule.ModuleStateConfig;
                         if (state4_pre.Json.IsPartOfPipeline)
                         {
+                            state4_pre.Json.ResourceVersion = G.Module.BundleManagerModule.ModuleStateConfig.Json.ResourceVersion;
+                            state4_pre.Json.ClientVersion = G.Module.PackageManagerModule.ModuleStateConfig.Json.ClientVersion;
                             G.Module.PlayerBuilderRunner.Prepare();
                         }
                         currentStep = Step.BuildPlayer;

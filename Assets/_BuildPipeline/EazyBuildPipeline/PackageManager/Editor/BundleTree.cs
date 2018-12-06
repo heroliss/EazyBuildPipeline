@@ -392,6 +392,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 string versionPath = Path.Combine(G.Module.GetBundleInfoFolderPath(), "Versions.json");
                 //string buildMapPath = Path.Combine(G.Module.GetBundleInfoFolderPath(), "BuildMap.json");
                 Versions = JsonConvert.DeserializeObject<VersionsStruct>(File.ReadAllText(versionPath));
+                G.Module.ModuleStateConfig.Json.ResourceVersion = Versions.ResourceVersion;
                 //BundleBuildMap = JsonConvert.DeserializeObject<AssetBundleBuild[]>(File.ReadAllText(buildMapPath));
             }
             catch (Exception e)

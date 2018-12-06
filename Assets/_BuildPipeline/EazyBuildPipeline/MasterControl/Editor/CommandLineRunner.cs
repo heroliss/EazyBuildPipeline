@@ -60,7 +60,6 @@ namespace EazyBuildPipeline
                 //设置Tag
                 runner.BaseModule.BaseModuleStateConfig.BaseJson.CurrentTag = assetTag;
                 //覆盖当前状态配置
-                CommonModule.CommonConfig.Json.CurrentResourceVersion = int.Parse(EBPUtility.GetArgValue("ResourceVersion"));
                 switch (runner.BaseModule.ModuleName)
                 {
                     case "SVNUpdate":
@@ -85,14 +84,22 @@ namespace EazyBuildPipeline
                         }
                         totalModule.BundleManagerModule.ModuleStateConfig.Json.CleanUpBundles = cleanUpBundles;
                         totalModule.BundleManagerModule.ModuleStateConfig.Json.CompressionOption = compressOption;
-                        totalModule.BundleManagerModule.ModuleStateConfig.Json.CurrentResourceVersion = int.Parse(EBPUtility.GetArgValue("ResourceVersion"));
+                        totalModule.BundleManagerModule.ModuleStateConfig.Json.ResourceVersion = int.Parse(EBPUtility.GetArgValue("ResourceVersion"));
                         break;
                     case "PackageManager":
                         runner.BaseModule.BaseModuleStateConfig.BaseJson.CurrentUserConfigName = EBPUtility.GetArgValue("subpackage") + ".json";
-                        totalModule.PackageManagerModule.ModuleStateConfig.Json.CurrentAddonVersion = EBPUtility.GetArgValue("ClientVersion");
+                        totalModule.PackageManagerModule.ModuleStateConfig.Json.ClientVersion = EBPUtility.GetArgValue("ClientVersion") ?? totalModule.PackageManagerModule.ModuleStateConfig.Json.ClientVersion;
+                        totalModule.PackageManagerModule.ModuleStateConfig.Json.ResourceVersion = int.Parse(EBPUtility.GetArgValue("ResourceVersion"));
                         break;
                     case "PlayerBuilder":
                         runner.BaseModule.BaseModuleStateConfig.BaseJson.CurrentUserConfigName = EBPUtility.GetArgValue("channel") + ".json";
+                        totalModule.PlayerBuilderModule.ModuleStateConfig.Json.ClientVersion = EBPUtility.GetArgValue("ClientVersion") ?? totalModule.PlayerBuilderModule.ModuleStateConfig.Json.ClientVersion;
+                        totalModule.PlayerBuilderModule.ModuleStateConfig.Json.ResourceVersion = int.Parse(EBPUtility.GetArgValue("ResourceVersion"));
+                        string buildNum = EBPUtility.GetArgValue("BuildNumber");
+                        if (buildNum != null)
+                        {
+                            totalModule.PlayerBuilderModule.ModuleStateConfig.Json.BuildNumber = int.Parse(buildNum);
+                        }
                         break;
                     default:
                         break;
@@ -119,13 +126,9 @@ namespace EazyBuildPipeline
                         {
                             case "iOS":
                                 playerSettings.IOS.BundleID = EBPUtility.GetArgValue("BundleID") ?? playerSettings.IOS.BundleID;
-                                playerSettings.IOS.ClientVersion = EBPUtility.GetArgValue("ClientVersion") ?? playerSettings.IOS.ClientVersion;
-                                playerSettings.IOS.BuildNumber = EBPUtility.GetArgValue("BuildNumber") ?? playerSettings.IOS.BuildNumber;
                                 break;
                             case "Android":
                                 playerSettings.Android.PackageName = EBPUtility.GetArgValue("BundleID") ?? playerSettings.Android.PackageName;
-                                playerSettings.Android.ClientVersion = EBPUtility.GetArgValue("ClientVersion") ?? playerSettings.Android.ClientVersion;
-                                playerSettings.Android.BundleVersionCode = int.Parse(EBPUtility.GetArgValue("BuildNumber") ?? playerSettings.Android.BundleVersionCode.ToString());
                                 break;
                             default:
                                 break;

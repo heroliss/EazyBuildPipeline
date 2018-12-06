@@ -49,7 +49,6 @@ namespace EazyBuildPipeline.Common.Configs
         {
             public string PipelineRootPath;
             public string[] CurrentAssetTag = { "Example Tag1", "Example Tag2" };
-            public int CurrentResourceVersion;
             public Dictionary<string, string[]> TagEnum;
             public string IconsFolderRelativePath;
 

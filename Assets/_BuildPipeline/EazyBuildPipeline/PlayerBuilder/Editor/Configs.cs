@@ -28,6 +28,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             public bool DevelopmentBuild;
             public bool ConnectWithProfiler;
             public bool AllowDebugging;
+
+            public int ResourceVersion;
+            public string ClientVersion;
+            public int BuildNumber;
         }
     }
 
@@ -118,8 +122,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public string CopyDirectoryRegex, CopyFileRegex;
                 public List<CopyItem> CopyList = new List<CopyItem>();
                 public string BundleID;
-                public string ClientVersion;
-                public string BuildNumber;
                 public bool AutomaticallySign;
                 public string ProvisioningProfile;
                 public string TeamID;
@@ -156,8 +158,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public bool PreserveFramebufferAlpha;
                 [JsonConverter(typeof(StringEnumConverter))] public AndroidBlitType BlitType;
                 public bool ProtectGraphicsMemory;
-                public string ClientVersion;
-                public int BundleVersionCode;
                 [JsonConverter(typeof(StringEnumConverter))] public AndroidSdkVersions MinimumAPILevel;
                 [JsonConverter(typeof(StringEnumConverter))] public AndroidSdkVersions TargetAPILevel;
                 [JsonConverter(typeof(StringEnumConverter))] public AndroidPreferredInstallLocation InstallLocation;

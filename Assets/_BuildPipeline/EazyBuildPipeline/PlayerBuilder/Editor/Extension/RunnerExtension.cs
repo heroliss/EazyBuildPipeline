@@ -317,8 +317,17 @@ namespace EazyBuildPipeline.PlayerBuilder
         private void DownLoadConfigs(float startProgress, float endProgress)
         {
             float progressLength = endProgress - startProgress;
-            string configsPath = Application.streamingAssetsPath + Path.DirectorySeparatorChar + "Configs";
+            string configsPath = Path.Combine(Application.streamingAssetsPath, "Configs");
+            //重建目录
+            Module.DisplayProgressBar("正在重建目录", configsPath, startProgress + progressLength * 0, true);
+            if (Directory.Exists(configsPath))
+            {
+                Directory.Delete(configsPath, true);
+            }
+            Directory.CreateDirectory(configsPath);
+
             //NetWorkConnection.ConfigNetworkURL();
+
             //.zip
             string configURL_Game = Module.UserConfig.Json.PlayerSettings.General.ConfigURL_Game;
             if (!string.IsNullOrEmpty(configURL_Game))
@@ -410,23 +419,12 @@ namespace EazyBuildPipeline.PlayerBuilder
             var activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
             var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(activeBuildTarget);
 
-            string build = "";
-
-            switch (buildTargetGroup)
-            {
-                case BuildTargetGroup.iOS:
-                    build = ps.IOS.BuildNumber;
-                    break;
-                case BuildTargetGroup.Android:
-                    build = ps.Android.BundleVersionCode.ToString();
-                    break;
-                default:
-                    break;
-            }
+            string build = Module.ModuleStateConfig.Json.BuildNumber.ToString();
+            string resourceVersion = Module.ModuleStateConfig.Json.ResourceVersion.ToString();
 
             string code = "public static class " + BuildingConfigsClassName + "\n{\n";
             code += string.Format("\tpublic static readonly string BuildVersion = \"{0}\";\n", build);
-            code += string.Format("\tpublic static readonly int Resourceversion = {0};\n", CommonModule.CommonConfig.Json.CurrentResourceVersion);
+            code += string.Format("\tpublic static readonly int Resourceversion = {0};\n", resourceVersion);
             code += string.Format("\tpublic static readonly string BuglyAppId = \"{0}\";\n", ps.General.BuglyAppID);
             code += string.Format("\tpublic static readonly string BuglyAppKey = \"{0}\";", ps.General.BuglyAppKey);
 

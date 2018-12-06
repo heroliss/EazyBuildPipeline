@@ -1,11 +1,10 @@
 {
-  "PipelineRootPath": "E:/NewPipelineRoot",
+  "PipelineRootPath": "",
   "CurrentAssetTag": [
     "",
     "",
     ""
   ],
-  "CurrentResourceVersion": 0,
   "TagEnum": {
     "Platform": [
       "iOS",

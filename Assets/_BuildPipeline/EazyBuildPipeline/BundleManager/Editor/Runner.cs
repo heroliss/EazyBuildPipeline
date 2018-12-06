@@ -107,7 +107,7 @@ namespace EazyBuildPipeline.BundleManager
             //准备参数
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), Module.ModuleStateConfig.Json.CurrentTag[0], true);
             int optionsValue = Module.ModuleStateConfig.Json.CurrentBuildAssetBundleOptionsValue;
-            int resourceVersion = Module.ModuleStateConfig.Json.CurrentResourceVersion;
+            int resourceVersion = Module.ModuleStateConfig.Json.ResourceVersion;
             string tagPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
 
             //创建目录

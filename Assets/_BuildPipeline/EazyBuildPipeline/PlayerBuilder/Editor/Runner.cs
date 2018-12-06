@@ -75,8 +75,6 @@ namespace EazyBuildPipeline.PlayerBuilder
 
             //iOS
             ps.IOS.BundleID = PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.iOS);
-            ps.IOS.ClientVersion = PlayerSettings.bundleVersion;
-            ps.IOS.BuildNumber = PlayerSettings.iOS.buildNumber;
             ps.IOS.AutomaticallySign = PlayerSettings.iOS.appleEnableAutomaticSigning;
             ps.IOS.ProvisioningProfile = PlayerSettings.iOS.iOSManualProvisioningProfileID;
             ps.IOS.TeamID = PlayerSettings.iOS.appleDeveloperTeamID;
@@ -97,8 +95,6 @@ namespace EazyBuildPipeline.PlayerBuilder
             ps.Android.BlitType = PlayerSettings.Android.blitType;
             ps.Android.ProtectGraphicsMemory = PlayerSettings.protectGraphicsMemory;
             ps.Android.PackageName = PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.Android);
-            ps.Android.ClientVersion = PlayerSettings.bundleVersion;
-            ps.Android.BundleVersionCode = PlayerSettings.Android.bundleVersionCode;
             ps.Android.MinimumAPILevel = PlayerSettings.Android.minSdkVersion;
             ps.Android.TargetAPILevel = PlayerSettings.Android.targetSdkVersion;
             ps.Android.DeviceFilter = PlayerSettings.Android.targetDevice;
@@ -117,13 +113,13 @@ namespace EazyBuildPipeline.PlayerBuilder
             var ps = Module.UserConfig.Json.PlayerSettings;
             PlayerSettings.companyName = ps.General.CompanyName;
             PlayerSettings.productName = ps.General.ProductName;
+            PlayerSettings.bundleVersion = Module.ModuleStateConfig.Json.ClientVersion;
             switch (buildTarget)
             {
                 case BuildTarget.iOS:
                     //Identity
                     PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, ps.IOS.BundleID);
-                    PlayerSettings.bundleVersion = ps.IOS.ClientVersion;
-                    PlayerSettings.iOS.buildNumber = ps.IOS.BuildNumber;
+                    PlayerSettings.iOS.buildNumber = Module.ModuleStateConfig.Json.BuildNumber.ToString();
                     PlayerSettings.iOS.appleEnableAutomaticSigning = ps.IOS.AutomaticallySign;
                     PlayerSettings.iOS.iOSManualProvisioningProfileID = ps.IOS.ProvisioningProfile;
                     PlayerSettings.iOS.appleDeveloperTeamID = ps.IOS.TeamID;
@@ -143,8 +139,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     PlayerSettings.Android.blitType = ps.Android.BlitType;
                     PlayerSettings.protectGraphicsMemory = ps.Android.ProtectGraphicsMemory;
                     PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, ps.Android.PackageName);
-                    PlayerSettings.bundleVersion = ps.Android.ClientVersion;
-                    PlayerSettings.Android.bundleVersionCode = ps.Android.BundleVersionCode;
+                    PlayerSettings.Android.bundleVersionCode = Module.ModuleStateConfig.Json.BuildNumber;
                     PlayerSettings.Android.minSdkVersion = ps.Android.MinimumAPILevel;
                     PlayerSettings.Android.targetSdkVersion = ps.Android.TargetAPILevel;
                     PlayerSettings.Android.targetDevice = ps.Android.DeviceFilter;

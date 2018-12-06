@@ -54,7 +54,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             if (ShowTagsDropdown()) return;
             GUILayout.FlexibleSpace();
             EditorGUILayout.LabelField("Resource Version:", labelOptions);
-            G.Module.ModuleStateConfig.Json.CurrentResourceVersion = EditorGUILayout.IntField(G.Module.ModuleStateConfig.Json.CurrentResourceVersion, inputOptions);
+            G.Module.ModuleStateConfig.Json.ResourceVersion = EditorGUILayout.IntField(G.Module.ModuleStateConfig.Json.ResourceVersion, inputOptions);
             G.Module.ModuleStateConfig.Json.CleanUpBundles = GUILayout.Toggle(G.Module.ModuleStateConfig.Json.CleanUpBundles, "CleanUp");
             GUILayout.Space(10);
             //压缩选项
@@ -128,7 +128,7 @@ namespace EazyBuildPipeline.BundleManager.Editor
             //确认信息
             BuildTarget target = (BuildTarget)Enum.Parse(typeof(BuildTarget), G.Module.ModuleStateConfig.Json.CurrentTag[0], true);
             int optionsValue = G.Module.ModuleStateConfig.Json.CurrentBuildAssetBundleOptionsValue;
-            int resourceVersion = G.Module.ModuleStateConfig.Json.CurrentResourceVersion;
+            int resourceVersion = G.Module.ModuleStateConfig.Json.ResourceVersion;
             string tagPath = Path.Combine(G.Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(G.Module.ModuleStateConfig.Json.CurrentTag));
 
             bool ensure = G.Module.DisplayDialog(string.Format("确定应用当前配置？\n\n" +

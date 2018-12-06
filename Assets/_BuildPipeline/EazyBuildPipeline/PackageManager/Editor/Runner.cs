@@ -25,8 +25,6 @@ namespace EazyBuildPipeline.PackageManager
             public bool hasDownloaded_;
         };
 
-        public int ResourceVersion;
-
         public Runner() { }
         public Runner(Module module) : base(module)
         {
@@ -60,12 +58,12 @@ namespace EazyBuildPipeline.PackageManager
                 case "Addon":
                     if (!onlyCheckConfig)
                     {
-                        if (string.IsNullOrEmpty(Module.ModuleStateConfig.Json.CurrentAddonVersion))
+                        if (string.IsNullOrEmpty(Module.ModuleStateConfig.Json.ClientVersion))
                         {
                             throw new EBPCheckFailedException("请设置Addon Version");
                         }
                         char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
-                        int index = Module.ModuleStateConfig.Json.CurrentAddonVersion.IndexOfAny(invalidFileNameChars);
+                        int index = Module.ModuleStateConfig.Json.ClientVersion.IndexOfAny(invalidFileNameChars);
                         if (index >= 0)
                         {
                             throw new EBPCheckFailedException("Package Version中不能包含非法字符：" + invalidFileNameChars[index]);
@@ -184,14 +182,10 @@ namespace EazyBuildPipeline.PackageManager
             switch (Module.UserConfig.Json.PackageMode)
             {
                 case "Patch":
-                    mapFilePathInPackage += "_" + ResourceVersion;
+                    mapFilePathInPackage += "_" + Module.ModuleStateConfig.Json.ResourceVersion;
                     break;
 
                 case "Addon":
-                    //修改当前ResourceVersion
-                    CommonModule.CommonConfig.Json.CurrentResourceVersion = ResourceVersion;
-                    CommonModule.CommonConfig.Save();
-
                     Module.DisplayProgressBar("正在获取需要拷贝到Streaming中的Bundles信息", progress, true); progress += 0.01f;
                     //得到需要拷贝到Streaming中的Bundles
                     List<string> bundlesCopyToStreaming = new List<string>();
@@ -221,7 +215,7 @@ namespace EazyBuildPipeline.PackageManager
                     string corePackageName = string.Join("_", new string[]{
                         platform,
                         Module.UserConfig.Json.PackageMode.ToLower(),
-                        Module.ModuleStateConfig.Json.CurrentAddonVersion,
+                        Module.ModuleStateConfig.Json.ClientVersion,
                         "Core"}) + Module.ModuleConfig.Json.PackageExtension;
                     packageManifest.Add(new PackageManifestStruct
                     {
@@ -236,7 +230,7 @@ namespace EazyBuildPipeline.PackageManager
                     {
                         packageManifest.Add(new PackageManifestStruct
                         {
-                            name_ = GetPackageFileName(package.PackageName, ResourceVersion),
+                            name_ = GetPackageFileName(package.PackageName, Module.ModuleStateConfig.Json.ResourceVersion),
                             flag_ = G.NecesseryEnum.IndexOf(package.Necessery),
                             location_ = G.DeploymentLocationEnum.IndexOf(package.DeploymentLocation),
                             hasDownloaded_ = package.CopyToStreaming
@@ -255,7 +249,7 @@ namespace EazyBuildPipeline.PackageManager
                             zipStream.SetLevel(Module.UserConfig.Json.CompressionLevel);
 
                             //构建bundle_version
-                            BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, ResourceVersion, bundlesCopyToStreaming, zipStream);
+                            BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, Module.ModuleStateConfig.Json.ResourceVersion, bundlesCopyToStreaming, zipStream);
 
                             //构建map
                             BuildMapInZipStream(mapFilePathInPackage, buffer, zipStream);
@@ -292,7 +286,11 @@ namespace EazyBuildPipeline.PackageManager
             for (int pi = 0; pi < packagesCount; pi++)
             {
                 var package = packages[pi];
-                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, GetPackageFileName(package.PackageName, ResourceVersion)), FileMode.Create))
+                if (package.CopyToStreaming) //copyToStreaming的Package不打成Addon
+                {
+                    continue;
+                }
+                using (FileStream zipFileStream = new FileStream(Path.Combine(packagesFolderPath, GetPackageFileName(package.PackageName, Module.ModuleStateConfig.Json.ResourceVersion)), FileMode.Create))
                 {
                     using (ZipOutputStream zipStream = new ZipOutputStream(zipFileStream))
                     {
@@ -326,7 +324,7 @@ namespace EazyBuildPipeline.PackageManager
                         }
 
                         //构建bundle_version
-                        BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, ResourceVersion, package.Bundles, zipStream);
+                        BuildBundleVersionInfoInZipStream(bundleVersionFilePathInPackage, Module.ModuleStateConfig.Json.ResourceVersion, package.Bundles, zipStream);
 
                         //以下为每个包中Patch和Addon独有内容
                         switch (Module.UserConfig.Json.PackageMode)
@@ -358,23 +356,23 @@ namespace EazyBuildPipeline.PackageManager
         {
             if (Module.UserConfig.Json.PackageMode == "Addon")
             {
-                AddDirectoryToZipStream(zipStream, "Assets/StreamingAssets/Lua", "Lua/Lua", buffer, "*.lua"); //Hack: 重复的Lua库，但是Android包中需要，iOS包中不需要
+                AddDirectoryToZipStream(zipStream, "Assets/StreamingAssets/Lua", "Lua/Lua", buffer); //Hack: 重复的Lua库，但是Android包中需要，iOS包中不需要
             }
             switch (Module.UserConfig.Json.LuaSource)
             {
                 case "None":
                     break;
                 case "Origin":
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScripts", "Lua/LuaScripts32", buffer, "*.lua");
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScripts", "Lua/LuaScripts64", buffer, "*.lua");
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScripts", "Lua/LuaScripts32", buffer);
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScripts", "Lua/LuaScripts64", buffer);
                     break;
                 case "ByteCode":
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsByteCode32", "Lua/LuaScripts32", buffer, "*.lua");
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsByteCode64", "Lua/LuaScripts64", buffer, "*.lua");
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsByteCode32", "Lua/LuaScripts32", buffer);
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsByteCode64", "Lua/LuaScripts64", buffer);
                     break;
                 case "Encrypted":
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted32", "Lua/LuaScripts32", buffer, "*.lua");
-                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted64", "Lua/LuaScripts64", buffer, "*.lua");
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted32", "Lua/LuaScripts32", buffer);
+                    AddDirectoryToZipStream(zipStream, "Assets/LuaScriptsEncrypted64", "Lua/LuaScripts64", buffer);
                     break;
                 default:
                     throw new EBPException("不能识别Lua源：" + Module.UserConfig.Json.LuaSource);
@@ -421,6 +419,10 @@ namespace EazyBuildPipeline.PackageManager
             int length = sourceFolderPath.Length + 1;
             foreach (var filePath in Directory.GetFiles(sourceFolderPath, searchPattern, SearchOption.AllDirectories))
             {
+                if (Path.GetExtension(filePath) == ".meta") //跳过meta文件
+                {
+                    continue;
+                }
                 AddFileToZipStream(zipStream, filePath, Path.Combine(targetFolderPath, filePath.Remove(0, length)), buffer);
             }
         }
@@ -471,7 +473,7 @@ namespace EazyBuildPipeline.PackageManager
                 case "Addon":
                     fileName = string.Format("{0}_addon_{1}_{2}{3}",
                         platform,
-                        Module.ModuleStateConfig.Json.CurrentAddonVersion,
+                        Module.ModuleStateConfig.Json.ClientVersion,
                         displayName,
                         Module.ModuleConfig.Json.PackageExtension);
                     break;

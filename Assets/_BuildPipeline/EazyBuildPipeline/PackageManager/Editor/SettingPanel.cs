@@ -159,17 +159,17 @@ namespace EazyBuildPipeline.PackageManager.Editor
 
             //VersionPanel
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-            EditorGUILayout.LabelField("Resource Version: " + G.g.bundleTree.Versions.ResourceVersion, labelStyle, GUILayout.MaxWidth(150));
+            EditorGUILayout.LabelField("Resource Version: " + G.Module.ModuleStateConfig.Json.ResourceVersion, labelStyle, GUILayout.MaxWidth(150));
             GUILayout.FlexibleSpace();
             if (G.Module.UserConfig.Json.PackageMode == "Addon")
             {
                 EditorGUILayout.LabelField("Addon Version:", labelStyle, GUILayout.MaxWidth(110));
-                string addonVersion_new = EditorGUILayout.TextField(G.Module.ModuleStateConfig.Json.CurrentAddonVersion);
+                string addonVersion_new = EditorGUILayout.TextField(G.Module.ModuleStateConfig.Json.ClientVersion);
                 {
                     if (!string.IsNullOrEmpty(addonVersion_new)) addonVersion_new = addonVersion_new.Trim();
-                    if (addonVersion_new != G.Module.ModuleStateConfig.Json.CurrentAddonVersion)
+                    if (addonVersion_new != G.Module.ModuleStateConfig.Json.ClientVersion)
                     {
-                        G.Module.ModuleStateConfig.Json.CurrentAddonVersion = addonVersion_new;
+                        G.Module.ModuleStateConfig.Json.ClientVersion = addonVersion_new;
                         G.g.packageTree.UpdateAllFileName();
                         return;
                     }
@@ -280,7 +280,6 @@ namespace EazyBuildPipeline.PackageManager.Editor
                 {
                     G.Module.DisplayProgressBar("Build Packages", "Starting...", 0);
                     double startTime = EditorApplication.timeSinceStartup;
-                    G.Runner.ResourceVersion = G.g.bundleTree.Versions.ResourceVersion;
 
                     CommonModule.GenerateLogFolderPath();
                     G.Runner.Run();
