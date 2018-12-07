@@ -19,11 +19,16 @@ ipa_name=$2
 #build文件夹路径
 build_path=${project_path}/build
 
+#进入Xcode工程目录
+cd $project_path
+
+#删除build目录
+rm -rf build
+
 #清理#
-xcodebuild  clean
+xcodebuild clean
 
 #编译工程
-cd $project_path
 xcodebuild || exit
 
 #打包#

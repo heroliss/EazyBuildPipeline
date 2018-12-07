@@ -106,6 +106,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             //TODO: 未找到 16.	Android GamePad Support
             ps.Android.StripEngineCode = PlayerSettings.stripEngineCode;
             ps.Android.UseObbMode = PlayerSettings.Android.useAPKExpansionFiles;
+            ps.Android.BuildSystem = EditorUserBuildSettings.androidBuildSystem;
         }
 
         public void ApplyPlayerSettings(BuildTarget buildTarget)
@@ -155,6 +156,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     PlayerSettings.Android.keystorePass = ps.Android.KeystorePass;
                     PlayerSettings.Android.keyaliasName = ps.Android.KeyaliasName;
                     PlayerSettings.Android.keyaliasPass = ps.Android.KeyaliasPass;
+                    EditorUserBuildSettings.androidBuildSystem = ps.Android.BuildSystem;
                     break;
                 default:
                     throw new EBPException("意外的平台：" + buildTarget.ToString());

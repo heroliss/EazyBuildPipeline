@@ -181,6 +181,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 //Unity 2018 AndroidArchitecture ，2017 为 AndroidTargetDevice
                 [JsonConverter(typeof(StringEnumConverter))] public AndroidTargetDevice DeviceFilter;
                 public string PackageName;
+                [JsonConverter(typeof(StringEnumConverter))] public AndroidBuildSystem BuildSystem = AndroidBuildSystem.Gradle;
                 public bool UseObbMode;
                 public string KeystoreName;
                 public string KeystorePass;

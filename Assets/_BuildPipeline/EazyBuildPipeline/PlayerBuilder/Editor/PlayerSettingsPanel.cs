@@ -140,6 +140,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             ps.Android.MinimumAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Minimum API Level", ps.Android.MinimumAPILevel, OnValueChanged);
             ps.Android.TargetAPILevel = (AndroidSdkVersions)EBPEditorGUILayout.EnumPopup("Target API Level", ps.Android.TargetAPILevel, OnValueChanged);
             EditorGUILayout.Separator();
+            ps.Android.BuildSystem = (AndroidBuildSystem)EBPEditorGUILayout.EnumPopup("Build System", ps.Android.BuildSystem, OnValueChanged);
             EBPEditorGUILayout.Toggle("Use OBB Mode", ref ps.Android.UseObbMode, OnValueChanged);
             EBPEditorGUILayout.TextField("Keystore Name", ref ps.Android.KeystoreName, OnValueChanged);
             EBPEditorGUILayout.TextField("Keystore Pass", ref ps.Android.KeystorePass, OnValueChanged);
@@ -255,12 +256,15 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EditorGUILayout.Separator();
 
             //以下为当前配置，不保存在配置文件中
-            EditorGUILayout.LabelField("Temp Build Settings", EditorStyles.boldLabel);
-            EBPEditorGUILayout.Toggle("Development Build", ref G.Module.ModuleStateConfig.Json.DevelopmentBuild);
-            EditorGUI.BeginDisabledGroup(!G.Module.ModuleStateConfig.Json.DevelopmentBuild);
-            EBPEditorGUILayout.Toggle("AutoConnect Profiler", ref G.Module.ModuleStateConfig.Json.ConnectWithProfiler);
-            EBPEditorGUILayout.Toggle("Script Debugging", ref G.Module.ModuleStateConfig.Json.AllowDebugging);
-            EditorGUI.EndDisabledGroup();
+            using (var tempBuildScope = new GUILayout.VerticalScope("box"))
+            {
+                EditorGUILayout.LabelField("Temp Build Settings", EditorStyles.boldLabel);
+                EBPEditorGUILayout.Toggle("Development Build", ref G.Module.ModuleStateConfig.Json.DevelopmentBuild);
+                EditorGUI.BeginDisabledGroup(!G.Module.ModuleStateConfig.Json.DevelopmentBuild);
+                EBPEditorGUILayout.Toggle("AutoConnect Profiler", ref G.Module.ModuleStateConfig.Json.ConnectWithProfiler);
+                EBPEditorGUILayout.Toggle("Script Debugging", ref G.Module.ModuleStateConfig.Json.AllowDebugging);
+                EditorGUI.EndDisabledGroup();
+            }
             EditorGUILayout.EndScrollView();
         }
 
