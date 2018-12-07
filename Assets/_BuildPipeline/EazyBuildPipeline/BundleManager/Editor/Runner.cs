@@ -61,7 +61,7 @@ namespace EazyBuildPipeline.BundleManager
                 Module.DisplayProgressBar("Create New AssetBundleBuilds...", 0.2f, true);
                 var allAssets = policeModule.ModuleConfig.AllBundles;
                 List<string> assetNames = new List<string>();
-                using (var writer = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RemovedAssetsWhenBuildBundles.txt")))
+                using (var writer = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RemovedAssetsWhenBuildBundles.log")))
                 {
                     int removedAssetsCount = 0;
                     int removedBundlesCount = 0;

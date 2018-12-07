@@ -163,7 +163,7 @@ namespace EazyBuildPipeline.PackageManager.Editor
             GUILayout.FlexibleSpace();
             if (G.Module.UserConfig.Json.PackageMode == "Addon")
             {
-                EditorGUILayout.LabelField("Addon Version:", labelStyle, GUILayout.MaxWidth(110));
+                EditorGUILayout.LabelField("Client Version:", labelStyle, GUILayout.MaxWidth(110));
                 string addonVersion_new = EditorGUILayout.TextField(G.Module.ModuleStateConfig.Json.ClientVersion);
                 {
                     if (!string.IsNullOrEmpty(addonVersion_new)) addonVersion_new = addonVersion_new.Trim();

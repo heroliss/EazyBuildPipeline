@@ -16,36 +16,49 @@ namespace EazyBuildPipeline.PlayerBuilder
     {
         public void Prepare()
         {
-            Module.StartLog();
-            Module.LogHead("Start Prepare", 1);
-            EBPUtility.RefreshAssets();
-
-            Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
-            PrepareBuildOptions();
-
-            Module.DisplayProgressBar("Start DownloadConfigs", 0.02f, true);
-            DownLoadConfigs(0.02f, 0.3f);
-
-            if (CommonModule.CommonConfig.IsBatchMode)
+            try
             {
+                Module.StartLog();
+                Module.LogHead("Start Prepare", 1);
+                EBPUtility.RefreshAssets();
+
+                Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
+                PrepareBuildOptions();
+
+                Module.DisplayProgressBar("Start DownloadConfigs", 0.02f, true);
+                DownLoadConfigs(0.02f, 0.3f);
+
                 Module.DisplayProgressBar("Start Copy Directories", 0.3f, true);
                 CopyAllDirectories();
+
+                Module.DisplayProgressBar("Creating Building Configs Class File", 0.8f, true);
+                CreateBuildingConfigsClassFile();
+
+                EBPUtility.RefreshAssets();
+
+                Module.DisplayProgressBar("Applying PlayerSettings", 0.9f, true);
+                ApplyPlayerSettings(BuildPlayerOptions.target);
+
+                Module.DisplayProgressBar("Applying Scripting Defines", 0.95f, true);
+                ApplyScriptDefines(BuildPlayerOptions.target, CommonModule.CommonConfig.IsBatchMode ? false : true);
+
+                EBPUtility.RefreshAssets();
             }
-
-            Module.DisplayProgressBar("Creating Building Configs Class File", 0.8f, true);
-            CreateBuildingConfigsClassFile();
-
-            EBPUtility.RefreshAssets();
-
-            Module.DisplayProgressBar("Applying PlayerSettings", 0.9f, true);
-            ApplyPlayerSettings(BuildPlayerOptions.target);
-
-            Module.DisplayProgressBar("Applying Scripting Defines", 0.95f, true);
-            ApplyScriptDefines(BuildPlayerOptions.target, CommonModule.CommonConfig.IsBatchMode ? false : true);
-
-            EBPUtility.RefreshAssets();
-            Module.LogHead("End Prepare", 1);
-            Module.EndLog();
+            catch (Exception e)
+            {
+                var state = Module.ModuleStateConfig.Json;
+                state.ErrorMessage = e.Message;
+                state.DetailedErrorMessage = e.ToString();
+                if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
+                Module.Log(state.DetailedErrorMessage);
+                throw new EBPException(state.DetailedErrorMessage);
+            }
+            finally
+            {
+                Module.LogHead("End Prepare", 1);
+                Module.EndLog();
+                EditorUtility.ClearProgressBar();
+            }
         }
 
         protected override void PreProcess()
@@ -187,6 +200,10 @@ namespace EazyBuildPipeline.PlayerBuilder
 
             for (int i = 0; i < copyList.Count; i++)
             {
+                if (!copyList[i].Enable || (!CommonModule.CommonConfig.IsBatchMode && copyList[i].BatchMode))
+                {
+                    continue;
+                }
                 Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].TargetPath, 0.5f, true);
                 allCopiedFiles.AddRange(EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode, directoryRegex, fileRegex));
             }
@@ -197,7 +214,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             errorMessage = "";
             float progress = 0;
             //单独的日志文件
-            string logPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RevertFilesLog.txt");
+            string logPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RevertFiles.log");
             //删除所有已拷贝的文件（不存在的文件不记录日志）
             using (var logWriter = new StreamWriter(logPath, true))
             {
@@ -238,7 +255,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 Module.DisplayProgressBar(title, "Start Revert " + EBPUtility.Quote(item.TargetPath), 0, true);
 
                 Process p = SVNUpdate.Runner.ExcuteCommand("/bin/bash",
-                    EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "SVNRevert.sh")) + " " +
+                    EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "Shells/SVNRevert.sh")) + " " +
                     EBPUtility.Quote(item.TargetPath) + " " +
                     EBPUtility.Quote(logPath), OnReceived, OnErrorReceived, null);
 
@@ -426,18 +443,18 @@ namespace EazyBuildPipeline.PlayerBuilder
             code += string.Format("\tpublic static readonly string BuildVersion = \"{0}\";\n", build);
             code += string.Format("\tpublic static readonly int Resourceversion = {0};\n", resourceVersion);
             code += string.Format("\tpublic static readonly string BuglyAppId = \"{0}\";\n", ps.General.BuglyAppID);
-            code += string.Format("\tpublic static readonly string BuglyAppKey = \"{0}\";", ps.General.BuglyAppKey);
+            code += string.Format("\tpublic static readonly string BuglyAppKey = \"{0}\";\n", ps.General.BuglyAppKey);
 
             if (ps.General.Channel == EazyGameChannel.Channels.None)
             {
-                code += string.Format("\tpublic static readonly string GameChannel = {0};", "string.Empty");
+                code += string.Format("\tpublic static readonly string GameChannel = {0};\n", "string.Empty");
             }
             else
             {
-                code += string.Format("\tpublic static readonly string GameChannel = \"{0}\";", ps.General.Channel.ToString());
+                code += string.Format("\tpublic static readonly string GameChannel = \"{0}\";\n", ps.General.Channel.ToString());
             }
 
-            code += "\n}\n";
+            code += "}\n";
             return code;
         }
         #endregion
@@ -545,7 +562,25 @@ namespace EazyBuildPipeline.PlayerBuilder
             UnityAppController.WriteBelow("[KeyboardDelegate Initialize];", "[Bugly startWithAppId:@\"" + BuglyInit.BuglyAppID + "\"];");
 
             File.WriteAllText(projPath, proj.WriteToString());
-            //XcodeBuild (path);
+
+            //*******************************Build Xcode*******************************//
+            XcodeBuild(path, Module.UserConfig.Json.PlayerSettings.General.ProductName);
+        }
+
+        private void XcodeBuild(string projectPath, string ipaName)
+        {
+            errorMessage = "";
+            Module.DisplayProgressBar("Start Compile Xcode Project", projectPath, 0, true);
+
+            Process p = SVNUpdate.Runner.ExcuteCommand("/bin/bash",
+                EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "Shells/XcodeBuild.sh")) + " " +
+                EBPUtility.Quote(projectPath) + " " +
+                EBPUtility.Quote(ipaName), null/*OnReceived*/, OnErrorReceived, null);
+            p.WaitForExit();
+            if (p.ExitCode != 0)
+            {
+                throw new EBPException("XcodeBuild Shell Error: " + errorMessage);
+            }
         }
 
 

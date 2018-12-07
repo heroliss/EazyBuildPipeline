@@ -1,5 +1,5 @@
 {
-  "PipelineRootPath": "",
+  "PipelineRootPath": "E:/NewPipelineRoot",
   "CurrentAssetTag": [
     "",
     "",
@@ -22,7 +22,7 @@
     ]
   },
   "IconsFolderRelativePath": "Icons",
-  "PipelineLogFileName": "PipelineLog.txt",
+  "PipelineLogFileName": "Pipeline.log",
   "DataRootName": "Data",
   "LogsRootName": "Logs",
   "UserConfigsRootName": "Configs",

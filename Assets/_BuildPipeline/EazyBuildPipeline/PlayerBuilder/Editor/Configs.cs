@@ -210,8 +210,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             public class CopyItem
             {
                 public string SourcePath;
-                [JsonConverter(typeof(StringEnumConverter))] public CopyMode CopyMode;
                 public string TargetPath;
+                [JsonConverter(typeof(StringEnumConverter))] public CopyMode CopyMode;
+                public bool Enable = true;
+                public bool BatchMode;
             }
         }
     }

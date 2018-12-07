@@ -58,7 +58,7 @@ namespace EazyBuildPipeline
 
         public static void Toggle(string label, ref bool value, Action action = null, params GUILayoutOption[] options)
         {
-            bool value_new = EditorGUILayout.Toggle(label, value, options);
+            bool value_new = label == null ? EditorGUILayout.Toggle(value, options) : EditorGUILayout.Toggle(label, value, options);
             if (value_new != value)
             {
                 value = value_new;

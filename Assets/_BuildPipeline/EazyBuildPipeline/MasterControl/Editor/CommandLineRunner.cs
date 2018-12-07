@@ -31,7 +31,7 @@ namespace EazyBuildPipeline
         {
             //加载公共基础配置
             CommonModule.LoadCommonConfig();
-            consoleLogWriter = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "ConsoleLog.txt"), true);
+            consoleLogWriter = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "UnityConsole.log"), true);
             consoleLogWriter.AutoFlush = true;
             Application.logMessageReceived += LogConsole;
             CommonModule.CommonConfig.Json.PipelineRootPath = EBPUtility.GetArgValue("PipelineRootPath");

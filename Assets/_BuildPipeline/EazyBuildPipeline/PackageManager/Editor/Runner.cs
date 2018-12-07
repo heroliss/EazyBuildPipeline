@@ -60,7 +60,7 @@ namespace EazyBuildPipeline.PackageManager
                     {
                         if (string.IsNullOrEmpty(Module.ModuleStateConfig.Json.ClientVersion))
                         {
-                            throw new EBPCheckFailedException("请设置Addon Version");
+                            throw new EBPCheckFailedException("请设置Client Version");
                         }
                         char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
                         int index = Module.ModuleStateConfig.Json.ClientVersion.IndexOfAny(invalidFileNameChars);
@@ -138,7 +138,7 @@ namespace EazyBuildPipeline.PackageManager
 
             //清除不存在的Bundle
             Module.DisplayProgressBar("正在从Packages清单中清除不存在的Bundle", 0, true);
-            notExistLogWriter = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "NotExistBundlesWhenBuildPackage.txt"));
+            notExistLogWriter = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "NotExistBundlesWhenBuildPackage.log"));
             notExistLogWriter.WriteLine("Root: " + bundlesFolderPath + "\n");
             cleanBundlesCount = 0;
             foreach (var package in packages)

@@ -84,6 +84,8 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PrefixLabel("Copy Directory", EditorStyles.boldLabel);
+            GUILayout.Label("Enable/BatchMode");
+            GUILayout.FlexibleSpace();
             GUI.SetNextControlName("+");
             if (GUILayout.Button("+"))
             {
@@ -92,16 +94,21 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             }
             //EBPEditorGUILayout.TextField("           Directory Regex:", ref directoryRegex, OnValueChanged, GUILayout.MaxWidth(100000));
             //EBPEditorGUILayout.TextField("                    File Regex:", ref fileRegex, OnValueChanged, GUILayout.MaxWidth(100000));
-            GUILayout.FlexibleSpace();
+            //GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             for (int i = 0; i < copyList.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PrefixLabel("-");
-                EBPEditorGUILayout.TextField(null, ref copyList[i].SourcePath, OnValueChanged, GUILayout.MaxWidth(100000));
-                EditorGUILayout.LabelField("→", GUILayout.Width(15));
-                EBPEditorGUILayout.TextField(null, ref copyList[i].TargetPath, OnValueChanged, GUILayout.MaxWidth(100000));
-                copyList[i].CopyMode = (CopyMode)EBPEditorGUILayout.EnumPopup(null, copyList[i].CopyMode, OnValueChanged, GUILayout.Width(70));
+                EBPEditorGUILayout.Toggle(null, ref copyList[i].Enable, OnValueChanged);
+                using (var scope = new EditorGUI.DisabledGroupScope(!copyList[i].Enable))
+                {
+                    EBPEditorGUILayout.Toggle(null, ref copyList[i].BatchMode, OnValueChanged);
+                    EBPEditorGUILayout.TextField(null, ref copyList[i].SourcePath, OnValueChanged, GUILayout.MaxWidth(100000));
+                    EditorGUILayout.LabelField("→", GUILayout.Width(15));
+                    EBPEditorGUILayout.TextField(null, ref copyList[i].TargetPath, OnValueChanged, GUILayout.MaxWidth(100000));
+                    copyList[i].CopyMode = (CopyMode)EBPEditorGUILayout.EnumPopup(null, copyList[i].CopyMode, OnValueChanged, GUILayout.Width(70));
+                }
                 if (GUILayout.Button("-")
                     && ((string.IsNullOrEmpty(copyList[i].SourcePath) && string.IsNullOrEmpty(copyList[i].TargetPath))
                     || G.Module.DisplayDialog("确定删除该项？", "确定", "取消")))
