@@ -186,7 +186,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             return definesGroup;
         }
 
-        public void ApplyScriptDefines(BuildTarget buildTarget, bool disableTemp)
+        public void ApplyScriptDefines(BuildTarget buildTarget, bool revert = false)
         {
             var ps = Module.UserConfig.Json.PlayerSettings;
 
@@ -194,20 +194,20 @@ namespace EazyBuildPipeline.PlayerBuilder
             {
                 case BuildTarget.iOS:
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS,
-                        GetScriptDefinesStr(ps.General.ScriptDefines, disableTemp) +
-                        GetScriptDefinesStr(ps.IOS.ScriptDefines, disableTemp));
+                        GetScriptDefinesStr(ps.General.ScriptDefines, revert) +
+                        GetScriptDefinesStr(ps.IOS.ScriptDefines, revert));
                     break;
                 case BuildTarget.Android:
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Android,
-                        GetScriptDefinesStr(ps.General.ScriptDefines, disableTemp) +
-                        GetScriptDefinesStr(ps.Android.ScriptDefines, disableTemp));
+                        GetScriptDefinesStr(ps.General.ScriptDefines, revert) +
+                        GetScriptDefinesStr(ps.Android.ScriptDefines, revert));
                     break;
                 default:
                     throw new EBPException("意外的平台：" + buildTarget.ToString());
             }
         }
 
-        private string GetScriptDefinesStr(List<UserConfig.PlayerSettings.ScriptDefinesGroup> scriptDefines, bool disableTemp)
+        private string GetScriptDefinesStr(List<UserConfig.PlayerSettings.ScriptDefinesGroup> scriptDefines, bool revert)
         {
             string s = "";
             foreach (var definesGroup in scriptDefines)
@@ -216,7 +216,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 {
                     foreach (var define in definesGroup.Defines)
                     {
-                        if (define.Active && (!disableTemp || !define.IsTemp))
+                        if (define.Active && (!revert || !define.Revert))
                         {
                             s += define.Define + ";";
                         }

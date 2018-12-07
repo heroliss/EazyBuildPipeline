@@ -84,7 +84,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PrefixLabel("Copy Directory", EditorStyles.boldLabel);
-            GUILayout.Label("Enable/BatchMode");
+            GUILayout.Label("Active/Revert");
             GUILayout.FlexibleSpace();
             GUI.SetNextControlName("+");
             if (GUILayout.Button("+"))
@@ -100,10 +100,10 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PrefixLabel("-");
-                EBPEditorGUILayout.Toggle(null, ref copyList[i].Enable, OnValueChanged);
-                using (var scope = new EditorGUI.DisabledGroupScope(!copyList[i].Enable))
+                EBPEditorGUILayout.Toggle(null, ref copyList[i].Active, OnValueChanged);
+                using (var scope = new EditorGUI.DisabledGroupScope(!copyList[i].Active))
                 {
-                    EBPEditorGUILayout.Toggle(null, ref copyList[i].BatchMode, OnValueChanged);
+                    EBPEditorGUILayout.Toggle(null, ref copyList[i].Revert, OnValueChanged);
                     EBPEditorGUILayout.TextField(null, ref copyList[i].SourcePath, OnValueChanged, GUILayout.MaxWidth(100000));
                     EditorGUILayout.LabelField("→", GUILayout.Width(15));
                     EBPEditorGUILayout.TextField(null, ref copyList[i].TargetPath, OnValueChanged, GUILayout.MaxWidth(100000));
@@ -347,7 +347,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     G.Module.IsDirty = true;
                 }
                 EditorGUILayout.Space();
-                GUILayout.Label("BatchMode");
+                GUILayout.Label("Revert");
                 EditorGUILayout.Space();
                 if (GUILayout.Button("×"))
                 {
@@ -408,13 +408,13 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     }
                     GUILayout.FlexibleSpace();
                     EditorGUILayout.Space();
-                    bool isTemp_new = GUILayout.Toggle(define.IsTemp, GUIContent.none);
-                    if (isTemp_new != define.IsTemp)
+                    bool revert_new = GUILayout.Toggle(define.Revert, GUIContent.none);
+                    if (revert_new != define.Revert)
                     {
-                        define.IsTemp = isTemp_new;
+                        define.Revert = revert_new;
                         G.Module.IsDirty = true;
                     }
-                    GUILayout.Space(20);
+                    GUILayout.Space(10);
                     if (GUILayout.Button("+"))
                     {
                         if (!group.Defines.Exists(x => x.Define == ""))

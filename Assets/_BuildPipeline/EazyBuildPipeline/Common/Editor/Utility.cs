@@ -125,13 +125,12 @@ namespace EazyBuildPipeline
 
         #region CopyDirectory
 
-        public static List<string> CopyDirectory(string source, string target, CopyMode copyMode, Regex directoryRegex = null, Regex fileRegex = null)
+        public static void CopyDirectory(string source, string target, CopyMode copyMode, Regex directoryRegex = null, Regex fileRegex = null, Action<string> OnCopiedFile = null)
         {
             if (!Directory.Exists(source))
             {
                 throw new EBPException("要拷贝的源目录不存在:" + source);
             }
-            List<string> copiedFiles = new List<string>(); //仅用于返回拷贝了哪些文件(目标文件路径)
             switch (copyMode)
             {
                 case CopyMode.New:
@@ -139,28 +138,27 @@ namespace EazyBuildPipeline
                     {
                         throw new EBPException("目录已存在:" + target);
                     }
-                    RecursiveCopyDirectory(source, target, copiedFiles, directoryRegex, fileRegex);
+                    RecursiveCopyDirectory(source, target, directoryRegex, fileRegex, OnCopiedFile);
                     break;
                 case CopyMode.Add:
-                    RecursiveCopyDirectory(source, target, copiedFiles, directoryRegex, fileRegex, true);
+                    RecursiveCopyDirectory(source, target, directoryRegex, fileRegex, OnCopiedFile, true);
                     break;
                 case CopyMode.Overwrite:
-                    RecursiveCopyDirectory(source, target, copiedFiles, directoryRegex, fileRegex);
+                    RecursiveCopyDirectory(source, target, directoryRegex, fileRegex, OnCopiedFile);
                     break;
                 case CopyMode.Replace:
                     if (Directory.Exists(target))
                     {
                         Directory.Delete(target, true);
                     }
-                    RecursiveCopyDirectory(source, target, copiedFiles, directoryRegex, fileRegex);
+                    RecursiveCopyDirectory(source, target, directoryRegex, fileRegex, OnCopiedFile);
                     break;
                 default:
                     break;
             }
-            return copiedFiles;
         }
 
-        private static void RecursiveCopyDirectory(string source, string target, List<string> copiedFiles, Regex directoryRegex = null, Regex fileRegex = null, bool checkFileExist = false)
+        private static void RecursiveCopyDirectory(string source, string target, Regex directoryRegex = null, Regex fileRegex = null, Action<string> OnCopiedFile = null, bool checkFileExist = false)
         {
             Directory.CreateDirectory(target);
 
@@ -170,7 +168,7 @@ namespace EazyBuildPipeline
                 folderName = Path.GetFileName(folderPath);
                 if (directoryRegex == null || directoryRegex.IsMatch(folderName))
                 {
-                    RecursiveCopyDirectory(folderPath, Path.Combine(target, folderName), copiedFiles, directoryRegex, fileRegex, checkFileExist);
+                    RecursiveCopyDirectory(folderPath, Path.Combine(target, folderName), directoryRegex, fileRegex, OnCopiedFile, checkFileExist);
                 }
             }
 
@@ -187,7 +185,10 @@ namespace EazyBuildPipeline
                         continue;
                     }
                     File.Copy(filePath, targetFilePath, true);
-                    copiedFiles.Add(targetFilePath);
+                    if (OnCopiedFile != null)
+                    {
+                        OnCopiedFile(targetFilePath);
+                    }
                 }
             }
         }

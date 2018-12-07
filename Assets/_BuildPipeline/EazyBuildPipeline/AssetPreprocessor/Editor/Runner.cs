@@ -166,7 +166,7 @@ namespace EazyBuildPipeline.AssetPreprocessor
 #endif
             //TODO:这里能否再优化一下结构？
             string copyFileArgs = Path.Combine(Module.ModuleConfig.ShellsFolderPath, "CopyFile.sh") + " "
-                + Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "CopyFile.log") + " Assets " + Module.ModuleConfig.PreStoredAssetsFolderPath;
+                + Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "CopyPreAssets.log") + " Assets " + Module.ModuleConfig.PreStoredAssetsFolderPath;
             string changeMetaArgs = Path.Combine(Module.ModuleConfig.ShellsFolderPath, "ModifyMeta.sh") + " "
                 + Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "ModifyMetaFile.log") + " Assets " + platform;
             int changeMetaArgsLength = changeMetaArgs.Length;

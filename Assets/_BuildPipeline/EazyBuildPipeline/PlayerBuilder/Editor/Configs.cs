@@ -194,7 +194,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
             {
                 public bool Active;
                 public string Define;
-                public bool IsTemp;
+                public bool Revert;
                 [NonSerialized]
                 public List<ScriptDefine> RepeatList = new List<ScriptDefine>();
             }
@@ -213,8 +213,8 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public string SourcePath;
                 public string TargetPath;
                 [JsonConverter(typeof(StringEnumConverter))] public CopyMode CopyMode;
-                public bool Enable = true;
-                public bool BatchMode;
+                public bool Active = true;
+                public bool Revert = true;
             }
         }
     }
