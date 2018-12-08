@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEditor;
 
 namespace EazyBuildPipeline.SVNUpdate
@@ -7,12 +7,17 @@ namespace EazyBuildPipeline.SVNUpdate
     {
         protected override void PreProcess()
         {
+            Module.DisplayProgressBar("Clear Wrap Files...", 0, true);
+            ToLuaMenu.ClearLuaWraps();
+            Module.DisplayProgressBar("Clear Lua Files...", 0.2f, true);
+            LuaScriptsPreProcessor.Clean();
+
+            EBPUtility.RefreshAssets();
         }
 
         protected override void PostProcess()
         {
-            Module.DisplayProgressBar("Clear Wrap Files...", 1, true);
-            ToLuaMenu.ClearLuaWraps();
+            EBPUtility.RefreshAssets();
         }
     }
 }

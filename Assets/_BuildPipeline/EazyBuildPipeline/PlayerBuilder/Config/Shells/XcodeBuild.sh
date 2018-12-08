@@ -1,6 +1,6 @@
 # #!/bin/bash
 
-#²ÎÊıÅĞ¶Ï
+#å‚æ•°åˆ¤æ–­
 if [ $# != 2 ];then
     echo "Params error!"
     echo "Need two params: 1.path of project 2.name of ipa file"
@@ -10,26 +10,26 @@ elif [ ! -d $1 ];then
     exit
 
 fi
-#¹¤³ÌÂ·¾¶
+#å·¥ç¨‹è·¯å¾„
 project_path=$1
 
-#IPAÃû³Æ
+#IPAåç§°
 ipa_name=$2
 
-#buildÎÄ¼ş¼ĞÂ·¾¶
+#buildæ–‡ä»¶å¤¹è·¯å¾„
 build_path=${project_path}/build
 
-#½øÈëXcode¹¤³ÌÄ¿Â¼
+#è¿›å…¥Xcodeå·¥ç¨‹ç›®å½•
 cd $project_path
 
-#É¾³ıbuildÄ¿Â¼
+#åˆ é™¤buildç›®å½•
 rm -rf build
 
-#ÇåÀí#
+#æ¸…ç†#
 xcodebuild clean
 
-#±àÒë¹¤³Ì
+#ç¼–è¯‘å·¥ç¨‹
 xcodebuild || exit
 
-#´ò°ü#
+#æ‰“åŒ…#
 xcrun -sdk iphoneos PackageApplication -v ${build_path}/*.app -o ${build_path}/${ipa_name}.ipa

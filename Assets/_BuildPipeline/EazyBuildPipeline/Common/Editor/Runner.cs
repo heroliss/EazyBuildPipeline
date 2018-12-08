@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using EazyBuildPipeline.Common.Configs;
 using UnityEditor;
@@ -74,7 +74,7 @@ namespace EazyBuildPipeline
                     state.DetailedErrorMessage = e.ToString() + (e_catch == null ? "" : "\nCatch内部异常:" + e_catch.ToString());
                     if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
                     Module.Log(state.DetailedErrorMessage);
-                    throw new EBPException(state.DetailedErrorMessage);
+                    throw new EBPException(state.ErrorMessage, new EBPException(state.DetailedErrorMessage));
                 }
             }
             finally

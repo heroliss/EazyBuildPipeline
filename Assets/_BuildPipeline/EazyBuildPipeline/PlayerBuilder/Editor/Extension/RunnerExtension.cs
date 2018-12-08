@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Diagnostics;
 using System.IO;
@@ -34,8 +34,6 @@ namespace EazyBuildPipeline.PlayerBuilder
                 Module.DisplayProgressBar("Creating Building Configs Class File", 0.8f, true);
                 CreateBuildingConfigsClassFile();
 
-                EBPUtility.RefreshAssets();
-
                 Module.DisplayProgressBar("Applying PlayerSettings", 0.9f, true);
                 ApplyPlayerSettings(BuildPlayerOptions.target);
 
@@ -51,7 +49,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 state.DetailedErrorMessage = e.ToString();
                 if (!string.IsNullOrEmpty(Module.ModuleStateConfig.JsonPath)) Module.ModuleStateConfig.Save();
                 Module.Log(state.DetailedErrorMessage);
-                throw new EBPException(state.DetailedErrorMessage);
+                throw new EBPException(e.Message, e);
             }
             finally
             {
@@ -509,8 +507,6 @@ namespace EazyBuildPipeline.PlayerBuilder
 
             string target = proj.TargetGuidByName("Unity-iPhone");
 
-            //获得xcode工程完整目录
-            string xcodePath = Path.GetFullPath(path);
             //customsetting
             //*******************************添加framework*******************************//
             proj.AddFrameworkToProject(target, "CoreLocation.framework", false);
@@ -564,7 +560,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             // list3.AddKey(photoAdd2);
             // list3.Save();
 
-            string plistPath = Path.Combine(xcodePath, "info.plist");
+            string plistPath = Path.Combine(path, "info.plist");
             var plist = new PlistDocument();
             plist.ReadFromFile(plistPath);
             plist.root.SetString("NSBluetoothPeripheralUsageDescription", psIOS.BlueToothUsageDesc);
@@ -593,18 +589,32 @@ namespace EazyBuildPipeline.PlayerBuilder
 
         private void XcodeBuild(string projectPath, string ipaName)
         {
-            errorMessage = "";
-            Module.DisplayProgressBar("Start Compile Xcode Project", projectPath, 0, true);
-
-            Process p = SVNUpdate.Runner.ExcuteCommand("/bin/bash",
-                EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "Shells/XcodeBuild.sh")) + " " +
-                EBPUtility.Quote(projectPath) + " " +
-                EBPUtility.Quote(ipaName), null/*OnReceived*/, OnErrorReceived, null);
-            p.WaitForExit();
-            if (p.ExitCode != 0)
+            message = errorMessage = "";
+            Module.DisplayProgressBar("Start Build Xcode...", projectPath, 0, true);
+            using (var xcodeBuildLogWriter = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "XcodeBuild.log")) { AutoFlush = true })
             {
-                throw new EBPException("XcodeBuild Shell Error: " + errorMessage);
+                Process p = SVNUpdate.Runner.ExcuteCommand("/bin/bash",
+                    EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "Shells/XcodeBuild.sh")) + " " +
+                    EBPUtility.Quote(projectPath) + " " +
+                    EBPUtility.Quote(ipaName),
+                    (object sender, DataReceivedEventArgs e) =>
+                    {
+                        message = e.Data;
+                        xcodeBuildLogWriter.WriteLine(message);
+                    },
+                    OnErrorReceived, null);
+                int progress = 0;
+                while (!p.HasExited)
+                {
+                    Module.DisplayProgressBar("Building Xcode...", message, (float)(progress++ % 1000) / 1000);
+                    System.Threading.Thread.Sleep(100);
+                }
+                if (p.ExitCode != 0)
+                {
+                    throw new EBPException("XcodeBuild Shell Error: " + errorMessage);
+                }
             }
+            Module.DisplayProgressBar("Build Xcode", "Finish!", 1, true);
         }
 
 

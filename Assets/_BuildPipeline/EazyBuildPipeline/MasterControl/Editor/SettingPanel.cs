@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System;
 using System.Linq;
@@ -755,7 +755,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
                 string timeInfo = string.Format("用时：{0}时 {1}分 {2}秒\n", endTime.Hours, endTime.Minutes, endTime.Seconds);
                 if (currentModule == null)
                 {
-                    G.Module.DisplayDialog("管线运行时发生错误!" + timeInfo + "错误信息：" + e.ToString());
+                    G.Module.DisplayDialog("管线运行时发生错误!" + timeInfo + "错误信息：" + e.Message);
                 }
                 else
                 {
