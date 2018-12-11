@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -76,7 +76,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             //iOS
             ps.IOS.BundleID = PlayerSettings.GetApplicationIdentifier(BuildTargetGroup.iOS);
             ps.IOS.AutomaticallySign = PlayerSettings.iOS.appleEnableAutomaticSigning;
-            ps.IOS.ProvisioningProfile = PlayerSettings.iOS.iOSManualProvisioningProfileID;
+            ps.IOS.ProfileID = PlayerSettings.iOS.iOSManualProvisioningProfileID;
             ps.IOS.TeamID = PlayerSettings.iOS.appleDeveloperTeamID;
             ps.IOS.CameraUsageDesc = PlayerSettings.iOS.cameraUsageDescription;
             ps.IOS.LocationUsageDesc = PlayerSettings.iOS.locationUsageDescription;
@@ -122,7 +122,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, ps.IOS.BundleID);
                     PlayerSettings.iOS.buildNumber = Module.ModuleStateConfig.Json.BuildNumber.ToString();
                     PlayerSettings.iOS.appleEnableAutomaticSigning = ps.IOS.AutomaticallySign;
-                    PlayerSettings.iOS.iOSManualProvisioningProfileID = ps.IOS.ProvisioningProfile;
+                    PlayerSettings.iOS.iOSManualProvisioningProfileID = ps.IOS.ProfileID;
                     PlayerSettings.iOS.appleDeveloperTeamID = ps.IOS.TeamID;
                     PlayerSettings.iOS.cameraUsageDescription = ps.IOS.CameraUsageDesc;
                     PlayerSettings.iOS.locationUsageDescription = ps.IOS.LocationUsageDesc;

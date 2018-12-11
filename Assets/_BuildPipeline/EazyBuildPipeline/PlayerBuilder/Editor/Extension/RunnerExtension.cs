@@ -120,6 +120,9 @@ namespace EazyBuildPipeline.PlayerBuilder
             Module.DisplayProgressBar("Revert Copied Files", 0f, true);
             RevertAllCopiedFiles();
 
+            //清除Wrap
+            ToLuaMenu.ClearLuaWraps();
+
             EBPUtility.RefreshAssets();
         }
 
@@ -584,19 +587,44 @@ namespace EazyBuildPipeline.PlayerBuilder
             File.WriteAllText(projPath, proj.WriteToString());
 
             //*******************************Build Xcode*******************************//
-            XcodeBuild(path, Module.UserConfig.Json.PlayerSettings.General.ProductName);
+            CreateIPAExportOptionsPlist();
+            XcodeBuild();
         }
 
-        private void XcodeBuild(string projectPath, string ipaName)
+        private void CreateIPAExportOptionsPlist()
         {
+            var ios = Module.UserConfig.Json.PlayerSettings.IOS;
+            var eo = ios.IPAExportOptions;
+            PlistDocument plist = new PlistDocument();
+            plist.root = new PlistElementDict();
+            plist.root.SetBoolean("compileBitcode", eo.CompileBitcode);
+            plist.root.SetString("destination", eo.Destination);
+            plist.root.SetString("method", eo.Method);
+            var provisioningProfiles = plist.root.CreateDict("provisioningProfiles");
+            provisioningProfiles.SetString(ios.BundleID, ios.ProfileID);
+            plist.root.SetString("signingCertificate", eo.SigningCertificate);
+            plist.root.SetString("signingStyle", eo.SigningStyle);
+            plist.root.SetBoolean("stripSwiftSymbols", eo.StripSwiftSymbols);
+            plist.root.SetString("teamID", ios.TeamID);
+            plist.root.SetString("thinning", eo.Thinning);
+
+            string tagsPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
+            string ipaFolderPath = Path.Combine(tagsPath, "IPA");
+            Directory.CreateDirectory(ipaFolderPath);
+            plist.WriteToFile(Path.Combine(ipaFolderPath, "ExportOptions.plist"));
+        }
+
+        private void XcodeBuild()
+        {
+            string workPath = Path.Combine(Module.ModuleConfig.WorkPath, EBPUtility.GetTagStr(Module.ModuleStateConfig.Json.CurrentTag));
             message = errorMessage = "";
-            Module.DisplayProgressBar("Start Build Xcode...", projectPath, 0, true);
+            Module.DisplayProgressBar("Start Xcode Build...", 0, true);
             using (var xcodeBuildLogWriter = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "XcodeBuild.log")) { AutoFlush = true })
             {
                 Process p = SVNUpdate.Runner.ExcuteCommand("/bin/bash",
                     EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "Shells/XcodeBuild.sh")) + " " +
-                    EBPUtility.Quote(projectPath) + " " +
-                    EBPUtility.Quote(ipaName),
+                    EBPUtility.Quote(workPath) + " " +
+                    EBPUtility.Quote("Project/Unity-iPhone.xcodeproj"),
                     (object sender, DataReceivedEventArgs e) =>
                     {
                         message = e.Data;
@@ -606,7 +634,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 int progress = 0;
                 while (!p.HasExited)
                 {
-                    Module.DisplayProgressBar("Building Xcode...", message, (float)(progress++ % 1000) / 1000);
+                    Module.DisplayProgressBar("Xcode Building...", message, (float)(progress++ % 1000) / 1000);
                     System.Threading.Thread.Sleep(100);
                 }
                 if (p.ExitCode != 0)
@@ -614,7 +642,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     throw new EBPException("XcodeBuild Shell Error: " + errorMessage);
                 }
             }
-            Module.DisplayProgressBar("Build Xcode", "Finish!", 1, true);
+            Module.DisplayProgressBar("Xcode Build", "Finish!", 1, true);
         }
 
 

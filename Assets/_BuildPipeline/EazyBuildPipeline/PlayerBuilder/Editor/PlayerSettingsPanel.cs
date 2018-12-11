@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System;
 using System.Collections.Generic;
+using UnityEditor.iOS.Xcode;
 
 namespace EazyBuildPipeline.PlayerBuilder.Editor
 {
@@ -181,12 +182,52 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EBPEditorGUILayout.TextField("Bundle Identifier", ref ps.IOS.BundleID, OnValueChanged);
             EditorGUILayout.Separator();
 
-            EditorGUILayout.LabelField("Signing", EditorStyles.boldLabel);
-            EBPEditorGUILayout.Toggle("Automatically Sign", ref ps.IOS.AutomaticallySign, OnValueChanged);
-            EditorGUI.BeginDisabledGroup(ps.IOS.AutomaticallySign);
-            EBPEditorGUILayout.TextField("Provisioning Profile", ref ps.IOS.ProvisioningProfile, OnValueChanged);
-            EditorGUI.EndDisabledGroup();
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.PrefixLabel("Signing", EditorStyles.boldLabel);
+                if (GUILayout.Button("Open Provising Profile", GUILayout.MaxWidth(200)))
+                {
+                    string path = EditorUtility.OpenFilePanel("Select the Provising Profile used for Manual Signing", null, "mobileprovision");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        GUI.FocusControl("");
+                        string text = File.ReadAllText(path, System.Text.Encoding.UTF8);
+                        int start = text.IndexOf("<plist");
+                        int len = text.IndexOf("</plist") - start;
+                        string plistStr = text.Substring(start, len) + "</plist>";
+                        PlistDocument plist = new PlistDocument();
+                        plist.ReadFromString(plistStr.Replace("date", "string")); //Hack: 此处date替换为string是因为这个PlistDocument不能识别date类型导致报错
+                        ps.IOS.ProfileID = plist.root.values["UUID"].AsString();
+                        ps.IOS.TeamID = plist.root.values["TeamIdentifier"].AsArray().values[0].AsString();
+                    }
+                }
+            }
             EBPEditorGUILayout.TextField("Team ID", ref ps.IOS.TeamID, OnValueChanged);
+            EBPEditorGUILayout.Toggle("Automatically Sign", ref ps.IOS.AutomaticallySign, OnValueChanged);
+
+            EditorGUI.BeginDisabledGroup(ps.IOS.AutomaticallySign);
+            EBPEditorGUILayout.TextField("Profile ID", ref ps.IOS.ProfileID, OnValueChanged);
+
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUILayout.Separator();
+
+            EditorGUILayout.LabelField("IPA Export Options", EditorStyles.boldLabel);
+            EBPEditorGUILayout.Toggle("CompileBitcode", ref ps.IOS.IPAExportOptions.CompileBitcode, OnValueChanged);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EBPEditorGUILayout.TextField("Method", ref ps.IOS.IPAExportOptions.Method, OnValueChanged);
+                if (GUILayout.Button("Options", GUILayout.MaxWidth(60)))
+                {
+                    GUI.FocusControl("");
+                    GenericMenu menu = new GenericMenu();
+                    foreach (var option in ps.IOS.IPAExportOptions.Methods)
+                    {
+                        menu.AddItem(new GUIContent(option), false, () => { ps.IOS.IPAExportOptions.Method = option; });
+                    }
+                    menu.ShowAsContext();
+                }
+            }
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Deployment Info", EditorStyles.boldLabel);

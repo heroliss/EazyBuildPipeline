@@ -1,4 +1,4 @@
-﻿#pragma warning disable 0649
+#pragma warning disable 0649
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -122,9 +122,24 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 public string CopyDirectoryRegex, CopyFileRegex;
                 public List<CopyItem> CopyList = new List<CopyItem>();
                 public string BundleID;
+
+                //Provisioning Profile
                 public bool AutomaticallySign;
-                public string ProvisioningProfile;
+                public string ProfileID;
                 public string TeamID;
+                public ExportOptionsPlistSettings IPAExportOptions = new ExportOptionsPlistSettings();
+                [Serializable]
+                public class ExportOptionsPlistSettings
+                {
+                    public bool CompileBitcode;
+                    public string Destination = "export";
+                    [NonSerialized] public readonly string[] Methods = { "development", "app-store", "ad-hoc", "enterprise" };
+                    public string Method = "development";
+                    public string SigningCertificate = "iPhone Developer"; //另一个选项："iPhone Distribution"
+                    public string SigningStyle = "manual"; //另一个选项：automatic
+                    public bool StripSwiftSymbols = true;
+                    public string Thinning = "&lt;none&gt;";
+                }
                 public string CameraUsageDesc;
                 public string LocationUsageDesc;
                 public string MicrophoneUsageDesc;
