@@ -334,9 +334,9 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 }
                 G.Module.IsDirty = true;
             }
-            if (GUILayout.Button(new GUIContent("Apply Scripting Defines","应用当前平台的宏定义，不包括临时宏定义"), GUILayout.Height(30)))
+            if (GUILayout.Button(new GUIContent("Apply Scripting Defines","应用当前平台所有勾选的宏定义"), GUILayout.Height(30)))
             {
-                G.Runner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true);
+                G.Runner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget);
             }
             EditorGUILayout.EndHorizontal();
 

@@ -551,7 +551,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
         }
         private void ClickedApply()
         {
-            PlayerBuilder.G.Runner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true);
+            PlayerBuilder.G.Runner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget);
             PlayerBuilder.G.Runner.ApplyPlayerSettings(EditorUserBuildSettings.activeBuildTarget);
         }
 

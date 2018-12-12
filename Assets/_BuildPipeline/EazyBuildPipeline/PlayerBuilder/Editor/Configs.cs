@@ -138,7 +138,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                     public string SigningCertificate = "iPhone Developer"; //另一个选项："iPhone Distribution"
                     public string SigningStyle = "manual"; //另一个选项：automatic
                     public bool StripSwiftSymbols = true;
-                    public string Thinning = "&lt;none&gt;";
+                    public string Thinning = "<none>";
                 }
                 public string CameraUsageDesc;
                 public string LocationUsageDesc;

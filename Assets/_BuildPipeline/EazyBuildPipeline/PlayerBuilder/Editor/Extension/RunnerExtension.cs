@@ -205,7 +205,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     {
                         continue;
                     }
-                    Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].TargetPath, 0.5f, true);
+                    Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].SourcePath + " -> " + copyList[i].TargetPath, 0.5f, true);
                     bool revertThis = copyList[i].Revert;
                     EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode, directoryRegex, fileRegex,
                         (targetPath) =>
@@ -335,7 +335,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                     locationPath = Path.Combine(tagsPath, versionInfo + ".apk");
                     break;
                 case BuildTarget.iOS:
-                    locationPath = Path.Combine(tagsPath, versionInfo);
+                    locationPath = Path.Combine(tagsPath, "Project");
                     break;
                 default:
                     throw new EBPException("意外的平台：" + EditorUserBuildSettings.activeBuildTarget);
