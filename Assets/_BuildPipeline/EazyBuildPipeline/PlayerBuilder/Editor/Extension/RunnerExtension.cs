@@ -568,8 +568,11 @@ namespace EazyBuildPipeline.PlayerBuilder
             File.WriteAllText(projPath, proj.WriteToString());
 
             //*******************************Build Xcode*******************************//
-            CreateIPAExportOptionsPlist();
-            XcodeBuild();
+            if (psIOS.IPAExportOptions.ExportIPA)
+            {
+                CreateIPAExportOptionsPlist();
+                XcodeBuild();
+            }
         }
 
         private void CreateIPAExportOptionsPlist()

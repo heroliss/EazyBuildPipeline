@@ -185,7 +185,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUILayout.PrefixLabel("Signing", EditorStyles.boldLabel);
-                if (GUILayout.Button("Open Provising Profile", GUILayout.MaxWidth(200)))
+                if (GUILayout.Button("Open Provising Profile", GUILayout.MaxWidth(160)))
                 {
                     string path = EditorUtility.OpenFilePanel("Select the Provising Profile used for Manual Signing", null, "mobileprovision");
                     if (!string.IsNullOrEmpty(path))
@@ -207,12 +207,13 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
             EditorGUI.BeginDisabledGroup(ps.IOS.AutomaticallySign);
             EBPEditorGUILayout.TextField("Profile ID", ref ps.IOS.ProfileID, OnValueChanged);
-
             EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("IPA Export Options", EditorStyles.boldLabel);
+            EBPEditorGUILayout.Toggle("Export IPA", ref ps.IOS.IPAExportOptions.ExportIPA, OnValueChanged);
+            EditorGUI.BeginDisabledGroup(!ps.IOS.IPAExportOptions.ExportIPA);
             EBPEditorGUILayout.Toggle("CompileBitcode", ref ps.IOS.IPAExportOptions.CompileBitcode, OnValueChanged);
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -228,6 +229,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     menu.ShowAsContext();
                 }
             }
+            EditorGUI.EndDisabledGroup();
             EditorGUILayout.Separator();
 
             EditorGUILayout.LabelField("Deployment Info", EditorStyles.boldLabel);

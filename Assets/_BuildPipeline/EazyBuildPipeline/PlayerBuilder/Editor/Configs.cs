@@ -131,6 +131,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 [Serializable]
                 public class ExportOptionsPlistSettings
                 {
+                    public bool ExportIPA;
                     public bool CompileBitcode;
                     public string Destination = "export";
                     [NonSerialized] public readonly string[] Methods = { "development", "app-store", "ad-hoc", "enterprise" };
