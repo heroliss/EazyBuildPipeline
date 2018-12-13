@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
@@ -8,6 +8,7 @@ namespace EazyBuildPipeline
 {
     public static class CommonModule
     {
+        public static readonly string MarkDirName = ".eazyBuildPipeline";
         public static CommonConfig CommonConfig = new CommonConfig();
         public static string CommonConfigSearchText { get { return "EazyBuildPipeline CommonConfig"; } }
         public static Texture2D GetIcon(string iconFileName)
@@ -35,9 +36,22 @@ namespace EazyBuildPipeline
                     GenerateLogFolderPath(); //确保没有LogPath参数时也存在日志目录路径
                     CommonConfig.CurrentLogFolderPath = EBPUtility.GetArgValue("LogPath"); //只有batchmode才开启自定义日志路径
                 }
-                else
+                else //只有非batchmode才开启根目录检查和自动创建
                 {
-                    CheckAndSetAllRootPath(); //只有非batchmode才开启根目录检查和自动创建
+                    string rootPath = null;
+                    if (!string.IsNullOrEmpty(CommonConfig.Json.PipelineRootPath))
+                    {
+                        rootPath = EBPUtility.OpenPipelineRoot(CommonConfig.Json.PipelineRootPath);
+                    }
+                    if (rootPath == null)
+                    {
+                        rootPath = EBPUtility.OpenPipelineRoot();
+                    }
+                    if (rootPath == null)
+                    {
+                        return false;
+                    }
+                    ChangeRootPath(rootPath);
                 }
 
                 return true;
@@ -55,38 +69,10 @@ namespace EazyBuildPipeline
             }
         }
 
-        public static void ChangeRootPath(string path)
+        public static void ChangeRootPath(string rootPath)
         {
-            CommonConfig.Json.PipelineRootPath = path;
+            CommonConfig.Json.PipelineRootPath = rootPath;
             CommonConfig.Save();
-            CheckAndSetAllRootPath();
-        }
-
-        public static void CheckAndSetAllRootPath()
-        {
-            CheckAndResetRootPath(CommonConfig.UserConfigsRootPath);
-            //CheckAndResetRootPath(CommonConfig.DataRootPath);
-            //CheckAndResetRootPath(CommonConfig.LogsRootPath);
-        }
-
-        static void CheckAndResetRootPath(string path)
-        {
-            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
-            {
-                if (EditorUtility.DisplayDialog("检查目录结构", "Pipeline根目录（" + CommonConfig.Json.PipelineRootPath +
-                    "）中缺少子目录：" + path, "创建新的根目录", "忽略"))
-                {
-                    string newPath = EditorUtility.OpenFolderPanel("Open Pipeline Root", CommonConfig.Json.PipelineRootPath, null);
-                    if (!string.IsNullOrEmpty(newPath))
-                    {
-                        CommonConfig.Json.PipelineRootPath = newPath;
-                        CommonConfig.Save();
-                        Directory.CreateDirectory(CommonConfig.DataRootPath);
-                        Directory.CreateDirectory(CommonConfig.UserConfigsRootPath);
-                        Directory.CreateDirectory(CommonConfig.LogsRootPath);
-                    }
-                }
-            }
         }
 
         public static void GenerateLogFolderPath()

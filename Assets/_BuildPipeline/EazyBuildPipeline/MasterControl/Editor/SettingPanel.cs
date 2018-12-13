@@ -11,7 +11,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
     [Serializable]
     public class SettingPanel
     {
-        enum Step { None, Start, SVNUpdate, PreprocessAssets, BuildBundles, BuildPackages, PrepareBuildPlayer, BuildPlayer, Finish }
+        enum Step { None, Start, SVNUpdate, Prepare, PreprocessAssets, BuildBundles, BuildPackages, BuildPlayer, Finish }
         [SerializeField] string SVNMessage;
         [SerializeField] Step currentStep = Step.None;
         [SerializeField] double startTime;
@@ -425,7 +425,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
 
             //BuildPlayer
             EditorGUILayout.BeginHorizontal();
-            FrontIndicator(currentStep == Step.BuildPlayer || currentStep == Step.PrepareBuildPlayer, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying,
+            FrontIndicator(currentStep == Step.BuildPlayer || currentStep == Step.Prepare, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.Applying,
                           G.Module.PlayerBuilderModule.ModuleStateConfig.Json.ErrorMessage);
             G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline = EditorGUILayout.BeginToggleGroup(
                   playerBuilderContent, G.Module.PlayerBuilderModule.ModuleStateConfig.Json.IsPartOfPipeline);
@@ -651,6 +651,16 @@ namespace EazyBuildPipeline.MasterControl.Editor
                         {
                             G.Module.SVNUpdateRunner.Run();
                         }
+                        currentStep = Step.Prepare;
+                        break;
+                    case Step.Prepare:
+                        var state4_pre = G.Module.PlayerBuilderModule.ModuleStateConfig;
+                        if (state4_pre.Json.IsPartOfPipeline)
+                        {
+                            state4_pre.Json.ResourceVersion = G.Module.BundleManagerModule.ModuleStateConfig.Json.ResourceVersion;
+                            state4_pre.Json.ClientVersion = G.Module.PackageManagerModule.ModuleStateConfig.Json.ClientVersion;
+                            G.Module.PlayerBuilderRunner.Prepare();
+                        }
                         currentStep = Step.PreprocessAssets;
                         break;
                     case Step.PreprocessAssets:
@@ -693,16 +703,6 @@ namespace EazyBuildPipeline.MasterControl.Editor
                             state3.Load();
                             state3.Json.IsPartOfPipeline = false;
                             state3.Save();
-                        }
-                        currentStep = Step.PrepareBuildPlayer;
-                        break;
-                    case Step.PrepareBuildPlayer:
-                        var state4_pre = G.Module.PlayerBuilderModule.ModuleStateConfig;
-                        if (state4_pre.Json.IsPartOfPipeline)
-                        {
-                            state4_pre.Json.ResourceVersion = G.Module.BundleManagerModule.ModuleStateConfig.Json.ResourceVersion;
-                            state4_pre.Json.ClientVersion = G.Module.PackageManagerModule.ModuleStateConfig.Json.ClientVersion;
-                            G.Module.PlayerBuilderRunner.Prepare();
                         }
                         currentStep = Step.BuildPlayer;
                         break;

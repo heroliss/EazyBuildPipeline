@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System;
 using System.IO;
@@ -17,26 +17,25 @@ namespace EazyBuildPipeline
             EditorGUILayout.LabelField(new GUIContent("Root:", rootAvailable ? null : module.StateConfigLoadFailedMessage),
                 rootAvailable ? EditorStyles.label : errorStyle, GUILayout.Width(45));
 
-            string path = EditorGUILayout.DelayedTextField(CommonModule.CommonConfig.Json.PipelineRootPath);
+            string rootPath = EditorGUILayout.DelayedTextField(CommonModule.CommonConfig.Json.PipelineRootPath);
             if (GUILayout.Button("...", miniButtonOptions))
             {
-                path = EditorUtility.OpenFolderPanel("打开根目录", CommonModule.CommonConfig.Json.PipelineRootPath, null);
+                rootPath = EditorUtility.OpenFolderPanel("打开根目录", CommonModule.CommonConfig.Json.PipelineRootPath, null);
             }
-            if (!string.IsNullOrEmpty(path) && path != CommonModule.CommonConfig.Json.PipelineRootPath)
+            if (!string.IsNullOrEmpty(rootPath) && rootPath != CommonModule.CommonConfig.Json.PipelineRootPath)
             {
-                if (!Directory.Exists(path))
+                string result = EBPUtility.OpenPipelineRoot(rootPath);
+                if (result != null)
                 {
-                    module.DisplayDialog("目录不存在:" + path);
-                    return;
-                }
-                bool ensure = true;
-                if (module.IsDirty)
-                {
-                    ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
-                }
-                if (ensure)
-                {
-                    ChangeRootPath(path);
+                    bool ensure = true;
+                    if (module.IsDirty)
+                    {
+                        ensure = EditorUtility.DisplayDialog("改变根目录", "更改未保存，是否要放弃更改？", "放弃保存", "返回");
+                    }
+                    if (ensure)
+                    {
+                        ChangeRootPath(result);
+                    }
                 }
                 return;
             }

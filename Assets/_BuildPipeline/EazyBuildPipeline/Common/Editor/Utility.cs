@@ -33,6 +33,39 @@ namespace EazyBuildPipeline
             return '\"' + s + '\"';
         }
 
+        public static string OpenPipelineRoot(string rootPath = null)
+        {
+            if (string.IsNullOrEmpty(rootPath))
+            {
+                rootPath = EditorUtility.OpenFolderPanel("Select Pipeline Root Folder", CommonModule.CommonConfig.Json.PipelineRootPath, null);
+            }
+            if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
+            {
+                return null;
+            }
+            string markDirPath = Path.Combine(rootPath, CommonModule.MarkDirName);
+            if (Directory.Exists(markDirPath))
+            {
+                return rootPath;
+            }
+            else
+            {
+                if (EditorUtility.DisplayDialog("Select Pipeline Root", "该目录不是合法的Pipeline根目录，是否要将其转化为合法的Pipeline根目录？\n\n" + rootPath,
+                    "合法化该目录", "取消"))
+                {
+                    Directory.CreateDirectory(markDirPath);
+                    Directory.CreateDirectory(Path.Combine(rootPath, CommonModule.CommonConfig.Json.DataRootName));
+                    Directory.CreateDirectory(Path.Combine(rootPath, CommonModule.CommonConfig.Json.UserConfigsRootName));
+                    Directory.CreateDirectory(Path.Combine(rootPath, CommonModule.CommonConfig.Json.LogsRootName));
+                    return rootPath;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         /// <summary>
         /// 在给定的根目录(rootPath)下递归查找所有匹配搜索模式(searchPattern)的文件，返回在根目录下的相对路径，不包含文件名后缀
         /// </summary>
