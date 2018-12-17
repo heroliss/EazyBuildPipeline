@@ -81,12 +81,32 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             G.Module.IsDirty = true;
         }
 
-        private void CopyListPanel(List<Configs.UserConfig.PlayerSettings.CopyItem> copyList, ref string directoryRegex, ref string fileRegex)
+        List<Configs.UserConfig.PlayerSettings.CopyItem> copyList = new List<Configs.UserConfig.PlayerSettings.CopyItem>();
+        private void CopyListPanel(BuildTarget buildTarget, ref string directoryRegex, ref string fileRegex)
         {
+            switch (buildTarget)
+            {
+                case BuildTarget.Android:
+                    copyList = G.Module.UserConfig.Json.PlayerSettings.Android.CopyList;
+                    break;
+                case BuildTarget.iOS:
+                    copyList = G.Module.UserConfig.Json.PlayerSettings.IOS.CopyList;
+                    break;
+                default:
+                    break;
+            }
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PrefixLabel("Copy Directory", EditorStyles.boldLabel);
             GUILayout.Label("Active/Revert");
             GUILayout.FlexibleSpace();
+            if(GUILayout.Button("Copy Now"))
+            {
+                CopyNow(buildTarget);
+            }
+            if (GUILayout.Button("Revert Now"))
+            {
+                RevertNow();
+            }
             GUI.SetNextControlName("+");
             if (GUILayout.Button("+"))
             {
@@ -121,6 +141,37 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
             }
+        }
+
+        public static bool RevertNow()
+        {
+            string logPath = EditorUtility.OpenFilePanel("Open Copy File Log", null, "log");
+            string revertLogPath = null;
+            if (!string.IsNullOrEmpty(logPath))
+            {
+                revertLogPath = EditorUtility.SaveFilePanel("Save Revert Log", Path.GetDirectoryName(logPath), "Revert", "log");
+            }
+            if (!string.IsNullOrEmpty(logPath) && !string.IsNullOrEmpty(revertLogPath) && File.Exists(logPath))
+            {
+                G.Module.DisplayProgressBar("Start Revert Copied Files", 0f);
+                G.Runner.RevertAllCopiedFiles(File.ReadAllLines(logPath), revertLogPath);
+                EditorUtility.ClearProgressBar();
+                return true;
+            }
+            return false;
+        }
+
+        public static bool CopyNow(BuildTarget buildTarget)
+        {
+            string logPath = EditorUtility.SaveFilePanel("Save Copy File Log", null, null, "log");
+            if (!string.IsNullOrEmpty(logPath))
+            {
+                G.Module.DisplayProgressBar("Start Copy Directories", 0);
+                G.Runner.CopyAllDirectories(buildTarget, logPath);
+                EditorUtility.ClearProgressBar();
+                return true;
+            }
+            return false;
         }
 
         private void AndroidPanel()
@@ -168,7 +219,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             EBPEditorGUILayout.Toggle("Protect Graphics Memory", ref ps.Android.ProtectGraphicsMemory, OnValueChanged);
             EditorGUILayout.Separator();
 
-            CopyListPanel(ps.Android.CopyList, ref ps.Android.CopyDirectoryRegex, ref ps.Android.CopyFileRegex);
+            CopyListPanel(BuildTarget.Android, ref ps.Android.CopyDirectoryRegex, ref ps.Android.CopyFileRegex);
 
             EditorGUILayout.EndScrollView();
         }
@@ -262,7 +313,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             //EditorGUI.EndDisabledGroup();
             EditorGUILayout.Separator();
 
-            CopyListPanel(ps.IOS.CopyList, ref ps.IOS.CopyDirectoryRegex, ref ps.IOS.CopyFileRegex);
+            CopyListPanel(BuildTarget.iOS, ref ps.IOS.CopyDirectoryRegex, ref ps.IOS.CopyFileRegex);
 
             EditorGUILayout.EndScrollView();
         }

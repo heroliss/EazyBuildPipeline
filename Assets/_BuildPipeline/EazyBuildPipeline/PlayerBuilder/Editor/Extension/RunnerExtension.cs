@@ -29,7 +29,7 @@ namespace EazyBuildPipeline.PlayerBuilder
                 DownLoadConfigs(0.02f, 0.3f);
 
                 Module.DisplayProgressBar("Start Copy Directories", 0.3f, true);
-                CopyAllDirectories();
+                CopyAllDirectories(BuildPlayerOptions.target, Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, copyFileLogName));
 
                 Module.DisplayProgressBar("Creating Building Configs Class File", 0.8f, true);
                 CreateBuildingConfigsClassFile();
@@ -112,7 +112,11 @@ namespace EazyBuildPipeline.PlayerBuilder
 
             //还原被拷贝覆盖的文件
             Module.DisplayProgressBar("Revert Copied Files", 0f, true);
-            RevertAllCopiedFiles();
+            string copyFileLogPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, copyFileLogName);
+            if (File.Exists(copyFileLogPath))
+            {
+                RevertAllCopiedFiles(File.ReadAllLines(copyFileLogPath), Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RevertFiles.log"));
+            }
 
             //清除Wrap
             ToLuaMenu.ClearLuaWraps();
@@ -138,12 +142,12 @@ namespace EazyBuildPipeline.PlayerBuilder
         string errorMessage;
         readonly string copyFileLogName = "CopiedFilesForBuild.log";
 
-        private void CopyAllDirectories()
+        public void CopyAllDirectories(BuildTarget buildTarget, string logPath)
         {
             string directoryRegexStr = CommonModule.CommonConfig.Json.DirectoryRegex;
             string fileRegexStr = CommonModule.CommonConfig.Json.FileRegex;
             List<UserConfig.PlayerSettings.CopyItem> copyList;
-            switch (BuildPlayerOptions.target)
+            switch (buildTarget)
             {
                 case BuildTarget.Android:
                     string directoryRegexStr_Android = Module.UserConfig.Json.PlayerSettings.Android.CopyDirectoryRegex;
@@ -178,7 +182,7 @@ namespace EazyBuildPipeline.PlayerBuilder
             Regex directoryRegex = string.IsNullOrEmpty(directoryRegexStr) ? null : new Regex(directoryRegexStr);
             Regex fileRegex = string.IsNullOrEmpty(fileRegexStr) ? null : new Regex(fileRegexStr);
 
-            using (var copyFileLogWriter = new StreamWriter(Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, copyFileLogName)) { AutoFlush = true })
+            using (var copyFileLogWriter = new StreamWriter(logPath) { AutoFlush = true })
             {
                 for (int i = 0; i < copyList.Count; i++)
                 {
@@ -187,51 +191,44 @@ namespace EazyBuildPipeline.PlayerBuilder
                         continue;
                     }
                     Module.DisplayProgressBar(string.Format("Copy Directory... ({0}/{1})", i + 1, copyList.Count), copyList[i].SourcePath + " -> " + copyList[i].TargetPath, 0.5f, true);
-                    bool revertThis = copyList[i].Revert;
+                    copyFileLogWriter.WriteLine((copyList[i].Revert ? "R " : "D ") + copyList[i].TargetPath);
                     EBPUtility.CopyDirectory(copyList[i].SourcePath, copyList[i].TargetPath, copyList[i].CopyMode, directoryRegex, fileRegex,
                         (targetPath) =>
                         {
-                            copyFileLogWriter.WriteLine((revertThis ? "R " : "  ") + targetPath);
+                            copyFileLogWriter.WriteLine("  " + targetPath);
                         });
                 }
             }
+            EBPUtility.RefreshAssets();
         }
 
-        private void RevertAllCopiedFiles()
+        public void RevertAllCopiedFiles(string[] copiedFilesLogText, string revertLogPath)
         {
-            var copyList = new List<UserConfig.PlayerSettings.CopyItem>();
-            switch (BuildPlayerOptions.target)
-            {
-                case BuildTarget.Android:
-                    copyList = Module.UserConfig.Json.PlayerSettings.Android.CopyList;
-                    break;
-                case BuildTarget.iOS:
-                    copyList = Module.UserConfig.Json.PlayerSettings.IOS.CopyList;
-                    break;
-                default:
-                    throw new EBPException("意外的平台：" + BuildPlayerOptions.target.ToString());
-            }
             //读入所有已拷贝的文件列表
+            var revertFolderList = new List<string>();
             var revertFilesList = new List<string>();
-            var copiedFilesLogText = new string[0];
-            string copyFileLogPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, copyFileLogName);
-            if (File.Exists(copyFileLogPath))
-            {
-                copiedFilesLogText = File.ReadAllLines(copyFileLogPath);
-            }
+            bool revertThis = false;
             foreach (var line in copiedFilesLogText)
             {
-                if (line[0] == 'R')
+                if (line[0] == 'R' && line[1] == ' ')
+                {
+                    revertFolderList.Add(line.Substring(2).Trim());
+                    revertThis = true;
+                }
+                else if (line[0] == 'D' && line[1] == ' ')
+                {
+                    revertThis = false;
+                }
+                else if (line[0] == ' ' && line[1] == ' ' && revertThis)
                 {
                     revertFilesList.Add(line.Substring(2).Trim());
                 }
             }
             //单独的日志文件
-            string logPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RevertFiles.log");
             errorMessage = "";
             float progress = 0;
             //删除所有已拷贝并标记为R(revert)的文件（不存在的文件不记录日志）
-            using (var logWriter = new StreamWriter(logPath, true))
+            using (var logWriter = new StreamWriter(revertLogPath, true))
             {
                 Module.DisplayProgressBar("Start Delete Copied Files", 0, true);
                 logWriter.WriteLine("Start Delete Files"); logWriter.Flush();
@@ -251,19 +248,15 @@ namespace EazyBuildPipeline.PlayerBuilder
             //还原目录
             progress = 0;
             Module.DisplayProgressBar("Start Revert All Copied Files", 0, true);
-            foreach (var item in copyList)
+            foreach (var folderPath in revertFolderList)
             {
-                if (item.Revert == false)
-                {
-                    continue;
-                }
-                string title = "Revert Copied Files in " + EBPUtility.Quote(Path.GetFileName(item.TargetPath));
-                Module.DisplayProgressBar(title, "Start Revert " + EBPUtility.Quote(item.TargetPath), 0, true);
+                string title = "Revert Copied Files in " + EBPUtility.Quote(Path.GetFileName(folderPath));
+                Module.DisplayProgressBar(title, "Start Revert " + EBPUtility.Quote(folderPath), 0, true);
 
                 Process p = SVNUpdate.Runner.ExcuteCommand("/bin/bash",
                     EBPUtility.Quote(Path.Combine(Module.ModuleConfig.ModuleRootPath, "Shells/SVNRevert.sh")) + " " +
-                    EBPUtility.Quote(item.TargetPath) + " " +
-                    EBPUtility.Quote(logPath), OnReceived, OnErrorReceived, null);
+                    EBPUtility.Quote(folderPath) + " " +
+                    EBPUtility.Quote(revertLogPath), OnReceived, OnErrorReceived, null);
 
                 while (!p.HasExited)
                 {
@@ -273,12 +266,12 @@ namespace EazyBuildPipeline.PlayerBuilder
 
                 if (p.ExitCode != 0)
                 {
-                    throw new EBPException("还原目录(" + item.TargetPath + ")时发生错误：" + errorMessage);
+                    throw new EBPException("还原目录(" + folderPath + ")时发生错误：" + errorMessage);
                 }
                 Module.DisplayProgressBar(title, "Finish!", 1, true);
             }
-
             Module.DisplayProgressBar("End Revert All Copied Files", 1, true);
+            EBPUtility.RefreshAssets();
         }
 
         void OnErrorReceived(object sender, DataReceivedEventArgs e)

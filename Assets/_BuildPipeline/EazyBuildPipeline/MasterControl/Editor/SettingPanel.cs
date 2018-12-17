@@ -46,7 +46,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
 
         GUILayoutOption[] dropdownOptions = { GUILayout.Width(150) };
         GUILayoutOption[] dropdownOptions2 = { GUILayout.MaxWidth(100) };
-        GUILayoutOption[] buttonOptions = { GUILayout.MaxWidth(60) };
+        GUILayoutOption[] buttonOptions = { GUILayout.MaxWidth(70) };
         GUILayoutOption[] labelOptions = { GUILayout.MinWidth(20), GUILayout.MaxWidth(110) };
         GUILayoutOption[] miniButtonOptions = { GUILayout.MaxHeight(18), GUILayout.MaxWidth(22) };
         GUILayoutOption[] inputOptions = { GUILayout.Width(50) };
@@ -465,6 +465,18 @@ namespace EazyBuildPipeline.MasterControl.Editor
             { ClickedApply(); return; }
             if (GUILayout.Button(new GUIContent("Fetch", "获取当前的PlayerSettings"), buttonOptions))
             { FetchSettings(); return; }
+            if (GUILayout.Button(new GUIContent("CopyDir", "自动拷贝目录并设置宏定义"), buttonOptions))
+            {
+                if (PlayerBuilder.Editor.PlayerSettingsPanel.CopyNow(EditorUserBuildSettings.activeBuildTarget))
+                { G.Module.PlayerBuilderRunner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget); }
+                return;
+            }
+            if (GUILayout.Button(new GUIContent("RevertDir", "自动恢复拷贝目录并恢复宏定义"), buttonOptions))
+            {
+                if (PlayerBuilder.Editor.PlayerSettingsPanel.RevertNow())
+                { G.Module.PlayerBuilderRunner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true); }
+                return;
+            }
             GUILayout.FlexibleSpace();
 
             //Run Button
