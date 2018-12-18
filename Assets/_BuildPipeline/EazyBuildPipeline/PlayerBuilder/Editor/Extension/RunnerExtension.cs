@@ -20,26 +20,32 @@ namespace EazyBuildPipeline.PlayerBuilder
             {
                 Module.StartLog();
                 Module.LogHead("Start Prepare", 1);
+
+                Module.DisplayProgressBar("Clear Lua Wraps", 0, true);
+                ToLuaMenu.ClearLuaWraps();
+
                 EBPUtility.RefreshAssets();
 
-                Module.DisplayProgressBar("Preparing BuildOptions", 0, true);
+                Module.DisplayProgressBar("Preparing BuildOptions", 0.2f, true);
                 PrepareBuildOptions();
 
-                Module.DisplayProgressBar("Start DownloadConfigs", 0.02f, true);
-                DownLoadConfigs(0.02f, 0.3f);
+                Module.DisplayProgressBar("Start DownloadConfigs", 0.22f, true);
+                DownLoadConfigs(0.22f, 0.5f);
 
-                Module.DisplayProgressBar("Start Copy Directories", 0.3f, true);
-                CopyAllDirectories(BuildPlayerOptions.target, Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, copyFileLogName));
-
-                Module.DisplayProgressBar("Creating Building Configs Class File", 0.8f, true);
+                Module.DisplayProgressBar("Creating Building Configs Class File", 0.5f, true);
                 CreateBuildingConfigsClassFile();
 
-                Module.DisplayProgressBar("Applying PlayerSettings", 0.9f, true);
+                Module.DisplayProgressBar("Applying PlayerSettings", 0.55f, true);
                 ApplyPlayerSettings(BuildPlayerOptions.target);
 
-                Module.DisplayProgressBar("Applying Scripting Defines", 0.95f, true);
-                ApplyScriptDefines(BuildPlayerOptions.target);
+                if (CommonModule.CommonConfig.IsBatchMode)
+                {
+                    Module.DisplayProgressBar("Start Copy Directories", 0.6f, true);
+                    CopyAllDirectories(BuildPlayerOptions.target, Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, copyFileLogName));
 
+                    Module.DisplayProgressBar("Applying Scripting Defines", 0.95f, true);
+                    ApplyScriptDefines(BuildPlayerOptions.target);
+                }
                 EBPUtility.RefreshAssets();
             }
             catch (Exception e)
@@ -106,20 +112,23 @@ namespace EazyBuildPipeline.PlayerBuilder
         {
             iOSBuildPostProcessor.DisableOnce = false;
 
-            //还原宏定义
-            Module.DisplayProgressBar("Revert Scripting Defines", 0f, true);
-            ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true);
-
-            //还原被拷贝覆盖的文件
-            Module.DisplayProgressBar("Revert Copied Files", 0f, true);
-            string copyFileLogPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, copyFileLogName);
-            if (File.Exists(copyFileLogPath))
+            if (CommonModule.CommonConfig.IsBatchMode)
             {
-                RevertAllCopiedFiles(File.ReadAllLines(copyFileLogPath), Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RevertFiles.log"));
-            }
+                //还原宏定义
+                Module.DisplayProgressBar("Revert Scripting Defines", 0f, true);
+                ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true);
 
-            //清除Wrap
-            ToLuaMenu.ClearLuaWraps();
+                //还原被拷贝覆盖的文件
+                Module.DisplayProgressBar("Revert Copied Files", 0f, true);
+                string copyFileLogPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, copyFileLogName);
+                if (File.Exists(copyFileLogPath))
+                {
+                    RevertAllCopiedFiles(File.ReadAllLines(copyFileLogPath), Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "RevertFiles.log"));
+                }
+
+                //清除Wrap
+                ToLuaMenu.ClearLuaWraps();
+            }
 
             EBPUtility.RefreshAssets();
         }

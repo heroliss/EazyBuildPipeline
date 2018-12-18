@@ -149,7 +149,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             string revertLogPath = null;
             if (!string.IsNullOrEmpty(logPath))
             {
-                revertLogPath = EditorUtility.SaveFilePanel("Save Revert Log", Path.GetDirectoryName(logPath), "Revert", "log");
+                revertLogPath = EditorUtility.SaveFilePanel("Save Revert Log", Path.GetDirectoryName(logPath), "RevertDir", "log");
             }
             if (!string.IsNullOrEmpty(logPath) && !string.IsNullOrEmpty(revertLogPath) && File.Exists(logPath))
             {
@@ -163,7 +163,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
         public static bool CopyNow(BuildTarget buildTarget)
         {
-            string logPath = EditorUtility.SaveFilePanel("Save Copy File Log", null, null, "log");
+            string logPath = EditorUtility.SaveFilePanel("Save Copy File Log", null, "CopyDir", "log");
             if (!string.IsNullOrEmpty(logPath))
             {
                 G.Module.DisplayProgressBar("Start Copy Directories", 0);

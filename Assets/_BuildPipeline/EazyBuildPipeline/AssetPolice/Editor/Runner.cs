@@ -1,4 +1,5 @@
-﻿using System;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,6 +18,51 @@ namespace EazyBuildPipeline.AssetPolice.Editor
         public Runner(Module module)
         {
             Module = module;
+        }
+
+        public List<AssetBundleBuild> GetCleanedBuilds(List<AssetBundleBuild> bundleBuilds, string outputPath)
+        {
+            List<AssetBundleBuild> cleanedBuilds = new List<AssetBundleBuild>();
+            var allAssets = Module.ModuleConfig.AllBundles;
+            List<string> assetNames = new List<string>();
+            using (var writer = new StreamWriter(Path.Combine(outputPath, "RemovedAssetsWhenBuildBundles.log")))
+            {
+                int removedAssetsCount = 0;
+                int removedBundlesCount = 0;
+                foreach (AssetBundleBuild bundle in bundleBuilds)
+                {
+                    assetNames.Clear();
+                    foreach (string asset in bundle.assetNames)
+                    {
+                        BundleRDItem rddItem;
+                        var exist = allAssets.TryGetValue(asset.ToLower(), out rddItem);
+                        if (!exist || rddItem.RDBundles.Count > 0 || rddItem.IsRDRoot)
+                        {
+                            assetNames.Add(asset);
+                        }
+                        else
+                        {
+                            removedAssetsCount++;
+                            writer.WriteLine("Remove Asset : " + asset);
+                        }
+                    }
+                    if (assetNames.Count != 0)
+                    {
+                        cleanedBuilds.Add(new AssetBundleBuild() { assetBundleName = bundle.assetBundleName, assetNames = assetNames.ToArray() });
+                    }
+                    else
+                    {
+                        removedBundlesCount++;
+                        writer.WriteLine("Remove Bundle: " + bundle.assetBundleName);
+                    }
+                }
+                writer.WriteLine("\nRemoved Assets Count: " + removedAssetsCount);
+                writer.WriteLine("Removed Bundles Count: " + removedBundlesCount);
+            }
+            //保存当前Builds作为日志
+            File.WriteAllText(Path.Combine(outputPath, "CleanedBundles.json"),
+                JsonConvert.SerializeObject(cleanedBuilds, Formatting.Indented));
+            return cleanedBuilds;
         }
 
         public void Run()
@@ -78,13 +124,31 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                     if (available)
                     {
                         string filePath = Path.Combine(directory, file).Replace('\\', '/').ToLower();
-                        Module.ModuleConfig.AllBundles[filePath].IsRDRoot = true;
-                        foreach (string dependence in manifest.GetAllDependencies(filePath)) //添加每一个依赖的文件
-                        {
-                            Module.ModuleConfig.AllBundles[dependence].RDBundles.Add(filePath);
-                        }
+                        AddDependenceRootToAllLeaves(manifest, filePath);
                     }
                 }
+            }
+
+            foreach (var guid in AssetDatabase.FindAssets("l:DependenceRoot"))
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid).ToLower();
+                if (Module.ModuleConfig.AllBundles.ContainsKey(assetPath))
+                {
+                    AddDependenceRootToAllLeaves(manifest, assetPath);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("The Asset with \"DependenceRoot\" label not included in dry build bundles list: " + assetPath);
+                }
+            }
+        }
+
+        private void AddDependenceRootToAllLeaves(UnityEngine.AssetBundleManifest manifest, string rootPath)
+        {
+            Module.ModuleConfig.AllBundles[rootPath].IsRDRoot = true;
+            foreach (string dependence in manifest.GetAllDependencies(rootPath)) //添加每一个依赖的文件
+            {
+                Module.ModuleConfig.AllBundles[dependence].RDBundles.Add(rootPath);
             }
         }
 

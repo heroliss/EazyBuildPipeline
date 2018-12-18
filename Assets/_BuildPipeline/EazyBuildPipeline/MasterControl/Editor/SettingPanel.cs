@@ -461,20 +461,26 @@ namespace EazyBuildPipeline.MasterControl.Editor
             { ClickedSave(); return; }
             if (GUILayout.Button(new GUIContent("Revert", "重新载入配置文件"), buttonOptions))
             { ClickedRevert(); return; }
-            if (GUILayout.Button(new GUIContent("Apply", "应用下面的PlayerSettings"), buttonOptions))
+            if (GUILayout.Button(new GUIContent("Apply", "应用下面的PlayerSettings（不包括宏定义）"), buttonOptions))
             { ClickedApply(); return; }
             if (GUILayout.Button(new GUIContent("Fetch", "获取当前的PlayerSettings"), buttonOptions))
             { FetchSettings(); return; }
             if (GUILayout.Button(new GUIContent("CopyDir", "自动拷贝目录并设置宏定义"), buttonOptions))
             {
                 if (PlayerBuilder.Editor.PlayerSettingsPanel.CopyNow(EditorUserBuildSettings.activeBuildTarget))
-                { G.Module.PlayerBuilderRunner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget); }
+                {
+                    G.Module.PlayerBuilderRunner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget);
+                    ToLuaMenu.ClearLuaWraps();
+                }
                 return;
             }
             if (GUILayout.Button(new GUIContent("RevertDir", "自动恢复拷贝目录并恢复宏定义"), buttonOptions))
             {
                 if (PlayerBuilder.Editor.PlayerSettingsPanel.RevertNow())
-                { G.Module.PlayerBuilderRunner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true); }
+                {
+                    G.Module.PlayerBuilderRunner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget, true);
+                    ToLuaMenu.ClearLuaWraps();
+                }
                 return;
             }
             GUILayout.FlexibleSpace();
@@ -563,7 +569,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
         }
         private void ClickedApply()
         {
-            PlayerBuilder.G.Runner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget);
+            //PlayerBuilder.G.Runner.ApplyScriptDefines(EditorUserBuildSettings.activeBuildTarget);
             PlayerBuilder.G.Runner.ApplyPlayerSettings(EditorUserBuildSettings.activeBuildTarget);
         }
 
