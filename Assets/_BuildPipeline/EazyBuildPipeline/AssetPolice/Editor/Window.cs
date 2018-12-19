@@ -28,7 +28,10 @@ namespace EazyBuildPipeline.AssetPolice.Editor
         MultiColumnHeaderState assetTreeHeaderState;
         private TreeViewState assetTreeViewState;
         AssetsTreeView assetTree;
-        List<string> selectedAssets = new List<string>();
+
+        enum AssetRDState { Unknow, UnReferenced, Referenced, ReferenceRoot }
+        class AssetRDItem { public string AssetPath; public string GUID; public AssetRDState State; public UnityEngine.Object MainAssetObj; }
+        List<AssetRDItem> selectedAssets = new List<AssetRDItem>();
 
         bool freeze;
         Vector2 scrollPosition_ReverseDependencePanel;
@@ -135,7 +138,16 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 selectedAssets.Clear();
                 foreach (string guid in Selection.assetGUIDs)
                 {
-                    selectedAssets.Add(AssetDatabase.GUIDToAssetPath(guid).ToLower());
+                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                    selectedAssets.Add(new AssetRDItem()
+                    {
+                        GUID = guid,
+                        AssetPath = assetPath,
+                        State = !module.ModuleConfig.AllBundles.ContainsKey(guid) ? AssetRDState.Unknow :
+                                module.ModuleConfig.AllBundles[guid].IsRDRoot ? AssetRDState.ReferenceRoot :
+                                module.ModuleConfig.AllBundles[guid].RDBundles.Count == 0 ? AssetRDState.UnReferenced : AssetRDState.Referenced,
+                        MainAssetObj = AssetDatabase.LoadMainAssetAtPath(assetPath)
+                    });
                 }
             }
             Repaint();
@@ -147,52 +159,58 @@ namespace EazyBuildPipeline.AssetPolice.Editor
             using (var scrollViewScope = new GUILayout.ScrollViewScope(scrollPosition_ReverseDependencePanel))
             {
                 scrollPosition_ReverseDependencePanel = scrollViewScope.scrollPosition;
-                for (int i = 0; i < selectedAssets.Count; i++)
+                foreach (var assetItem in selectedAssets)
                 {
                     using (new GUILayout.VerticalScope("GroupBox"))
                     {
-                        string assetPath = selectedAssets[i];
-                        if (module.ModuleConfig.AllBundles.ContainsKey(assetPath))
+                        switch (assetItem.State)
                         {
-                            int theReferencedAssetCount = module.ModuleConfig.AllBundles[assetPath].RDBundles.Count;
-                            using (new GUILayout.HorizontalScope())
+                            case AssetRDState.Unknow:
+                                AssetItemPanel(assetItem, " [X] ", "ErrorLabel", "LightmapEditorSelectedHighlight");
+                                break;
+                            case AssetRDState.UnReferenced:
+                                AssetItemPanel(assetItem, " [0] ", "HeaderLabel", "LightmapEditorSelectedHighlight");
+                                break;
+                            case AssetRDState.Referenced:
+                                AssetItemPanel(assetItem, " [" + module.ModuleConfig.AllBundles[assetItem.GUID].RDBundles.Count + "] ", "BoldLabel", "LightmapEditorSelectedHighlight");
+                                break;
+                            case AssetRDState.ReferenceRoot:
+                                AssetItemPanel(assetItem, " [R] ", "HeaderLabel", "LightmapEditorSelectedHighlight");
+                                break;
+                            default:
+                                break;
+                        }
+                        if (assetItem.State != AssetRDState.Unknow)
+                        {
+                            foreach (var guid in module.ModuleConfig.AllBundles[assetItem.GUID].RDBundles)
                             {
-                                if (GUILayout.Button(new GUIContent((module.ModuleConfig.AllBundles[assetPath].IsRDRoot ? " [R] " : " [" + theReferencedAssetCount + "] ") + assetPath,
-                                    AssetDatabase.GetCachedIcon(assetPath)),
-                                    freeze && (AssetDatabase.LoadMainAssetAtPath(assetPath) == Selection.activeObject) ? "LightmapEditorSelectedHighlight" : theReferencedAssetCount == 0 ? "HeaderLabel" : "BoldLabel", GUILayout.Height(20)))
-                                {
-                                    Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
-                                }
-                                GUILayout.FlexibleSpace();
-                            }
-
-                            foreach (var theReferencedAsset in module.ModuleConfig.AllBundles[assetPath].RDBundles)
-                            {
+                                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
                                 using (new GUILayout.HorizontalScope())
                                 {
-                                    if (GUILayout.Button(new GUIContent(theReferencedAsset, AssetDatabase.GetCachedIcon(theReferencedAsset)),
-                                        freeze && (AssetDatabase.LoadMainAssetAtPath(theReferencedAsset)) == Selection.activeObject ? "LightmapEditorSelectedHighlight" : "WhiteLabel", GUILayout.Height(18)))
+                                    if (GUILayout.Button(new GUIContent(assetPath, AssetDatabase.GetCachedIcon(assetPath)),
+                                        freeze && (AssetDatabase.LoadMainAssetAtPath(assetPath)) == Selection.activeObject ? "LightmapEditorSelectedHighlight" : "WhiteLabel", GUILayout.Height(18)))
                                     {
-                                        Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(theReferencedAsset);
+                                        Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
                                     }
                                     GUILayout.FlexibleSpace();
                                 }
                             }
                         }
-                        else
-                        {
-                            using (new GUILayout.HorizontalScope())
-                            {
-                                if (GUILayout.Button(new GUIContent(" [X] " + assetPath, AssetDatabase.GetCachedIcon(assetPath)),
-                                    freeze && (AssetDatabase.LoadMainAssetAtPath(assetPath) == Selection.activeObject) ? "LightmapEditorSelectedHighlight" : "ErrorLabel", GUILayout.Height(20)))
-                                {
-                                    Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
-                                }
-                                GUILayout.FlexibleSpace();
-                            }
-                        }
                     }
                 }
+            }
+        }
+
+        private void AssetItemPanel(AssetRDItem assetItem, string prefix, GUIStyle normalStyle, GUIStyle selectStyle)
+        {
+            using (new GUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button(new GUIContent(prefix + assetItem.AssetPath, AssetDatabase.GetCachedIcon(assetItem.AssetPath)),
+                    freeze && (assetItem.MainAssetObj == Selection.activeObject) ? selectStyle : normalStyle, GUILayout.Height(20)))
+                {
+                    Selection.activeObject = assetItem.MainAssetObj;
+                }
+                GUILayout.FlexibleSpace();
             }
         }
 

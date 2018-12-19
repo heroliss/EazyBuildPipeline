@@ -35,7 +35,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                     foreach (string asset in bundle.assetNames)
                     {
                         BundleRDItem rddItem;
-                        var exist = allAssets.TryGetValue(asset.ToLower(), out rddItem);
+                        var exist = allAssets.TryGetValue(AssetDatabase.AssetPathToGUID(asset), out rddItem);
                         if (!exist || rddItem.RDBundles.Count > 0 || rddItem.IsRDRoot)
                         {
                             assetNames.Add(asset);
@@ -80,7 +80,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                     var ab = new AssetBundleBuild
                     {
                         assetNames = new[] { filePath },
-                        assetBundleName = filePath
+                        assetBundleName = AssetDatabase.AssetPathToGUID(filePath)
                     };
                     assetBundleList.Add(ab);
                 }
@@ -123,32 +123,31 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                     }
                     if (available)
                     {
-                        string filePath = Path.Combine(directory, file).Replace('\\', '/').ToLower();
-                        AddDependenceRootToAllLeaves(manifest, filePath);
+                        string guid = AssetDatabase.AssetPathToGUID(Path.Combine(directory, file));
+                        AddDependenceRootToAllLeaves(manifest, guid);
                     }
                 }
             }
 
             foreach (var guid in AssetDatabase.FindAssets("l:DependenceRoot"))
             {
-                string assetPath = AssetDatabase.GUIDToAssetPath(guid).ToLower();
-                if (Module.ModuleConfig.AllBundles.ContainsKey(assetPath))
+                if (Module.ModuleConfig.AllBundles.ContainsKey(guid))
                 {
-                    AddDependenceRootToAllLeaves(manifest, assetPath);
+                    AddDependenceRootToAllLeaves(manifest, guid);
                 }
                 else
                 {
-                    UnityEngine.Debug.LogWarning("The Asset with \"DependenceRoot\" label not included in dry build bundles list: " + assetPath);
+                    UnityEngine.Debug.LogWarning("The Asset with \"DependenceRoot\" label not included in dry build bundles list: " + AssetDatabase.GUIDToAssetPath(guid));
                 }
             }
         }
 
-        private void AddDependenceRootToAllLeaves(UnityEngine.AssetBundleManifest manifest, string rootPath)
+        private void AddDependenceRootToAllLeaves(UnityEngine.AssetBundleManifest manifest, string guid)
         {
-            Module.ModuleConfig.AllBundles[rootPath].IsRDRoot = true;
-            foreach (string dependence in manifest.GetAllDependencies(rootPath)) //添加每一个依赖的文件
+            Module.ModuleConfig.AllBundles[guid].IsRDRoot = true;
+            foreach (string dependence in manifest.GetAllDependencies(guid)) //添加每一个依赖的文件
             {
-                Module.ModuleConfig.AllBundles[dependence].RDBundles.Add(rootPath);
+                Module.ModuleConfig.AllBundles[dependence].RDBundles.Add(guid);
             }
         }
 

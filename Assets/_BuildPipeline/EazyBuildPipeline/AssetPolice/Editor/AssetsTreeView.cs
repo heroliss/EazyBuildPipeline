@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -107,9 +107,10 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 if (!bundle.Value.IsRDRoot && bundle.Value.RDBundles.Count == 0)
                 {
                     bool available = true;
+                    string assetPath = AssetDatabase.GUIDToAssetPath(bundle.Key).ToLower();
                     foreach (var except in excludeSubStrList)
                     {
-                        if (bundle.Key.Contains(except))
+                        if (assetPath.Contains(except))
                         {
                             available = false;
                             break;
@@ -222,12 +223,13 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                 if (EditorUtility.DisplayDialog("删除文件", "你确定要删除所有勾选✔的文件？ (共" + checkedCount + "项)", "删除所有勾选的文件", "取消"))
                 {
                     int deleteCount = 0;
+                    AssetDatabase.StartAssetEditing();
                     for (int i = 0; i < rootItem.children.Count; i++)
                     {
-                        var item = rootItem.children[i];
-                        if (((AssetTreeItem)item).Check == true)
+                        var item = (AssetTreeItem)rootItem.children[i];
+                        if (item.Check == true)
                         {
-                            moduleConfig.AllBundles.Remove(item.displayName);
+                            moduleConfig.AllBundles.Remove(item.GUID);
                             AssetDatabase.DeleteAsset(item.displayName);
                             deleteCount++;
                             if (EditorUtility.DisplayCancelableProgressBar("Delete Assets", item.displayName, (float)deleteCount / checkedCount))
@@ -239,6 +241,7 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                             }
                         }
                     }
+                    AssetDatabase.StopAssetEditing();
                     EditorUtility.ClearProgressBar();
                     EditorUtility.DisplayDialog("删除成功", "已删除" + deleteCount + "个文件", "确定");
                     Reload();
@@ -298,13 +301,15 @@ namespace EazyBuildPipeline.AssetPolice.Editor
     public class AssetTreeItem : TreeViewItem
     {
         public bool Check;
+        public string GUID;
 
         public AssetTreeItem() : base()
         {
         }
 
-        public AssetTreeItem(int id, int depth, string displayName) : base(id, depth, displayName)
+        public AssetTreeItem(int id, int depth, string guid) : base(id, depth, AssetDatabase.GUIDToAssetPath(guid))
         {
+            GUID = guid;
         }
     }
 }

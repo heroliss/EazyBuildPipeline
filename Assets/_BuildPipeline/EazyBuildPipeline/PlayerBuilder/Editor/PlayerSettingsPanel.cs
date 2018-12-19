@@ -153,10 +153,16 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             }
             if (!string.IsNullOrEmpty(logPath) && !string.IsNullOrEmpty(revertLogPath) && File.Exists(logPath))
             {
-                G.Module.DisplayProgressBar("Start Revert Copied Files", 0f);
-                G.Runner.RevertAllCopiedFiles(File.ReadAllLines(logPath), revertLogPath);
-                EditorUtility.ClearProgressBar();
-                return true;
+                try
+                {
+                    G.Module.DisplayProgressBar("Start Revert Copied Files", 0f);
+                    G.Runner.RevertAllCopiedFiles(File.ReadAllLines(logPath), revertLogPath);
+                    return true;
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
+                }
             }
             return false;
         }
@@ -166,10 +172,16 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             string logPath = EditorUtility.SaveFilePanel("Save Copy File Log", null, "CopyDir", "log");
             if (!string.IsNullOrEmpty(logPath))
             {
-                G.Module.DisplayProgressBar("Start Copy Directories", 0);
-                G.Runner.CopyAllDirectories(buildTarget, logPath);
-                EditorUtility.ClearProgressBar();
-                return true;
+                try
+                {
+                    G.Module.DisplayProgressBar("Start Copy Directories", 0);
+                    G.Runner.CopyAllDirectories(buildTarget, logPath);
+                    return true;
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
+                }
             }
             return false;
         }
