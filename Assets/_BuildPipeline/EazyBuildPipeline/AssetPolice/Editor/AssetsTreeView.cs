@@ -229,7 +229,6 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                         var item = (AssetTreeItem)rootItem.children[i];
                         if (item.Check == true)
                         {
-                            moduleConfig.AllBundles.Remove(item.GUID);
                             AssetDatabase.DeleteAsset(item.displayName);
                             deleteCount++;
                             if (EditorUtility.DisplayCancelableProgressBar("Delete Assets", item.displayName, (float)deleteCount / checkedCount))

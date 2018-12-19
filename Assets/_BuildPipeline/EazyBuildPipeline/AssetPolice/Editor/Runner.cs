@@ -22,8 +22,20 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
         public List<AssetBundleBuild> GetCleanedBuilds(List<AssetBundleBuild> bundleBuilds, string outputPath)
         {
+            //获得ExcludeSubStrList
+            string[] excludeSubStrList_origin = Module.ModuleConfig.Json.ExcludeSubStringWhenFind.Replace('\\', '/')
+                .ToLower().Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string> excludeSubStrList = new List<string>();
+            foreach (string item in excludeSubStrList_origin)
+            {
+                if (item.Trim() != "")
+                {
+                    excludeSubStrList.Add(item.Trim());
+                }
+            }
+
+            //开始构建CleanedBundleBuilds
             List<AssetBundleBuild> cleanedBuilds = new List<AssetBundleBuild>();
-            var allAssets = Module.ModuleConfig.AllBundles;
             List<string> assetNames = new List<string>();
             using (var writer = new StreamWriter(Path.Combine(outputPath, "RemovedAssetsWhenBuildBundles.log")))
             {
@@ -35,8 +47,25 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                     foreach (string asset in bundle.assetNames)
                     {
                         BundleRDItem rddItem;
-                        var exist = allAssets.TryGetValue(AssetDatabase.AssetPathToGUID(asset), out rddItem);
-                        if (!exist || rddItem.RDBundles.Count > 0 || rddItem.IsRDRoot)
+                        var exist = Module.ModuleConfig.AllBundles.TryGetValue(AssetDatabase.AssetPathToGUID(asset), out rddItem);
+                        bool available = false;
+                        if (!exist || rddItem.RDBundles.Count > 0 || rddItem.IsRDRoot) //若满足这三个条件中的任意一个
+                        {
+                            available = true; //则允许加入builds
+                        }
+                        else //或满足该条件（asset路径中存在排除字符串(全小写)）
+                        {
+                            foreach (var except in excludeSubStrList)
+                            {
+                                if (asset.ToLower().Contains(except))
+                                {
+                                    available = true; //则允许加入builds
+                                    break;
+                                }
+                            }
+                        }
+                        //至此已得知能否将此Asset加入Builds
+                        if (available)
                         {
                             assetNames.Add(asset);
                         }
