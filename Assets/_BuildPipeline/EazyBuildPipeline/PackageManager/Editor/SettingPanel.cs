@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -568,10 +568,9 @@ namespace EazyBuildPipeline.PackageManager.Editor
         }
         private void ShowInputField()
         {
-            GUI.SetNextControlName("InputField1");
             string tip = "<输入名称>(回车确定，空串取消)";
             string s = EditorGUILayout.DelayedTextField(tip, dropdownStyle, configNamePopupOptions);
-            GUI.FocusControl("InputField1");
+            EditorGUIUtility.editingTextField = false;
             s = s.Trim().Replace('\\', '/');
             if (s != tip)
             {

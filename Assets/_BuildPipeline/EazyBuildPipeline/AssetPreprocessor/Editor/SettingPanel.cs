@@ -237,11 +237,10 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
 		private void ShowInputField()
 		{
-			GUI.SetNextControlName("InputField1");
 			string tip = "<输入名称>(回车确定，空串取消)";
 			string s = EditorGUILayout.DelayedTextField(tip, popupStyle, popupOptions);
-			GUI.FocusControl("InputField1");
-			s = s.Trim().Replace('\\', '/');
+            EditorGUIUtility.editingTextField = false;
+            s = s.Trim().Replace('\\', '/');
 			if (s != tip)
 			{
 				if (s != "")

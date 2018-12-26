@@ -49,13 +49,11 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
         public void OnGUI()
         {
-            //这里当切换Panel时改变焦点，是用来解决当焦点在某个TextField上时输入框遗留显示的问题
-            //GUI.SetNextControlName("Toggle1"); //如果有这句话则会影响到SettingsPanel中New时的输入框的焦点，使输入框不能显示
             int selectedToggle_new = GUILayout.Toolbar(selectedToggle, toggles, toggleStyle, GUILayout.Height(30));
             if (selectedToggle_new != selectedToggle)
             {
                 selectedToggle = selectedToggle_new;
-                GUI.FocusControl("Toggle1"); //这里可能什么都没focus到，但是可以取消当前的focus
+                EditorGUIUtility.editingTextField = false;
             }
             switch (toggles[selectedToggle])
             {
@@ -107,7 +105,6 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
             {
                 RevertNow();
             }
-            GUI.SetNextControlName("+");
             if (GUILayout.Button("+"))
             {
                 copyList.Add(new Configs.UserConfig.PlayerSettings.CopyItem());
@@ -136,7 +133,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 {
                     copyList.RemoveAt(i);
                     OnValueChanged();
-                    GUI.FocusControl("+");
+                    EditorGUIUtility.editingTextField = false;
                 }
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
@@ -253,7 +250,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                     string path = EditorUtility.OpenFilePanel("Select the Provising Profile used for Manual Signing", null, "mobileprovision");
                     if (!string.IsNullOrEmpty(path))
                     {
-                        GUI.FocusControl("");
+                        EditorGUIUtility.editingTextField = false;
                         string text = File.ReadAllText(path, System.Text.Encoding.UTF8);
                         int start = text.IndexOf("<plist");
                         int len = text.IndexOf("</plist") - start;
@@ -283,7 +280,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                 EBPEditorGUILayout.TextField("Method", ref ps.IOS.IPAExportOptions.Method, OnValueChanged);
                 if (GUILayout.Button("Options", GUILayout.MaxWidth(60)))
                 {
-                    GUI.FocusControl("");
+                    EditorGUIUtility.editingTextField = false;
                     GenericMenu menu = new GenericMenu();
                     foreach (var option in ps.IOS.IPAExportOptions.Methods)
                     {

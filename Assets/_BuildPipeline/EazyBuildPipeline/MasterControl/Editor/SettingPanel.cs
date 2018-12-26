@@ -486,6 +486,8 @@ namespace EazyBuildPipeline.MasterControl.Editor
             GUILayout.FlexibleSpace();
 
             //Run Button
+            Color defaultColor = GUI.contentColor;
+            GUI.contentColor = Color.green;
             if (PlayerBuilder.G.Module.StateConfigAvailable)
             {
                 if (GUILayout.Button(new GUIContent("Run Pipeline"))) { ClickedRunPipeline(); return; }
@@ -494,6 +496,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
             {
                 if (GUILayout.Button(new GUIContent("Check", "检查所有勾选的模块配置"))) { ClickedCheckAll(); return; }
             }
+            GUI.contentColor = defaultColor;
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndScrollView();
@@ -828,10 +831,9 @@ namespace EazyBuildPipeline.MasterControl.Editor
 
         private void ShowInputField()
         {
-            GUI.SetNextControlName("InputField1");
             string tip = "<输入名称>(回车确定，空串取消)";
             string s = EditorGUILayout.DelayedTextField(tip, dropdownOptions);
-            GUI.FocusControl("InputField1");
+            EditorGUIUtility.editingTextField = false;
             s = s.Trim().Replace('\\', '/');
             if (s != tip)
             {

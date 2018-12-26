@@ -106,15 +106,13 @@ namespace EazyBuildPipeline.AssetPolice.Editor
 
         private void OnGUI()
         {
-            //这里当切换Panel时改变焦点，是用来解决当焦点在某个TextField上时输入框遗留显示的问题
-            //GUI.SetNextControlName("Toggle1"); //如果有这句话则会影响到SettingsPanel中New时的输入框的焦点，使输入框不能显示
             using (new GUILayout.HorizontalScope())
             {
                 int selectedToggle_new = GUILayout.Toolbar(selectedToggle, toggles, toggleStyle);
                 if (selectedToggle_new != selectedToggle)
                 {
                     selectedToggle = selectedToggle_new;
-                    GUI.FocusControl("Toggle1"); //这里可能什么都没focus到，但是可以取消当前的focus
+                    EditorGUIUtility.editingTextField = false;
                 }
                 GUILayout.FlexibleSpace();
             }
@@ -182,19 +180,19 @@ namespace EazyBuildPipeline.AssetPolice.Editor
                         }
                         if (assetItem.State != AssetRDState.Unknow)
                         {
-                            foreach (var guid in module.ModuleConfig.AllBundles[assetItem.GUID].RDBundles)
+                        foreach (var guid in module.ModuleConfig.AllBundles[assetItem.GUID].RDBundles)
+                        {
+                            string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                            using (new GUILayout.HorizontalScope())
                             {
-                                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-                                using (new GUILayout.HorizontalScope())
+                                if (GUILayout.Button(new GUIContent(assetPath, AssetDatabase.GetCachedIcon(assetPath)),
+                                    freeze && (AssetDatabase.LoadMainAssetAtPath(assetPath)) == Selection.activeObject ? "LightmapEditorSelectedHighlight" : "WhiteLabel", GUILayout.Height(18)))
                                 {
-                                    if (GUILayout.Button(new GUIContent(assetPath, AssetDatabase.GetCachedIcon(assetPath)),
-                                        freeze && (AssetDatabase.LoadMainAssetAtPath(assetPath)) == Selection.activeObject ? "LightmapEditorSelectedHighlight" : "WhiteLabel", GUILayout.Height(18)))
-                                    {
-                                        Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
-                                    }
-                                    GUILayout.FlexibleSpace();
+                                    Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(assetPath);
                                 }
+                                GUILayout.FlexibleSpace();
                             }
+                        }
                         }
                     }
                 }
