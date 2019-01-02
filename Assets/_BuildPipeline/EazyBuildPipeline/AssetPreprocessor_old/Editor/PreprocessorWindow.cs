@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System;
 
-namespace EazyBuildPipeline.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
 {
     public class PreprocessorWindow : EditorWindow, ISerializationCallbackReceiver
     {
@@ -21,7 +21,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
         GroupDictionary3 groupPanels;
         string currentPlatform = "";
 
-        [MenuItem("Window/EazyBuildPipeline/AssetPreprocessor")]
+        [MenuItem("Window/EazyBuildPipeline/AssetPreprocessor_old")]
         public static void ShowWindow()
         {
             GetWindow<PreprocessorWindow>();

@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
-using EazyBuildPipeline.AssetPreprocessor.Configs;
+using EazyBuildPipeline.AssetPreprocessor_old.Configs;
 using System;
 
-namespace EazyBuildPipeline.AssetPreprocessor
+namespace EazyBuildPipeline.AssetPreprocessor_old
 {
     public partial class Runner
     {

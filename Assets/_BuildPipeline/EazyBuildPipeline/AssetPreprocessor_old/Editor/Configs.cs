@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 
-namespace EazyBuildPipeline.AssetPreprocessor.Configs
+namespace EazyBuildPipeline.AssetPreprocessor_old.Configs
 {
     [Serializable]
     public class ModuleConfig : Common.Configs.ModuleConfig<ModuleConfig.JsonClass>

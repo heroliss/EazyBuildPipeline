@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System;
 using System.Linq;
 
-namespace EazyBuildPipeline.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
 {
     [Serializable]
     public class GroupPanel

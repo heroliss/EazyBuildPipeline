@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace EazyBuildPipeline.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
 {
     public static class StringMaps
     {

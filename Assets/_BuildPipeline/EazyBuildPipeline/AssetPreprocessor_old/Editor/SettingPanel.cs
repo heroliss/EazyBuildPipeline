@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace EazyBuildPipeline.AssetPreprocessor.Editor
+namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
 {
     [Serializable]
     public class SettingPanel

@@ -1,13 +1,13 @@
-﻿#pragma warning disable 0649
+#pragma warning disable 0649
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
-using EazyBuildPipeline.AssetPreprocessor.Configs;
+using EazyBuildPipeline.AssetPreprocessor_old.Configs;
 
-namespace EazyBuildPipeline.AssetPreprocessor
+namespace EazyBuildPipeline.AssetPreprocessor_old
 {
     public static class G
     {

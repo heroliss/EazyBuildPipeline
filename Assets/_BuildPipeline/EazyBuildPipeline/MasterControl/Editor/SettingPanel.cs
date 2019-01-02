@@ -79,7 +79,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
         }
         private void Action_AssetPreprocessor_OnChangeCurrentConfig()
         {
-            if (AssetPreprocessor.G.Module.ModuleStateConfig.Json.CurrentUserConfigName == G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName)
+            if (AssetPreprocessor_old.G.Module.ModuleStateConfig.Json.CurrentUserConfigName == G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName)
             {
                 G.Module.AssetPreprocessorModule.LoadUserConfig(); //重新加载
             }
@@ -129,10 +129,10 @@ namespace EazyBuildPipeline.MasterControl.Editor
                 }
                 needRepaint = true;
             };
-            if (AssetPreprocessor.G.g != null)
+            if (AssetPreprocessor_old.G.g != null)
             {
-                AssetPreprocessor.G.g.OnChangeCurrentUserConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
-                AssetPreprocessor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
+                AssetPreprocessor_old.G.g.OnChangeCurrentUserConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
+                AssetPreprocessor_old.G.g.OnChangeConfigList += Action_OnChangeConfigList;
             }
             if (BundleManager.G.g != null)
             {
@@ -145,10 +145,10 @@ namespace EazyBuildPipeline.MasterControl.Editor
         }
         private void SetdownActions()
         {
-            if (AssetPreprocessor.G.g != null)
+            if (AssetPreprocessor_old.G.g != null)
             {
-                AssetPreprocessor.G.g.OnChangeCurrentUserConfig -= Action_AssetPreprocessor_OnChangeCurrentConfig;
-                AssetPreprocessor.G.g.OnChangeConfigList -= Action_OnChangeConfigList;
+                AssetPreprocessor_old.G.g.OnChangeCurrentUserConfig -= Action_AssetPreprocessor_OnChangeCurrentConfig;
+                AssetPreprocessor_old.G.g.OnChangeConfigList -= Action_OnChangeConfigList;
             }
             if (BundleManager.G.g != null)
             {
@@ -301,16 +301,16 @@ namespace EazyBuildPipeline.MasterControl.Editor
             }
             if (GUILayout.Button(settingGUIContent, miniButtonOptions))
             {
-                AssetPreprocessor.G.OverrideCurrentUserConfigName = G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName;
-                if (AssetPreprocessor.G.g == null)
+                AssetPreprocessor_old.G.OverrideCurrentUserConfigName = G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName;
+                if (AssetPreprocessor_old.G.g == null)
                 {
-                    EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
-                    AssetPreprocessor.G.g.OnChangeCurrentUserConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
-                    AssetPreprocessor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
+                    EditorWindow.GetWindow<AssetPreprocessor_old.Editor.PreprocessorWindow>();
+                    AssetPreprocessor_old.G.g.OnChangeCurrentUserConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
+                    AssetPreprocessor_old.G.g.OnChangeConfigList += Action_OnChangeConfigList;
                 }
                 else
                 {
-                    EditorWindow.GetWindow<AssetPreprocessor.Editor.PreprocessorWindow>();
+                    EditorWindow.GetWindow<AssetPreprocessor_old.Editor.PreprocessorWindow>();
                 }
                 return;
             }

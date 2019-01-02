@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System;
 using EazyBuildPipeline.MasterControl.Configs;
@@ -36,8 +36,8 @@ namespace EazyBuildPipeline.MasterControl
     {
         public SVNUpdate.Module SVNUpdateModule = new SVNUpdate.Module();
         public SVNUpdate.Runner SVNUpdateRunner = new SVNUpdate.Runner();
-        public AssetPreprocessor.Module AssetPreprocessorModule = new AssetPreprocessor.Module();
-        public AssetPreprocessor.Runner AssetPreprocessorRunner = new AssetPreprocessor.Runner();
+        public AssetPreprocessor_old.Module AssetPreprocessorModule = new AssetPreprocessor_old.Module();
+        public AssetPreprocessor_old.Runner AssetPreprocessorRunner = new AssetPreprocessor_old.Runner();
         public BundleManager.Module BundleManagerModule = new BundleManager.Module();
         public BundleManager.Runner BundleManagerRunner = new BundleManager.Runner();
         public PackageManager.Module PackageManagerModule = new PackageManager.Module();
