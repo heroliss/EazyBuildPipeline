@@ -102,6 +102,8 @@ namespace EazyBuildPipeline
         public abstract bool LoadUserConfig();
 
         #region 对话框和进度条
+        readonly double progressInterval = 0.06f;
+        double lastTimeSinceStartup;
         public void DisplayDialog(string message)
         {
             if (!CommonModule.CommonConfig.IsBatchMode)
@@ -121,25 +123,52 @@ namespace EazyBuildPipeline
 
         public void DisplayProgressBar(string title, float progress, bool log = false)
         {
-            if (!CommonModule.CommonConfig.IsBatchMode)
-            {
-                EditorUtility.DisplayProgressBar(title, null, progress);
-            }
             if (log)
             {
                 Log(title);
+            }
+            if (CanDisplayProgressBar())
+            {
+                EditorUtility.DisplayProgressBar(title, null, progress);
             }
         }
 
         public void DisplayProgressBar(string title, string info, float progress, bool log = false)
         {
-            if (!CommonModule.CommonConfig.IsBatchMode)
-            {
-                EditorUtility.DisplayProgressBar(title, info, progress);
-            }
             if (log)
             {
                 Log(title + " : " + info);
+            }
+            if (CanDisplayProgressBar())
+            {
+                EditorUtility.DisplayProgressBar(title, info, progress);
+            }
+        }
+
+        public bool DisplayCancelableProgressBar(string title, string info, float progress, bool log = false)
+        {
+            if (log)
+            {
+                Log(title + " : " + info);
+            }
+            if (CanDisplayProgressBar())
+            {
+                return EditorUtility.DisplayCancelableProgressBar(title, info, progress);
+            }
+            return false;
+        }
+
+        private bool CanDisplayProgressBar()
+        {
+            double time = EditorApplication.timeSinceStartup;
+            if (CommonModule.CommonConfig.IsBatchMode || time - lastTimeSinceStartup < progressInterval)
+            {
+                return false;
+            }
+            else
+            {
+                lastTimeSinceStartup = time;
+                return true;
             }
         }
 
@@ -149,7 +178,7 @@ namespace EazyBuildPipeline
             {
                 if (DisplayDialog(preText + "运行过程中发生错误：" + BaseModuleStateConfig.BaseJson.ErrorMessage, "详细信息", "确定"))
                 {
-                    System.Diagnostics.Process.Start(BaseModuleStateConfig.JsonPath);
+                    EditorUtility.OpenWithDefaultApp(BaseModuleStateConfig.JsonPath);
                 }
             }
         }

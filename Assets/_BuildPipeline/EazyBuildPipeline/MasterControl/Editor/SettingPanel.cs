@@ -79,7 +79,7 @@ namespace EazyBuildPipeline.MasterControl.Editor
         }
         private void Action_AssetPreprocessor_OnChangeCurrentConfig()
         {
-            if (AssetPreprocessor_old.G.Module.ModuleStateConfig.Json.CurrentUserConfigName == G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName)
+            if (AssetPreprocessor.G.Module.ModuleStateConfig.Json.CurrentUserConfigName == G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName)
             {
                 G.Module.AssetPreprocessorModule.LoadUserConfig(); //重新加载
             }
@@ -129,10 +129,10 @@ namespace EazyBuildPipeline.MasterControl.Editor
                 }
                 needRepaint = true;
             };
-            if (AssetPreprocessor_old.G.g != null)
+            if (AssetPreprocessor.G.g != null)
             {
-                AssetPreprocessor_old.G.g.OnChangeCurrentUserConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
-                AssetPreprocessor_old.G.g.OnChangeConfigList += Action_OnChangeConfigList;
+                AssetPreprocessor.G.g.OnChangeCurrentUserConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
+                AssetPreprocessor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
             }
             if (BundleManager.G.g != null)
             {
@@ -145,10 +145,10 @@ namespace EazyBuildPipeline.MasterControl.Editor
         }
         private void SetdownActions()
         {
-            if (AssetPreprocessor_old.G.g != null)
+            if (AssetPreprocessor.G.g != null)
             {
-                AssetPreprocessor_old.G.g.OnChangeCurrentUserConfig -= Action_AssetPreprocessor_OnChangeCurrentConfig;
-                AssetPreprocessor_old.G.g.OnChangeConfigList -= Action_OnChangeConfigList;
+                AssetPreprocessor.G.g.OnChangeCurrentUserConfig -= Action_AssetPreprocessor_OnChangeCurrentConfig;
+                AssetPreprocessor.G.g.OnChangeConfigList -= Action_OnChangeConfigList;
             }
             if (BundleManager.G.g != null)
             {
@@ -301,16 +301,16 @@ namespace EazyBuildPipeline.MasterControl.Editor
             }
             if (GUILayout.Button(settingGUIContent, miniButtonOptions))
             {
-                AssetPreprocessor_old.G.OverrideCurrentUserConfigName = G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName;
-                if (AssetPreprocessor_old.G.g == null)
+                AssetPreprocessor.G.OverrideCurrentUserConfigName = G.Module.AssetPreprocessorModule.ModuleStateConfig.Json.CurrentUserConfigName;
+                if (AssetPreprocessor.G.g == null)
                 {
-                    EditorWindow.GetWindow<AssetPreprocessor_old.Editor.PreprocessorWindow>();
-                    AssetPreprocessor_old.G.g.OnChangeCurrentUserConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
-                    AssetPreprocessor_old.G.g.OnChangeConfigList += Action_OnChangeConfigList;
+                    EditorWindow.GetWindow<AssetPreprocessor.Editor.AssetPreprocessorWindow>();
+                    AssetPreprocessor.G.g.OnChangeCurrentUserConfig += Action_AssetPreprocessor_OnChangeCurrentConfig;
+                    AssetPreprocessor.G.g.OnChangeConfigList += Action_OnChangeConfigList;
                 }
                 else
                 {
-                    EditorWindow.GetWindow<AssetPreprocessor_old.Editor.PreprocessorWindow>();
+                    EditorWindow.GetWindow<AssetPreprocessor.Editor.AssetPreprocessorWindow>();
                 }
                 return;
             }
@@ -831,9 +831,10 @@ namespace EazyBuildPipeline.MasterControl.Editor
 
         private void ShowInputField()
         {
+            GUI.SetNextControlName("InputField1");
             string tip = "<输入名称>(回车确定，空串取消)";
             string s = EditorGUILayout.DelayedTextField(tip, dropdownOptions);
-            EditorGUIUtility.editingTextField = false;
+            GUI.FocusControl("InputField1");
             s = s.Trim().Replace('\\', '/');
             if (s != tip)
             {

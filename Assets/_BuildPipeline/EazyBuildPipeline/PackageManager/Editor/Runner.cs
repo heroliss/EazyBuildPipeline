@@ -1,4 +1,4 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
+using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -119,9 +119,6 @@ namespace EazyBuildPipeline.PackageManager
 
         protected override void RunProcess()
         {
-            //开始
-            double lastTime = EditorApplication.timeSinceStartup;
-
             //准备参数
             bundlesFolderPath = Module.GetBundleFolderPath();
             if (!Directory.Exists(bundlesFolderPath))
@@ -265,13 +262,11 @@ namespace EazyBuildPipeline.PackageManager
                     for (int i = 0; i < bundlesCopyToStreamingCount; i++)
                     {
                         string bundle = bundlesCopyToStreaming[i];
-                        if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
-                        {
-                            Module.DisplayProgressBar(string.Format("正在向StreamingAssets中拷贝Bundles({0}/{1})",
-                                i + 1, bundlesCopyToStreamingCount),
-                                bundle, progress + (float)i / bundlesCopyToStreamingCount * 0.1f);//拷贝Assetbundle过程占整个过程的10%
-                            lastTime = EditorApplication.timeSinceStartup;
-                        }
+
+                        Module.DisplayProgressBar(string.Format("正在向StreamingAssets中拷贝Bundles({0}/{1})",
+                            i + 1, bundlesCopyToStreamingCount),
+                            bundle, progress + (float)i / bundlesCopyToStreamingCount * 0.1f);//拷贝Assetbundle过程占整个过程的10%
+
                         string targetPath = Path.Combine(bundlesRootPathInStreaming, bundle);
                         Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
                         File.Copy(Path.Combine(bundlesFolderPath, bundle), targetPath, false); //这里不允许覆盖，若已存在则抛出异常
@@ -302,13 +297,11 @@ namespace EazyBuildPipeline.PackageManager
                         {
                             string bundleRelativePath = package.Bundles[i];
                             string bundlePath = Path.Combine(bundlesFolderPath, bundleRelativePath);
-                            if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
-                            {
-                                Module.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
-                                    package.PackageName, pi + 1, packagesCount, i + 1, bundlesCount, count + 1, total),
-                                    bundleRelativePath, progress + (float)count / total * restProgress);
-                                lastTime = EditorApplication.timeSinceStartup;
-                            }
+
+                            Module.DisplayProgressBar(string.Format("正在打包{0}({1}/{2}) : ({3}/{4})  总计:({5}/{6})",
+                                package.PackageName, pi + 1, packagesCount, i + 1, bundlesCount, count + 1, total),
+                                bundleRelativePath, progress + (float)count / total * restProgress);
+
                             AddFileToZipStream(zipStream, bundlePath, Path.Combine(bundlesRootPathInPackage, bundleRelativePath), buffer);
                             count++;
                         }

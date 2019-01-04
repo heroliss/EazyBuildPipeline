@@ -443,7 +443,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
 
                 EditorGUI.BeginDisabledGroup(!group.Active);
 
-                string newDefineStr = GUILayout.TextField(group.GroupName, "flow overlay header upper left", GUILayout.MinWidth(100), GUILayout.MaxWidth(2000));
+                string newDefineStr = EditorGUILayout.TextField(group.GroupName, (GUIStyle)"flow overlay box", GUILayout.MinWidth(100), GUILayout.MaxWidth(2000));
                 if (group.GroupName != newDefineStr)
                 {
                     group.GroupName = newDefineStr;
@@ -493,7 +493,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Editor
                         G.Module.IsDirty = true;
                     }
                     EditorGUI.BeginDisabledGroup(!define.Active);
-                    newDefineStr = GUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle, GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
+                    newDefineStr = EditorGUILayout.TextField(define.Define, define.RepeatList.Count > 0 ? scriptDefineTextStyle_red : scriptDefineTextStyle, GUILayout.MinWidth(100), GUILayout.MaxWidth(2000)).Trim();
                     if (define.Define != newDefineStr)
                     {
                         define.Define = newDefineStr;

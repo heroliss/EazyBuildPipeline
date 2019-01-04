@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
-using EazyBuildPipeline.AssetPreprocessor_old.Configs;
+using EazyBuildPipeline.AssetPreprocessor.Configs;
+using System.Reflection;
+using System.Linq;
 
-namespace EazyBuildPipeline.AssetPreprocessor_old
+namespace EazyBuildPipeline.AssetPreprocessor
 {
     public static class G
     {
@@ -41,13 +43,12 @@ namespace EazyBuildPipeline.AssetPreprocessor_old
         ModuleConfig, ModuleConfig.JsonClass,
         ModuleStateConfig, ModuleStateConfig.JsonClass>
     {
-        public override string ModuleName { get { return "AssetPreprocessor_old"; } }
-        public OptionsEnumConfig OptionsEnumConfig = new OptionsEnumConfig();
+        public override string ModuleName { get { return "AssetPreprocessor"; } }
         public UserConfig UserConfig = new UserConfig();
 
         public override bool LoadAllConfigs(bool NOTLoadUserConfig = false)
         {
-            bool success = LoadModuleConfig() && LoadOptionsEnumConfig();
+            bool success = LoadModuleConfig();
             LoadModuleStateConfig();
             if (G.OverrideCurrentUserConfigName != null)
             {
@@ -61,22 +62,6 @@ namespace EazyBuildPipeline.AssetPreprocessor_old
             return success;
         }
 
-        public bool LoadOptionsEnumConfig()
-        {
-            try
-            {
-                OptionsEnumConfig.Load(ModuleConfig.OptionsEnumConfigPath);
-                return true;
-            }
-            catch (Exception e)
-            {
-                DisplayOrLogAndThrowError("加载选项配置文件时发生错误：" + e.Message
-                    + "\n加载路径：" + OptionsEnumConfig.JsonPath
-                    + "\n请设置正确的路径以及形如以下所示的配置文件：\n" + new OptionsEnumConfig(), e);
-                return false;
-            }
-        }
-
         public override bool LoadUserConfig()
         {
             try
@@ -84,6 +69,8 @@ namespace EazyBuildPipeline.AssetPreprocessor_old
                 if (!string.IsNullOrEmpty(ModuleStateConfig.CurrentUserConfigPath))
                 {
                     UserConfig.Load(ModuleStateConfig.CurrentUserConfigPath);
+                    UserConfig.InitImporterGroups();
+                    UserConfig.PullAll();
                 }
                 return true;
             }

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -420,23 +420,20 @@ namespace EazyBuildPipeline.PackageManager.Editor
 				folderDic.Add(folderItem.relativePath, folderItem);
 			}
 		}
-		double lastTime;
-		void AddFiles(BundleTreeItem folderItem)
+
+        void AddFiles(BundleTreeItem folderItem)
 		{
 			string[] files = Directory.GetFiles(folderItem.path);
 			foreach (string filePath in files)
-			{
-                if (EditorApplication.timeSinceStartup - lastTime > 0.06f)
-				{
-					G.Module.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
-					    loadFileProgressCount,G.Module.ModuleConfig.Json.CheckBundle), filePath,
-					    (float)loadFileProgressCount % 100000 / 100000);
-                    lastTime = EditorApplication.timeSinceStartup;
-				}
-				loadFileProgressCount++;
+            {
+                G.Module.DisplayProgressBar(string.Format("PackageManager(检查：{1}，载入总数：{0})",
+                    loadFileProgressCount, G.Module.ModuleConfig.Json.CheckBundle), filePath,
+                    (float)loadFileProgressCount % 100000 / 100000);
 
-				//Texture2D cachedIcon = AssetDatabase.GetCachedIcon(filePath) as Texture2D; //TODO：如何找到类似函数
-				if (filePath.EndsWith(".manifest", StringComparison.Ordinal))
+                loadFileProgressCount++;
+
+                //Texture2D cachedIcon = AssetDatabase.GetCachedIcon(filePath) as Texture2D; //TODO：如何找到类似函数
+                if (filePath.EndsWith(".manifest", StringComparison.Ordinal))
 				{
 					string bundlePath = filePath.Remove(filePath.Length - 9, 9);
 					string bundleName = Path.GetFileName(bundlePath);

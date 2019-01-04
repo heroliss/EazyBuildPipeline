@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
+namespace EazyBuildPipeline.AssetPreprocessor.Editor
 {
     [Serializable]
     public class SettingPanel
@@ -141,24 +141,25 @@ namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
                     return;
                 }
 
-				string s = "转换完成！\n";
+                string s = "转换完成！\n";
                 if (G.Runner.process.ExitCode != 0)
                 {
-					s = string.Format("操作中断！执行第{0}步时出错：{1}\n", G.Runner.currentShellIndex + 1, G.Runner.errorMessage);
+                    s = string.Format("操作中断！执行第{0}步时出错：{1}\n", G.Runner.currentStepIndex + 1, G.Runner.errorMessage);
                 }
-				s += string.Format("\n第一步(拷贝文件):\nPreStoredAssets中符合标签的文件共有{0}个，跳过{1}个，成功拷贝{2}个。\n",
+                s += string.Format("\n第一步(拷贝文件):\nPreStoredAssets中符合标签的文件共有{0}个，跳过{1}个，成功拷贝{2}个。\n",
                     G.Runner.totalCountList[0], G.Runner.skipCountList[0], G.Runner.successCountList[0]);
-                if (G.Runner.currentShellIndex >= 1)
-				{
-					s += string.Format("\n第二步(修改meta):\n共有{0}个meta文件，跳过{1}个，成功修改{2}个。\n",
-                        G.Runner.totalCountList[1], G.Runner.skipCountList[1], G.Runner.successCountList[1]);
-				}
-				else
-				{
-					s += "\n第二步未执行";
-				}
 
-				if (G.Module.DisplayDialog(s, "查看日志文件", "关闭"))
+                //if (G.Runner.currentShellIndex >= 1)
+                //{
+                //    s += string.Format("\n第二步(修改meta):\n共有{0}个meta文件，跳过{1}个，成功修改{2}个。\n",
+                //        G.Runner.totalCountList[1], G.Runner.skipCountList[1], G.Runner.successCountList[1]);
+                //}
+                //else
+                //{
+                //    s += "\n第二步未执行";
+                //}
+
+                if (G.Module.DisplayDialog(s, "查看日志文件", "关闭"))
 				{
 					foreach (string logFilePath in G.Runner.LogFilePathList)
 					{
@@ -222,6 +223,8 @@ namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
 					string newConfigName = userConfigNames[selectedIndex_new] + ".json";
 					newUserConfig.JsonPath = Path.Combine(G.Module.ModuleConfig.UserConfigsFolderPath, newConfigName);
 					newUserConfig.Load();
+                    newUserConfig.InitImporterGroups();
+                    newUserConfig.PullAll();
 					//至此加载成功
 					G.Module.ModuleStateConfig.Json.CurrentUserConfigName = newConfigName;
 					G.Module.UserConfig = newUserConfig;
@@ -309,6 +312,7 @@ namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
 		{
 			try
 			{
+                G.Module.UserConfig.PushAll();
 				G.Module.UserConfig.Save();
 				G.Module.DisplayDialog("保存成功！");
 				G.g.OnChangeCurrentUserConfig(); //用于刷新dirty 和 总控事件
@@ -334,7 +338,7 @@ namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
             //G.Module.DisplayRunError();
         }
 
-		private void ClickedSyncDirectory()
+        private void ClickedSyncDirectory()
 		{
 			if (!Directory.Exists(Path.GetDirectoryName(G.Module.ModuleConfig.PreStoredAssetsFolderPath)))
 			{
@@ -355,14 +359,14 @@ namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
 				int i;
 				string item = "";
 				for (i = 0; i < total; i++)
-                {
+				{
                     item = allDirectories[i];
                     string path = Path.Combine(G.Module.ModuleConfig.PreStoredAssetsFolderPath, item.Remove(0, 7));
                     Directory.CreateDirectory(path);
                     G.Module.DisplayProgressBar("同步目录", path, (float)i / total);
                 }
-            }
-            EditorUtility.ClearProgressBar();
+                EditorUtility.ClearProgressBar();
+			}
 		}
 
 		public void OnDestory()

@@ -2,7 +2,7 @@
   "OptionsEnumConfigRelativePath": "OptionsEnumConfig.json",
   "ShellsFolderRelativePath": "Shells",
 
-  "WorkRelativePath": "PreStoredAssets",
+  "WorkRelativePath": "PreStoredAssets_old",
   "PreStoredAssetsFolderRelativePath": "Assets",
   "StateConfigRelativePath": "_Config/State.json",
 }

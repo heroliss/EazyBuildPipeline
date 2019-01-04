@@ -37,6 +37,7 @@ namespace EazyBuildPipeline.Common.Configs
         public string IconsFolderPath { get { return Path.Combine(CommonConfigRootPath, Json.IconsFolderRelativePath); } }
         public string CommonConfigRootPath { get { return Path.GetDirectoryName(JsonPath); } }
         public string UserConfigsFolderPath_AssetPreprocessor { get { return Path.Combine(UserConfigsRootPath, Json.UserConfigsFolderName_AssetPreprocessor); } }
+        public string UserConfigsFolderPath_AssetPreprocessor_old { get { return Path.Combine(UserConfigsRootPath, Json.UserConfigsFolderName_AssetPreprocessor_old); } } //TODO: obsolete
         public string UserConfigsFolderPath_BundleManager { get { return Path.Combine(UserConfigsRootPath, Json.UserConfigsFolderName_BundleManager); } }
         public string UserConfigsFolderPath_PackageManager { get { return Path.Combine(UserConfigsRootPath, Json.UserConfigsFolderName_PackageManager); } }
         public string UserConfigsFolderPath_PlayerBuilder { get { return Path.Combine(UserConfigsRootPath, Json.UserConfigsFolderName_PlayerBuilder); } }
@@ -57,6 +58,7 @@ namespace EazyBuildPipeline.Common.Configs
             public string LogsRootName;
             public string UserConfigsRootName;
             public string UserConfigsFolderName_AssetPreprocessor;
+            public string UserConfigsFolderName_AssetPreprocessor_old; //TODO：obsolete
             public string UserConfigsFolderName_BundleManager;
             public string UserConfigsFolderName_PackageManager;
             public string UserConfigsFolderName_PlayerBuilder;
