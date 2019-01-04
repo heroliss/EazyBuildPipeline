@@ -151,7 +151,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
                 //if (G.Runner.currentShellIndex >= 1)
                 //{
-                //    s += string.Format("\n第二步(修改meta):\n共有{0}个meta文件，跳过{1}个，成功修改{2}个。\n",
+                //    s += string.Format("\n第二步(修改AssetImporter设置):\n共有{0}个meta文件，跳过{1}个，成功修改{2}个。\n",
                 //        G.Runner.totalCountList[1], G.Runner.skipCountList[1], G.Runner.successCountList[1]);
                 //}
                 //else

@@ -441,8 +441,6 @@ namespace EazyBuildPipeline.PlayerBuilder
         private string GenerateCode()
         {
             var ps = Module.UserConfig.Json.PlayerSettings;
-            var activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
-            var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(activeBuildTarget);
 
             string build = Module.ModuleStateConfig.Json.BuildNumber.ToString();
             string resourceVersion = Module.ModuleStateConfig.Json.ResourceVersion.ToString();

@@ -72,7 +72,11 @@ namespace EazyBuildPipeline.AssetPreprocessor.ImporterSettings
         public override bool Set(AssetImporter importer, IEnumerable<string> properties, string platform)
         {
             bool dirty = false;
-            TextureImporter textureImporter = (TextureImporter)importer;
+            TextureImporter textureImporter = importer as TextureImporter;
+            if (textureImporter == null) //TODO: 这样处理意外的Importer类型可以吗？
+            {
+                return false;
+            }
             var setting = textureImporter.GetPlatformTextureSettings(platform);
             if (setting.overridden != true)
             {
