@@ -79,6 +79,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     G.Module.IsDirty = true;
                 }
             }
+            GUILayout.Space(10);
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
             importerSettingPanel.OnGUI();
             EditorGUILayout.EndScrollView();

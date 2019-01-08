@@ -26,90 +26,136 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
 
         private void ImporterGroupPanel(ImporterGroup importerGroup)
         {
-            using (new GUILayout.VerticalScope(importerGroup.Name, "flow overlay box"))
+            using (new GUILayout.VerticalScope(GUILayout.MaxWidth(100000)))
             {
-                using (new GUILayout.HorizontalScope(GUILayout.MinWidth(200)))
+                //头部
+                using (new GUILayout.HorizontalScope())
                 {
-                    if (GUILayout.Button("+"))
+                    if (GUILayout.Button("+", GUILayout.Width(20)))
                     {
-                        //添加LabelGroup
-                        var labelGroup = new LabelGroup();
-                        foreach (var propertyGroup in labelGroup.PropertyGroups)
-                        {
-                            propertyGroup.ImporterSetting = (ImporterSetting)ScriptableObject.CreateInstance(importerGroup.SettingType);
-                            propertyGroup.SerializedObject = new SerializedObject(propertyGroup.ImporterSetting);
-                        }
-                        importerGroup.LabelGroups.Add(labelGroup);
-                        G.Module.IsDirty = true;
+                        AddLabelGroup(importerGroup);
                     }
-                    GUILayout.FlexibleSpace();
+                    GUILayout.Label(importerGroup.Name, "BoldLabel");
                 }
+                //每一个LabelGroup
                 foreach (var labelGroup in importerGroup.LabelGroups)
                 {
-                    using (new GUILayout.VerticalScope("GroupBox"))
+                    if (LabelGroupPanel(importerGroup, labelGroup))//返回true表示发生了删除操作
+                    {
+                        break;
+                    }
+                }
+                GUILayout.FlexibleSpace();
+            }
+        }
+
+        private bool LabelGroupPanel(ImporterGroup importerGroup, LabelGroup labelGroup)
+        {
+            using (new GUILayout.VerticalScope("GroupBox"))
+            {
+                //头部
+                using (new GUILayout.HorizontalScope())
+                {
+                    labelGroup.Active = EditorGUILayout.ToggleLeft(GUIContent.none, labelGroup.Active, GUILayout.Width(20));
+                    labelGroup.LabelExpression = EditorGUILayout.TextField(labelGroup.LabelExpression);
+                    if (GUILayout.Button("×", GUILayout.Width(20))) //删除LabelGroup
+                    {
+                        RemoveLabelGroup(importerGroup, labelGroup);
+                        return true;
+                    }
+                }
+                using (new EditorGUI.DisabledGroupScope(!labelGroup.Active))
+                {
+                    //每一个属性
+                    using (new GUILayout.HorizontalScope())
                     {
                         foreach (var propertyGroup in labelGroup.PropertyGroups)
                         {
-                            propertyGroup.SerializedObject.Update();
-                        }
-                        //删除LabelGroup
-                        using (new GUILayout.HorizontalScope())
-                        {
-                            labelGroup.Label = EditorGUILayout.TextField(labelGroup.Label);
-                            if (GUILayout.Button("×", GUILayout.Width(20)))
-                            {
-                                importerGroup.LabelGroups.Remove(labelGroup);
-                                G.Module.IsDirty = true;
-                                break;
-                            }
-                        }
-
-                        using (new GUILayout.HorizontalScope())
-                        {
-                            //添加字段
-                            if (GUILayout.Button("Choose Properties", GUILayout.MaxWidth(120)))
-                            {
-                                GenericMenu menu = new GenericMenu();
-                                foreach (string fieldName in importerGroup.FieldNames)
-                                {
-                                    Property property = labelGroup.CurrentPropertyGroup.Properties.Find(x => x.Name == fieldName);
-                                    bool exist = property != null;
-                                    menu.AddItem(new GUIContent(fieldName), exist, () =>
-                                    {
-                                        if (!exist)
-                                        {
-                                            labelGroup.CurrentPropertyGroup.Properties.Add(new Property() { Name = fieldName });
-                                        }
-                                        else
-                                        {
-                                            labelGroup.CurrentPropertyGroup.Properties.Remove(property);
-                                        }
-                                        G.Module.IsDirty = true;
-                                    });
-                                }
-                                menu.ShowAsContext();
-                            }
-
-                            //切换平台
-                            GUILayout.FlexibleSpace();
-                            labelGroup.CurrentPropertyIndex = GUILayout.Toolbar(labelGroup.CurrentPropertyIndex, LabelGroup.PropertyGroupNames);
-
-                        }
-                        //显示字段
-                        foreach (var fieldName in importerGroup.FieldNames)
-                        {
-                            if (labelGroup.CurrentPropertyGroup.Properties.Exists(x => x.Name == fieldName))
-                            {
-                                EditorGUILayout.PropertyField(labelGroup.CurrentPropertyGroup.SerializedObject.FindProperty(fieldName), true);
-                            }
-                        }
-                        if(labelGroup.CurrentPropertyGroup.SerializedObject.ApplyModifiedProperties())
-                        {
-                            G.Module.IsDirty = true;
+                            PropertyGroupPanel(importerGroup, propertyGroup);
                         }
                     }
                 }
             }
+            return false;
+        }
+
+        private void PropertyGroupPanel(ImporterGroup importerGroup, PropertyGroup propertyGroup)
+        {
+            propertyGroup.SerializedObject.Update();
+            using (new GUILayout.VerticalScope("CN Box", GUILayout.MaxWidth(100000)))
+            {
+                //头部
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Label(propertyGroup.Name, "BoldLabel");
+                    GUILayout.FlexibleSpace();
+                    //选择字段
+                    if (GUILayout.Button("Choose Properties", GUILayout.MaxWidth(120)))
+                    {
+                        ShowChoosePropertiesMenu(importerGroup, propertyGroup);
+                    }
+                }
+                EditorGUILayout.Separator();
+                //显示字段
+                foreach (var fieldName in importerGroup.FieldNames)
+                {
+                    if (propertyGroup.Properties.Exists(x => x.Name == fieldName))
+                    {
+                        EditorGUILayout.PropertyField(propertyGroup.SerializedObject.FindProperty(fieldName), true);
+                    }
+                }
+                //应用修改
+                if (propertyGroup.SerializedObject.ApplyModifiedProperties())
+                {
+                    G.Module.IsDirty = true;
+                }
+            }
+        }
+
+        private void RemoveLabelGroup(ImporterGroup importerGroup, LabelGroup labelGroup)
+        {
+            if (labelGroup.PropertyGroups.All(x => x.Properties.Count == 0) || G.Module.DisplayDialog("确定删除该组？\n\n" + labelGroup.LabelExpression, "确定", "取消"))
+            {
+                importerGroup.LabelGroups.Remove(labelGroup);
+                G.Module.IsDirty = true;
+                EditorGUIUtility.editingTextField = false;
+            }
+        }
+
+        private void AddLabelGroup(ImporterGroup importerGroup)
+        {
+            var labelGroup = new LabelGroup();
+            foreach (var propertyGroup in labelGroup.PropertyGroups)
+            {
+                propertyGroup.ImporterSetting = (ImporterSetting)ScriptableObject.CreateInstance(importerGroup.SettingType);
+                propertyGroup.SerializedObject = new SerializedObject(propertyGroup.ImporterSetting);
+            }
+            importerGroup.LabelGroups.Add(labelGroup);
+            G.Module.IsDirty = true;
+            EditorGUIUtility.editingTextField = false;
+        }
+
+        private void ShowChoosePropertiesMenu(ImporterGroup importerGroup, PropertyGroup propertyGroup)
+        {
+            GenericMenu menu = new GenericMenu();
+            foreach (string fieldName in importerGroup.FieldNames)
+            {
+                Property property = propertyGroup.Properties.Find(x => x.Name == fieldName);
+                bool exist = property != null;
+                menu.AddItem(new GUIContent(fieldName), exist, () =>
+                {
+                    if (!exist)
+                    {
+                        propertyGroup.Properties.Add(new Property() { Name = fieldName });
+                    }
+                    else
+                    {
+                        propertyGroup.Properties.Remove(property);
+                    }
+                    G.Module.IsDirty = true;
+                });
+            }
+            menu.ShowAsContext();
         }
 
         public void Awake()
@@ -156,12 +202,9 @@ namespace EazyBuildPipeline.AssetPreprocessor
     [Serializable]
     public class LabelGroup
     {
-        public static string[] PropertyGroupNames = { "iPhone", "Android" };
-        public int CurrentPropertyIndex; //该字段不写入json，但要序列化
-        public PropertyGroup CurrentPropertyGroup { get { return PropertyGroups[CurrentPropertyIndex]; } }
-
+        public bool Active = true;
+        public string LabelExpression;
         public PropertyGroup[] PropertyGroups = { new PropertyGroup() { Name = "iPhone" }, new PropertyGroup() { Name = "Android" } };
-        public string Label;
 
         public bool SetPropertyGroups(string assetPath)
         {

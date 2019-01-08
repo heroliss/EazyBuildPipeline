@@ -102,7 +102,7 @@ namespace EazyBuildPipeline
         public abstract bool LoadUserConfig();
 
         #region 对话框和进度条
-        readonly double progressInterval = 0.06f;
+        readonly double progressInterval = 0.04f;
         double lastTimeSinceStartup;
         public void DisplayDialog(string message)
         {
@@ -121,53 +121,52 @@ namespace EazyBuildPipeline
             return EditorUtility.DisplayDialog(ModuleName, message, ok, cancel);
         }
 
-        public void DisplayProgressBar(string title, float progress, bool log = false)
+        public void DisplayProgressBar(string title, float progress, bool log = false, bool interval = false)
         {
             if (log)
             {
                 Log(title);
             }
-            if (CanDisplayProgressBar())
+            if (CanDisplayProgressBar(interval))
             {
                 EditorUtility.DisplayProgressBar(title, null, progress);
             }
         }
 
-        public void DisplayProgressBar(string title, string info, float progress, bool log = false)
+        public void DisplayProgressBar(string title, string info, float progress, bool log = false, bool interval = false)
         {
             if (log)
             {
                 Log(title + " : " + info);
             }
-            if (CanDisplayProgressBar())
+            if (CanDisplayProgressBar(interval))
             {
                 EditorUtility.DisplayProgressBar(title, info, progress);
             }
         }
 
-        public bool DisplayCancelableProgressBar(string title, string info, float progress, bool log = false)
+        public bool DisplayCancelableProgressBar(string title, string info, float progress, bool log = false, bool interval = false)
         {
             if (log)
             {
                 Log(title + " : " + info);
             }
-            if (CanDisplayProgressBar())
+            if (CanDisplayProgressBar(interval))
             {
                 return EditorUtility.DisplayCancelableProgressBar(title, info, progress);
             }
             return false;
         }
 
-        private bool CanDisplayProgressBar()
+        private bool CanDisplayProgressBar(bool interval)
         {
-            double time = EditorApplication.timeSinceStartup;
-            if (CommonModule.CommonConfig.IsBatchMode || time - lastTimeSinceStartup < progressInterval)
+            if (CommonModule.CommonConfig.IsBatchMode || (interval && EditorApplication.timeSinceStartup - lastTimeSinceStartup < progressInterval))
             {
                 return false;
             }
             else
             {
-                lastTimeSinceStartup = time;
+                lastTimeSinceStartup = EditorApplication.timeSinceStartup;
                 return true;
             }
         }

@@ -1,14 +1,11 @@
-using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using EazyBuildPipeline.AssetPreprocessor.Editor;
 using EazyBuildPipeline.AssetPreprocessor.Configs;
-using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace EazyBuildPipeline.AssetPreprocessor
 {
@@ -28,6 +25,9 @@ namespace EazyBuildPipeline.AssetPreprocessor
         [NonSerialized] public int currentStepIndex;
         [NonSerialized] public string applyingFile;
         [NonSerialized] public string errorMessage;
+
+        readonly Regex regexSpace = new Regex(@"\s");
+        readonly Regex regexOperator = new Regex("[^" + new string(TruthExpressionParser.opset) + "]+");
 
         public Runner() { }
         public Runner(Module module) : base(module)
@@ -148,9 +148,39 @@ namespace EazyBuildPipeline.AssetPreprocessor
                 }
                 if (!Directory.Exists(Module.ModuleConfig.PreStoredAssetsFolderPath))
                 {
-                    throw new EBPCheckFailedException("不能应用配置，找不到目录:" + Module.ModuleConfig.PreStoredAssetsFolderPath);
+                    throw new EBPCheckFailedException("不能应用配置，找不到PreStoredAssets目录:" + Module.ModuleConfig.PreStoredAssetsFolderPath);
                 }
             }
+            //检查所有label表达式
+            foreach (var importerGroup in Module.UserConfig.Json.ImporterGroups)
+            {
+                foreach (var labelGroup in importerGroup.LabelGroups)
+                {
+                    string expression = labelGroup.LabelExpression;
+                    if (string.IsNullOrEmpty(expression))
+                    {
+                        throw new EBPCheckFailedException("条件表达式不能为空!");
+                    }
+                    expression = regexSpace.Replace(expression, ""); //消除所有\t\n\r\v\f
+                    string[] labels = expression.Split(TruthExpressionParser.opset, StringSplitOptions.RemoveEmptyEntries); //获得labels
+                    expression = regexOperator.Replace(expression, "o") + "#"; //获得表达式
+                    int labelsLen = labels.Length;
+                    bool[] values = new bool[labelsLen]; //存放每个资产的label包含结果
+                    try
+                    {
+                        TruthExpressionParser.Parse(expression, values);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new EBPCheckFailedException("条件表达式不正确：(" + e.Message + ")\n\n" + labelGroup.LabelExpression);
+                    }
+                    if (TruthExpressionParser.StackEmpty() == false)
+                    {
+                        throw new EBPCheckFailedException("条件表达式不正确（栈没有清空）：\n\n" + labelGroup.LabelExpression);
+                    }
+                }
+            }
+
             base.CheckProcess(onlyCheckConfig);
         }
 
@@ -176,6 +206,8 @@ namespace EazyBuildPipeline.AssetPreprocessor
                 throw new EBPException("第一步CopyFile时发生错误：" + errorMessage);
             }
 
+            EBPUtility.RefreshAssets();
+
             //第二步
             currentStepIndex = 1;
             string importerLogPath = Path.Combine(CommonModule.CommonConfig.CurrentLogFolderPath, "ImporterSetting.log");
@@ -189,35 +221,116 @@ namespace EazyBuildPipeline.AssetPreprocessor
             CommonModule.CommonConfig.Save();
         }
 
-        private void ApplyImporter(StreamWriter writer)
+        private void ApplyImporter(StreamWriter logWriter)
         {
-            writer.WriteLine("Start Setting Importers");
+            int totalCount = 0, skipCount = 0, successCount = 0; //统计变量
+            logWriter.WriteLine("Start Setting Importers");
             foreach (var importerGroup in Module.UserConfig.Json.ImporterGroups)
             {
                 Module.DisplayProgressBar("Setting " + importerGroup.Name, 0, true);
-                writer.WriteLine("\nSetting " + importerGroup.Name);
+                logWriter.WriteLine("\nSetting " + importerGroup.Name);
+                var assetInfos = GetAssetInfoList(importerGroup.SearchFilter);
+                int assetInfosLen = assetInfos.Length;
                 foreach (var labelGroup in importerGroup.LabelGroups)
                 {
-                    var guids = AssetDatabase.FindAssets(importerGroup.SearchFilter + " l:" + labelGroup.Label); //TODO
-                    float total = guids.Length;
-                    for (int i = 0; i < total; i++)
+                    if (!labelGroup.Active || labelGroup.LabelExpression.Trim() == "")
                     {
-                        var assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
-                        if (Module.DisplayCancelableProgressBar("Setting " + importerGroup.Name, assetPath, i / total))
+                        continue;
+                    }
+
+                    string expression = labelGroup.LabelExpression;
+                    expression = regexSpace.Replace(expression, ""); //消除所有\t\n\r\v\f
+                    string[] labels = expression.Split(TruthExpressionParser.opset, StringSplitOptions.RemoveEmptyEntries); //获得labels
+                    expression = regexOperator.Replace(expression, "o") + "#"; //获得表达式
+                    int labelsLen = labels.Length;
+                    bool[] values = new bool[labelsLen]; //存放每个资产的label包含结果
+                    for (int i = 0; i < assetInfosLen; i++)
+                    {
+                        var assetInfo = assetInfos[i];
+                        //没有label的资产跳过
+                        if(assetInfo.Labels == null) { continue; }
+                        //标记该Asset是否包含当前表达式中的label
+                        for (int j = 0; j < labelsLen; j++)
+                        {
+                            values[j] = assetInfo.Labels.Contains(labels[j]);
+                        }
+                        //计算真值表达式
+                        bool truth = TruthExpressionParser.Parse(expression, values);
+                        //值为false则跳过
+                        if (truth == false) { continue; }
+                        //至此该Asset可以被设置
+                        if (Module.DisplayCancelableProgressBar("Setting " + importerGroup.Name, assetInfo.Path, i / assetInfosLen, false, true))
                         {
                             throw new EBPException("运行被中止");
                         }
-                        if(labelGroup.SetPropertyGroups(assetPath))
+                        totalCount++;
+                        if (labelGroup.SetPropertyGroups(assetInfo.Path))
                         {
-                            writer.WriteLine("Set  " + assetPath);
+                            logWriter.WriteLine("Set  " + assetInfo.Path);
+                            successCount++;
                         }
                         else
                         {
-                            writer.WriteLine("Skip " + assetPath);
+                            logWriter.WriteLine("Skip " + assetInfo.Path);
+                            skipCount++;
                         }
                     }
                 }
             }
+            logWriter.WriteLine("\n\nTotal: " + totalCount);
+            logWriter.WriteLine("\nSkip: " + skipCount);
+            logWriter.WriteLine("\nSuccess: " + successCount);
+            totalCountList[currentStepIndex] = totalCount;
+            skipCountList[currentStepIndex] = skipCount;
+            successCountList[currentStepIndex] = successCount;
+        }
+
+        private struct AssetInfo
+        {
+            public string Path;
+            public string[] Labels;
+        }
+        private AssetInfo[] GetAssetInfoList(string searchFilter)
+        {
+            string[] guids = AssetDatabase.FindAssets(searchFilter);
+            List<string> labelList = new List<string>();
+            AssetInfo[] assetInfos = new AssetInfo[guids.Length];
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                Module.DisplayProgressBar("Reading Asset Meta Info Searched by " + searchFilter, assetPath, (float)i / guids.Length, false, true);
+                assetInfos[i] = new AssetInfo() { Path = assetPath };
+                using (var file = File.OpenText(assetPath + ".meta"))
+                {
+                    bool startReadLabel = false;
+                    while (!file.EndOfStream)
+                    {
+                        if (file.ReadLine() == "labels:")
+                        {
+                            startReadLabel = true;
+                            break;
+                        }
+                    }
+                    if (startReadLabel)
+                    {
+                        labelList.Clear();
+                        while (!file.EndOfStream)
+                        {
+                            string line = file.ReadLine();
+                            if (line[0] == '-')
+                            {
+                                labelList.Add(line.Substring(2));
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        assetInfos[i].Labels = labelList.ToArray();
+                    }
+                }
+            }
+            return assetInfos;
         }
     }
 }

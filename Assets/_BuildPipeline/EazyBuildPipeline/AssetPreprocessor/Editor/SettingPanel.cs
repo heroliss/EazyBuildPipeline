@@ -142,34 +142,23 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                 }
 
                 string s = "转换完成！\n";
-                if (G.Runner.process.ExitCode != 0)
-                {
-                    s = string.Format("操作中断！执行第{0}步时出错：{1}\n", G.Runner.currentStepIndex + 1, G.Runner.errorMessage);
-                }
-                s += string.Format("\n第一步(拷贝文件):\nPreStoredAssets中符合标签的文件共有{0}个，跳过{1}个，成功拷贝{2}个。\n",
+                s += string.Format("\n第一步(资产替换):\nPreStoredAssets中符合标签的文件共有{0}个，跳过{1}个，成功拷贝{2}个。\n",
                     G.Runner.totalCountList[0], G.Runner.skipCountList[0], G.Runner.successCountList[0]);
 
-                //if (G.Runner.currentShellIndex >= 1)
-                //{
-                //    s += string.Format("\n第二步(修改AssetImporter设置):\n共有{0}个meta文件，跳过{1}个，成功修改{2}个。\n",
-                //        G.Runner.totalCountList[1], G.Runner.skipCountList[1], G.Runner.successCountList[1]);
-                //}
-                //else
-                //{
-                //    s += "\n第二步未执行";
-                //}
+                s += string.Format("\n第二步(修改AssetImporter设置):\n共找到{0}个Importer，跳过{1}个，成功修改{2}个。\n",
+                       G.Runner.totalCountList[1], G.Runner.skipCountList[1], G.Runner.successCountList[1]);
 
                 if (G.Module.DisplayDialog(s, "查看日志文件", "关闭"))
-				{
-					foreach (string logFilePath in G.Runner.LogFilePathList)
-					{
-						if (!string.IsNullOrEmpty(logFilePath))
-						{
-							EditorUtility.OpenWithDefaultApp(logFilePath);
-						}
-					}
-				}
-			}
+                {
+                    foreach (string logFilePath in G.Runner.LogFilePathList)
+                    {
+                        if (!string.IsNullOrEmpty(logFilePath))
+                        {
+                            EditorUtility.OpenWithDefaultApp(logFilePath);
+                        }
+                    }
+                }
+            }
 		}
 
 		private void ClickedRevert()
@@ -363,7 +352,7 @@ namespace EazyBuildPipeline.AssetPreprocessor.Editor
                     item = allDirectories[i];
                     string path = Path.Combine(G.Module.ModuleConfig.PreStoredAssetsFolderPath, item.Remove(0, 7));
                     Directory.CreateDirectory(path);
-                    G.Module.DisplayProgressBar("同步目录", path, (float)i / total);
+                    G.Module.DisplayProgressBar("同步目录", path, (float)i / total, false, true);
                 }
                 EditorUtility.ClearProgressBar();
 			}

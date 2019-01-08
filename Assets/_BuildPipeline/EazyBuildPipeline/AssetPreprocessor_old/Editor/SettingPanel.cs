@@ -359,7 +359,7 @@ namespace EazyBuildPipeline.AssetPreprocessor_old.Editor
                     item = allDirectories[i];
                     string path = Path.Combine(G.Module.ModuleConfig.PreStoredAssetsFolderPath, item.Remove(0, 7));
                     Directory.CreateDirectory(path);
-                    G.Module.DisplayProgressBar("同步目录", path, (float)i / total);
+                    G.Module.DisplayProgressBar("同步目录", path, (float)i / total, false, true);
                 }
             }
             EditorUtility.ClearProgressBar();
