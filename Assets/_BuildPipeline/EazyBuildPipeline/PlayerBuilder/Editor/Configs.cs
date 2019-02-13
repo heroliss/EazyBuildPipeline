@@ -153,7 +153,7 @@ namespace EazyBuildPipeline.PlayerBuilder.Configs
                 [JsonConverter(typeof(StringEnumConverter))] public ArchitectureEnum Architecture;
 
                 //For iOSPostprocessor
-                public string ThirdFrameWorkPath;
+                //public string ThirdFrameWorkPath;
                 public string BlueToothUsageDesc;
                 public string PhotoUsageDesc;
                 public string PhotoUsageAddDesc;

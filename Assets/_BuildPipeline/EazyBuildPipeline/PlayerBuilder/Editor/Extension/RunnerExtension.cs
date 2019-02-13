@@ -9,6 +9,7 @@ using UnityEditor.iOS.Xcode;
 using System.Collections.Generic;
 using EazyBuildPipeline.PlayerBuilder.Configs;
 using System.Text.RegularExpressions;
+using UnityEditor.iOS.Xcode.Extensions;
 
 namespace EazyBuildPipeline.PlayerBuilder
 {
@@ -508,12 +509,12 @@ namespace EazyBuildPipeline.PlayerBuilder
             proj.AddFileToBuild(target, proj.AddFile("usr/lib/libsqlite3.tbd", "Frameworks/libsqlite3.tbd", PBXSourceTree.Sdk));
 
             //*******************************添加第三方framework*******************************//
-            CopyAndReplaceDirectory(psIOS.ThirdFrameWorkPath + "/BuglySDK/Bugly/Bugly.framework", Path.Combine(path, "Frameworks/Bugly.framework"));
-            proj.AddFileToBuild(target, proj.AddFile("Frameworks/Bugly.framework", "Frameworks/Bugly.framework", PBXSourceTree.Source));
+            //CopyAndReplaceDirectory(psIOS.ThirdFrameWorkPath + "/BuglySDK/Bugly/Bugly.framework", Path.Combine(path, "Frameworks/Bugly.framework"));
+            //proj.AddFileToBuild(target, proj.AddFile("Frameworks/Bugly.framework", "Frameworks/Bugly.framework", PBXSourceTree.Source));
 
             // 追加framework的检索目录
             proj.SetBuildProperty(target, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
-            proj.AddBuildProperty(target, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks");
+            proj.AddBuildProperty(target, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/**");
 
             //*******************************设置buildsetting*******************************//
             proj.SetBuildProperty(target, "ENABLE_BITCODE", "NO");
@@ -522,11 +523,18 @@ namespace EazyBuildPipeline.PlayerBuilder
             proj.SetBuildProperty(target, "BUILD_PRODUCTS_PATH", path);
             proj.SetBuildProperty(target, "DEBUG_INFORMATION_FORMAT", "DWARF with dSYM File");
 
+            proj.SetBuildProperty(target, "LD_RUNPATH_SEARCH_PATHS", "$(inherited) @executable_path/Frameworks");//如果没有这句话，运行会崩溃，报 image not found 错误
 
-            //*******************************设置capability*******************************//
+            //*******************************设置EmbedFrameworks*******************************//
+            string defaultLocationInProj = "Frameworks/Plugins/iOS";
 
+            string framework = Path.Combine(defaultLocationInProj, "GWebVideoUI.bundle");
+            string fileGuid = proj.AddFile(framework, "Frameworks/" + framework, PBXSourceTree.Sdk);
+            proj.AddFileToEmbedFrameworks(target, fileGuid);
 
-
+            framework = Path.Combine(defaultLocationInProj, "GWebVideo.framework");
+            fileGuid = proj.AddFile(framework, "Frameworks/" + framework, PBXSourceTree.Sdk);
+            proj.AddFileToEmbedFrameworks(target, fileGuid);
 
             //*******************************设置plist文件*******************************//
             // XCPlist list = new XCPlist (xcodePath);
