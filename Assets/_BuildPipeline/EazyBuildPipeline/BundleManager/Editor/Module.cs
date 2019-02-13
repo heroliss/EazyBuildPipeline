@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using EazyBuildPipeline.BundleManager.Configs;
 using System;

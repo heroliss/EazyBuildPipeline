@@ -1,4 +1,4 @@
-﻿#pragma warning disable 0649
+#pragma warning disable 0649
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
